@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getUsers, updateUser, toggleUserStatus } from '../../services/userService'
+import { getUsers, updateUser, toggleUserStatus, createUser } from '../../services/userService'
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import { ROLE_LABELS } from '../../constants/roles'
 import toast from 'react-hot-toast'
@@ -10,10 +10,21 @@ export default function UserManagement() {
   const [regions, setRegions] = useState([])
   const [branches, setBranches] = useState([])
   const [loading, setLoading] = useState(false)
-  const [modalOpen, setModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [createModalOpen, setCreateModalOpen] = useState(false)
   const [editUser, setEditUser] = useState(null)
   const [formData, setFormData] = useState({})
+  const [createData, setCreateData] = useState({
+    full_name: '',
+    email: '',
+    password: '',
+    role: 'branch_employee',
+    branch_code: '',
+    division_id: '',
+    region_id: '',
+  })
   const [search, setSearch] = useState('')
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => { loadData() }, [])
 
@@ -34,7 +45,7 @@ export default function UserManagement() {
     }
   }
 
-  const openModal = (user) => {
+  const openEditModal = (user) => {
     setEditUser(user)
     setFormData({
       full_name: user.full_name,
@@ -43,23 +54,58 @@ export default function UserManagement() {
       division_id: user.division_id || '',
       region_id: user.region_id || '',
     })
-    setModalOpen(true)
+    setEditModalOpen(true)
   }
 
-  const closeModal = () => {
-    setModalOpen(false)
-    setEditUser(null)
-    setFormData({})
-  }
-
-  const handleSubmit = async () => {
+  const handleUpdate = async () => {
     try {
       await updateUser(editUser.id, formData)
       toast.success('User updated successfully!')
-      closeModal()
+      setEditModalOpen(false)
       loadData()
     } catch (error) {
       toast.error(error.message)
+    }
+  }
+
+  const handleCreate = async () => {
+    if (!createData.full_name) { toast.error('Name is required!'); return }
+    if (!createData.email) { toast.error('Email is required!'); return }
+    if (!createData.password || createData.password.length < 6) {
+      toast.error('Password must be at least 6 characters!'); return
+    }
+    if (['branch_manager', 'branch_employee'].includes(createData.role) && !createData.branch_code) {
+      toast.error('Branch code is required!'); return
+    }
+    setCreating(true)
+    try {
+      await createUser(
+        createData.email,
+        createData.password,
+        createData.full_name,
+        createData.role,
+        {
+          branch_code: createData.branch_code,
+          division_id: createData.division_id,
+          region_id: createData.region_id,
+        }
+      )
+      toast.success('User created successfully!')
+      setCreateModalOpen(false)
+      setCreateData({
+        full_name: '',
+        email: '',
+        password: '',
+        role: 'branch_employee',
+        branch_code: '',
+        division_id: '',
+        region_id: '',
+      })
+      loadData()
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setCreating(false)
     }
   }
 
@@ -73,29 +119,106 @@ export default function UserManagement() {
     }
   }
 
-  const isBranchUser = ['branch_manager', 'branch_employee'].includes(formData.role)
-  const isDivisionalChecker = formData.role === 'divisional_checker'
-  const isRegionalChecker = formData.role === 'regional_checker'
+  const isBranchUser = (role) => ['branch_manager', 'branch_employee'].includes(role)
+  const isDivisionalChecker = (role) => role === 'divisional_checker'
+  const isRegionalChecker = (role) => role === 'regional_checker'
 
   const filteredUsers = users.filter(u =>
     u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
     u.email?.toLowerCase().includes(search.toLowerCase())
   )
 
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg p-6 shadow-sm flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
+  const UserFormFields = ({ data, setData }) => (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
         <input
           type="text"
-          placeholder="Search users..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={data.full_name || ''}
+          onChange={e => setData({ ...data, full_name: e.target.value })}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+        <select
+          value={data.role || ''}
+          onChange={e => setData({ ...data, role: e.target.value })}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {Object.entries(ROLE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </div>
+
+      {isBranchUser(data.role) && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+          <select
+            value={data.branch_code || ''}
+            onChange={e => setData({ ...data, branch_code: e.target.value })}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select Branch</option>
+            {branches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
+          </select>
+        </div>
+      )}
+
+      {isDivisionalChecker(data.role) && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Division</label>
+          <select
+            value={data.division_id || ''}
+            onChange={e => setData({ ...data, division_id: e.target.value })}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select Division</option>
+            {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+        </div>
+      )}
+
+      {isRegionalChecker(data.role) && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
+          <select
+            value={data.region_id || ''}
+            onChange={e => setData({ ...data, region_id: e.target.value })}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select Region</option>
+            {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+          </select>
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg p-6 shadow-sm flex justify-between items-center flex-wrap gap-4">
+        <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
+        <div className="flex gap-3 items-center flex-wrap">
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={() => setCreateModalOpen(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            + Create User
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
         {loading ? (
           <div className="text-center py-8 text-gray-500">Loading...</div>
         ) : (
@@ -127,7 +250,7 @@ export default function UserManagement() {
                     </span>
                   </td>
                   <td className="px-6 py-4 flex gap-3">
-                    <button onClick={() => openModal(user)} className="text-blue-600 hover:underline text-sm">Edit</button>
+                    <button onClick={() => openEditModal(user)} className="text-blue-600 hover:underline text-sm">Edit</button>
                     <button onClick={() => handleToggleStatus(user)} className={`text-sm hover:underline ${user.is_active ? 'text-red-600' : 'text-green-600'}`}>
                       {user.is_active ? 'Deactivate' : 'Activate'}
                     </button>
@@ -139,88 +262,68 @@ export default function UserManagement() {
         )}
       </div>
 
-      {/* Modal */}
-      {modalOpen && (
+      {/* Create Modal */}
+      {createModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Edit User</h2>
-
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-screen overflow-y-auto">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Create New User</h2>
             <div className="space-y-4">
+              <UserFormFields data={createData} setData={setCreateData} />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
-                  type="text"
-                  value={formData.full_name || ''}
-                  onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                  type="email"
+                  value={createData.email}
+                  onChange={e => setCreateData({ ...createData, email: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter email"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select
-                  value={formData.role || ''}
-                  onChange={e => setFormData({ ...formData, role: e.target.value })}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  value={createData.password}
+                  onChange={e => setCreateData({ ...createData, password: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
+                  placeholder="Minimum 6 characters"
+                />
               </div>
-
-              {isBranchUser && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Branch Code</label>
-                  <select
-                    value={formData.branch_code || ''}
-                    onChange={e => setFormData({ ...formData, branch_code: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Branch</option>
-                    {branches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
-                  </select>
-                </div>
-              )}
-
-              {isDivisionalChecker && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Division</label>
-                  <select
-                    value={formData.division_id || ''}
-                    onChange={e => setFormData({ ...formData, division_id: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Division</option>
-                    {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                  </select>
-                </div>
-              )}
-
-              {isRegionalChecker && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
-                  <select
-                    value={formData.region_id || ''}
-                    onChange={e => setFormData({ ...formData, region_id: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Region</option>
-                    {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                  </select>
-                </div>
-              )}
             </div>
-
             <div className="flex gap-3 mt-6">
               <button
-                onClick={handleSubmit}
+                onClick={handleCreate}
+                disabled={creating}
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+              >
+                {creating ? 'Creating...' : 'Create User'}
+              </button>
+              <button
+                onClick={() => setCreateModalOpen(false)}
+                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-screen overflow-y-auto">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Edit User</h2>
+            <UserFormFields data={formData} setData={setFormData} />
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleUpdate}
                 className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
               >
                 Update
               </button>
               <button
-                onClick={closeModal}
+                onClick={() => setEditModalOpen(false)}
                 className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition"
               >
                 Cancel

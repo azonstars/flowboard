@@ -40,3 +40,19 @@ export const getUsersByRole = async (role) => {
   if (error) throw error
   return data
 }
+
+export const createUser = async (email, password, fullName, role, extraData = {}) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: fullName,
+        role: role,
+        ...extraData,
+      },
+    },
+  })
+  if (error) throw error
+  return data
+}
