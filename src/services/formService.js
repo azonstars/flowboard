@@ -4,7 +4,18 @@ export const getForms = async () => {
   const { data, error } = await supabase
     .from('forms')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('menu_order', { ascending: true })
+  if (error) throw error
+  return data
+}
+
+export const getMenuForms = async () => {
+  const { data, error } = await supabase
+    .from('forms')
+    .select('*')
+    .eq('is_active', true)
+    .eq('show_in_menu', true)
+    .order('menu_order', { ascending: true })
   if (error) throw error
   return data
 }

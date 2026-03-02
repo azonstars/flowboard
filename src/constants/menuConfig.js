@@ -24,11 +24,7 @@ export const MENU_ITEMS = [
     label: 'Forms',
     path: '/forms',
     icon: 'FileText',
-    roles: [
-      ROLES.ADMIN,
-      ROLES.BRANCH_MANAGER,
-      ROLES.BRANCH_EMPLOYEE,
-    ],
+    roles: [ROLES.ADMIN],
   },
   {
     label: 'Report Builder',
@@ -64,5 +60,11 @@ export const MENU_ITEMS = [
     path: '/permissions',
     icon: 'Shield',
     roles: [ROLES.ADMIN, ROLES.REGIONAL_CHECKER],
+  },
+  {
+    label: 'Settings',
+    path: '/settings',
+    icon: 'Settings',
+    roles: [ROLES.ADMIN],
   },
 ]
