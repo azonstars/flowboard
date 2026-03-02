@@ -45,6 +45,16 @@ export default function UserManagement() {
     }
   }
 
+  const generateRandom = () => {
+    const random = Math.random().toString(36).substring(2, 8)
+    setCreateData(prev => ({
+      ...prev,
+      email: `user_${random}@flowboard.test`,
+      password: `Pass_${random}@123`,
+    }))
+    toast.success('Random email & password generated!')
+  }
+
   const openEditModal = (user) => {
     setEditUser(user)
     setFormData({
@@ -128,31 +138,8 @@ export default function UserManagement() {
     u.email?.toLowerCase().includes(search.toLowerCase())
   )
 
-  const UserFormFields = ({ data, setData }) => (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-        <input
-          type="text"
-          value={data.full_name || ''}
-          onChange={e => setData({ ...data, full_name: e.target.value })}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-        <select
-          value={data.role || ''}
-          onChange={e => setData({ ...data, role: e.target.value })}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {Object.entries(ROLE_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
-      </div>
-
+  const RoleFields = ({ data, setData }) => (
+    <>
       {isBranchUser(data.role) && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
@@ -166,7 +153,6 @@ export default function UserManagement() {
           </select>
         </div>
       )}
-
       {isDivisionalChecker(data.role) && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Division</label>
@@ -180,7 +166,6 @@ export default function UserManagement() {
           </select>
         </div>
       )}
-
       {isRegionalChecker(data.role) && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
@@ -194,7 +179,7 @@ export default function UserManagement() {
           </select>
         </div>
       )}
-    </div>
+    </>
   )
 
   return (
@@ -265,12 +250,45 @@ export default function UserManagement() {
       {/* Create Modal */}
       {createModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-screen overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Create New User</h2>
             <div className="space-y-4">
-              <UserFormFields data={createData} setData={setCreateData} />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={createData.full_name}
+                  onChange={e => setCreateData({ ...createData, full_name: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter full name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select
+                  value={createData.role}
+                  onChange={e => setCreateData({ ...createData, role: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <RoleFields data={createData} setData={setCreateData} />
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <button
+                    onClick={generateRandom}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    ⚡ Generate Random
+                  </button>
+                </div>
                 <input
                   type="email"
                   value={createData.email}
@@ -279,10 +297,11 @@ export default function UserManagement() {
                   placeholder="Enter email"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <input
-                  type="password"
+                  type="text"
                   value={createData.password}
                   onChange={e => setCreateData({ ...createData, password: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -290,6 +309,7 @@ export default function UserManagement() {
                 />
               </div>
             </div>
+
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleCreate}
@@ -312,9 +332,32 @@ export default function UserManagement() {
       {/* Edit Modal */}
       {editModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-screen overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Edit User</h2>
-            <UserFormFields data={formData} setData={setFormData} />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={formData.full_name || ''}
+                  onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select
+                  value={formData.role || ''}
+                  onChange={e => setFormData({ ...formData, role: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              <RoleFields data={formData} setData={setFormData} />
+            </div>
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleUpdate}
