@@ -6,6 +6,7 @@ import ResetPassword from '../pages/auth/ResetPassword'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import AdminDashboard from '../pages/dashboard/AdminDashboard'
 import BranchManagement from '../pages/branches/BranchManagement'
+import UserManagement from '../pages/users/UserManagement'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -47,6 +48,14 @@ export default function AppRoutes() {
           <PrivateRoute>
             <DashboardLayout>
               <BranchManagement />
+            </DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/users" element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <UserManagement />
             </DashboardLayout>
           </PrivateRoute>
         } />
