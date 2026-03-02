@@ -12,6 +12,7 @@ import FormBuilderPage from '../pages/forms/FormBuilderPage'
 import FormSubmitPage from '../pages/forms/FormSubmitPage'
 import ReportViewPage from '../pages/reports/ReportViewPage'
 import ReportBuilderPage from '../pages/reports/ReportBuilderPage'
+import PermissionManagement from '../pages/permissions/PermissionManagement'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -86,6 +87,12 @@ export default function AppRoutes() {
         <Route path="/reports/builder" element={
           <PrivateRoute>
             <DashboardLayout><ReportBuilderPage /></DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/permissions" element={
+          <PrivateRoute>
+            <DashboardLayout><PermissionManagement /></DashboardLayout>
           </PrivateRoute>
         } />
 
