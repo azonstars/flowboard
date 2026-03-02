@@ -21,12 +21,6 @@ export const MENU_ITEMS = [
     roles: [ROLES.ADMIN],
   },
   {
-    label: 'Forms',
-    path: '/forms',
-    icon: 'FileText',
-    roles: [ROLES.ADMIN],
-  },
-  {
     label: 'Report Builder',
     path: '/reports/builder',
     icon: 'BarChart2',
