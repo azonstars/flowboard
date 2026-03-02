@@ -7,6 +7,9 @@ import DashboardLayout from '../components/layout/DashboardLayout'
 import AdminDashboard from '../pages/dashboard/AdminDashboard'
 import BranchManagement from '../pages/branches/BranchManagement'
 import UserManagement from '../pages/users/UserManagement'
+import FormListPage from '../pages/forms/FormListPage'
+import FormBuilderPage from '../pages/forms/FormBuilderPage'
+import FormSubmitPage from '../pages/forms/FormSubmitPage'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -56,6 +59,30 @@ export default function AppRoutes() {
           <PrivateRoute>
             <DashboardLayout>
               <UserManagement />
+            </DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/forms" element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <FormListPage />
+            </DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/forms/builder" element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <FormBuilderPage />
+            </DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/forms/submit/:formId" element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <FormSubmitPage />
             </DashboardLayout>
           </PrivateRoute>
         } />
