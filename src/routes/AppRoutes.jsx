@@ -6,6 +6,10 @@ import Register from '../pages/auth/Register'
 import ResetPassword from '../pages/auth/ResetPassword'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import AdminDashboard from '../pages/dashboard/AdminDashboard'
+import BranchDashboard from '../pages/dashboard/BranchDashboard'
+import CentralCheckerDashboard from '../pages/dashboard/CentralCheckerDashboard'
+import DivisionalCheckerDashboard from '../pages/dashboard/DivisionalCheckerDashboard'
+import RegionalCheckerDashboard from '../pages/dashboard/RegionalCheckerDashboard'
 import BranchManagement from '../pages/branches/BranchManagement'
 import UserManagement from '../pages/users/UserManagement'
 import FormListPage from '../pages/forms/FormListPage'
@@ -54,11 +58,22 @@ const RoleRoute = ({ children, roles }) => {
   return children
 }
 
+const DashboardRouter = () => {
+  const { profile } = useAuth()
+  switch (profile?.role) {
+    case ROLES.ADMIN: return <AdminDashboard />
+    case ROLES.CENTRAL_CHECKER: return <CentralCheckerDashboard />
+    case ROLES.DIVISIONAL_CHECKER: return <DivisionalCheckerDashboard />
+    case ROLES.REGIONAL_CHECKER: return <RegionalCheckerDashboard />
+    case ROLES.BRANCH_MANAGER:
+    case ROLES.BRANCH_EMPLOYEE: return <BranchDashboard />
+    default: return <div className="text-center py-8 text-gray-500">Loading...</div>
+  }
+}
+
 const ADMIN_ONLY = [ROLES.ADMIN]
-const ADMIN_CENTRAL = [ROLES.ADMIN, ROLES.CENTRAL_CHECKER]
 const CHECKERS = [ROLES.ADMIN, ROLES.CENTRAL_CHECKER, ROLES.DIVISIONAL_CHECKER, ROLES.REGIONAL_CHECKER]
 const BRANCH_USERS = [ROLES.ADMIN, ROLES.BRANCH_MANAGER, ROLES.BRANCH_EMPLOYEE]
-const ALL_ROLES = Object.values(ROLES)
 
 export default function AppRoutes() {
   return (
@@ -70,7 +85,7 @@ export default function AppRoutes() {
 
         <Route path="/dashboard" element={
           <PrivateRoute>
-            <DashboardLayout><AdminDashboard /></DashboardLayout>
+            <DashboardLayout><DashboardRouter /></DashboardLayout>
           </PrivateRoute>
         } />
 
