@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { ROLES } from '../constants/roles'
 import Login from '../pages/auth/Login'
 import Register from '../pages/auth/Register'
 import ResetPassword from '../pages/auth/ResetPassword'
@@ -34,6 +35,31 @@ const PublicRoute = ({ children }) => {
   return !user ? children : <Navigate to="/dashboard" />
 }
 
+const RoleRoute = ({ children, roles }) => {
+  const { profile, loading } = useAuth()
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-blue-600 text-xl">Loading...</div>
+    </div>
+  )
+  if (!roles.includes(profile?.role)) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-red-500">403</h1>
+        <p className="text-gray-600 mt-2">Access Denied</p>
+        <a href="/dashboard" className="text-blue-600 hover:underline mt-4 block">Go to Dashboard</a>
+      </div>
+    </div>
+  )
+  return children
+}
+
+const ADMIN_ONLY = [ROLES.ADMIN]
+const ADMIN_CENTRAL = [ROLES.ADMIN, ROLES.CENTRAL_CHECKER]
+const CHECKERS = [ROLES.ADMIN, ROLES.CENTRAL_CHECKER, ROLES.DIVISIONAL_CHECKER, ROLES.REGIONAL_CHECKER]
+const BRANCH_USERS = [ROLES.ADMIN, ROLES.BRANCH_MANAGER, ROLES.BRANCH_EMPLOYEE]
+const ALL_ROLES = Object.values(ROLES)
+
 export default function AppRoutes() {
   return (
     <BrowserRouter>
@@ -50,53 +76,70 @@ export default function AppRoutes() {
 
         <Route path="/branches" element={
           <PrivateRoute>
-            <DashboardLayout><BranchManagement /></DashboardLayout>
+            <RoleRoute roles={ADMIN_ONLY}>
+              <DashboardLayout><BranchManagement /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
 
         <Route path="/users" element={
           <PrivateRoute>
-            <DashboardLayout><UserManagement /></DashboardLayout>
+            <RoleRoute roles={ADMIN_ONLY}>
+              <DashboardLayout><UserManagement /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
 
         <Route path="/forms" element={
           <PrivateRoute>
-            <DashboardLayout><FormListPage /></DashboardLayout>
+            <RoleRoute roles={BRANCH_USERS}>
+              <DashboardLayout><FormListPage /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
 
         <Route path="/forms/builder" element={
           <PrivateRoute>
-            <DashboardLayout><FormBuilderPage /></DashboardLayout>
+            <RoleRoute roles={ADMIN_ONLY}>
+              <DashboardLayout><FormBuilderPage /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
 
         <Route path="/forms/submit/:formId" element={
           <PrivateRoute>
-            <DashboardLayout><FormSubmitPage /></DashboardLayout>
+            <RoleRoute roles={BRANCH_USERS}>
+              <DashboardLayout><FormSubmitPage /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
 
         <Route path="/reports" element={
           <PrivateRoute>
-            <DashboardLayout><ReportViewPage /></DashboardLayout>
+            <RoleRoute roles={CHECKERS}>
+              <DashboardLayout><ReportViewPage /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
 
         <Route path="/reports/builder" element={
           <PrivateRoute>
-            <DashboardLayout><ReportBuilderPage /></DashboardLayout>
+            <RoleRoute roles={ADMIN_ONLY}>
+              <DashboardLayout><ReportBuilderPage /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
 
         <Route path="/permissions" element={
           <PrivateRoute>
-            <DashboardLayout><PermissionManagement /></DashboardLayout>
+            <RoleRoute roles={[ROLES.ADMIN, ROLES.REGIONAL_CHECKER]}>
+              <DashboardLayout><PermissionManagement /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
 
         <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </BrowserRouter>
   )
