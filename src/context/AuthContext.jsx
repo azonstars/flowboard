@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../services/supabase'
 import { getMenuForms } from '../services/formService'
+import { getMenuItems } from '../services/menuService'
 
 const AuthContext = createContext({})
 
@@ -8,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [menuForms, setMenuForms] = useState([])
+  const [menuItems, setMenuItems] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,6 +26,7 @@ export const AuthProvider = ({ children }) => {
         else {
           setProfile(null)
           setMenuForms([])
+          setMenuItems([])
           setLoading(false)
         }
       }
@@ -45,7 +48,7 @@ export const AuthProvider = ({ children }) => {
         return
       }
       setProfile(data)
-      await fetchMenuForms()
+      await Promise.all([fetchMenuForms(), fetchMenuItems()])
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -62,15 +65,28 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const fetchMenuItems = async () => {
+    try {
+      const items = await getMenuItems()
+      setMenuItems(items)
+    } catch (error) {
+      console.error('Menu items error:', error)
+    }
+  }
+
   const signOut = async () => {
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
     setMenuForms([])
+    setMenuItems([])
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, menuForms, loading, signOut, fetchProfile, fetchMenuForms }}>
+    <AuthContext.Provider value={{
+      user, profile, menuForms, menuItems, loading,
+      signOut, fetchProfile, fetchMenuForms, fetchMenuItems
+    }}>
       {children}
     </AuthContext.Provider>
   )

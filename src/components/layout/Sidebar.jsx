@@ -1,13 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { MENU_ITEMS } from '../../constants/menuConfig'
 import { ROLES } from '../../constants/roles'
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { profile, menuForms } = useAuth()
+  const { profile, menuForms, menuItems } = useAuth()
   const location = useLocation()
 
-  const filteredMenu = MENU_ITEMS.filter(item =>
+  const filteredMenuItems = menuItems.filter(item =>
     item.roles.includes(profile?.role)
   )
 
@@ -44,9 +43,9 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Menu */}
         <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100%-160px)]">
-          {filteredMenu.map((item) => (
+          {filteredMenuItems.map((item) => (
             <Link
-              key={item.path}
+              key={item.id}
               to={item.path}
               onClick={onClose}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
