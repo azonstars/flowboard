@@ -10,6 +10,8 @@ import UserManagement from '../pages/users/UserManagement'
 import FormListPage from '../pages/forms/FormListPage'
 import FormBuilderPage from '../pages/forms/FormBuilderPage'
 import FormSubmitPage from '../pages/forms/FormSubmitPage'
+import ReportViewPage from '../pages/reports/ReportViewPage'
+import ReportBuilderPage from '../pages/reports/ReportBuilderPage'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -41,49 +43,49 @@ export default function AppRoutes() {
 
         <Route path="/dashboard" element={
           <PrivateRoute>
-            <DashboardLayout>
-              <AdminDashboard />
-            </DashboardLayout>
+            <DashboardLayout><AdminDashboard /></DashboardLayout>
           </PrivateRoute>
         } />
 
         <Route path="/branches" element={
           <PrivateRoute>
-            <DashboardLayout>
-              <BranchManagement />
-            </DashboardLayout>
+            <DashboardLayout><BranchManagement /></DashboardLayout>
           </PrivateRoute>
         } />
 
         <Route path="/users" element={
           <PrivateRoute>
-            <DashboardLayout>
-              <UserManagement />
-            </DashboardLayout>
+            <DashboardLayout><UserManagement /></DashboardLayout>
           </PrivateRoute>
         } />
 
         <Route path="/forms" element={
           <PrivateRoute>
-            <DashboardLayout>
-              <FormListPage />
-            </DashboardLayout>
+            <DashboardLayout><FormListPage /></DashboardLayout>
           </PrivateRoute>
         } />
 
         <Route path="/forms/builder" element={
           <PrivateRoute>
-            <DashboardLayout>
-              <FormBuilderPage />
-            </DashboardLayout>
+            <DashboardLayout><FormBuilderPage /></DashboardLayout>
           </PrivateRoute>
         } />
 
         <Route path="/forms/submit/:formId" element={
           <PrivateRoute>
-            <DashboardLayout>
-              <FormSubmitPage />
-            </DashboardLayout>
+            <DashboardLayout><FormSubmitPage /></DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/reports" element={
+          <PrivateRoute>
+            <DashboardLayout><ReportViewPage /></DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/reports/builder" element={
+          <PrivateRoute>
+            <DashboardLayout><ReportBuilderPage /></DashboardLayout>
           </PrivateRoute>
         } />
 
