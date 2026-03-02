@@ -11,7 +11,8 @@ export default function Sidebar({ isOpen, onClose }) {
     item.roles.includes(profile?.role)
   )
 
-  const isBranchUser = [
+  const isBranchOrAdmin = [
+    ROLES.ADMIN,
     ROLES.BRANCH_MANAGER,
     ROLES.BRANCH_EMPLOYEE,
   ].includes(profile?.role)
@@ -59,7 +60,7 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
 
           {/* Dynamic Form Menu Items */}
-          {isBranchUser && menuForms.length > 0 && (
+          {isBranchOrAdmin && menuForms.length > 0 && (
             <>
               <div className="pt-3 pb-1 px-4">
                 <p className="text-blue-400 text-xs uppercase font-semibold tracking-wider">
