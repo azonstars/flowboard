@@ -54,6 +54,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   : 'text-blue-200 hover:bg-blue-800 hover:text-white'
               }`}
             >
+              <span className="text-xl">{item.icon || '📋'}</span>
               <span>{item.label}</span>
             </Link>
           ))}
@@ -77,7 +78,7 @@ export default function Sidebar({ isOpen, onClose }) {
                       : 'text-blue-200 hover:bg-blue-800 hover:text-white'
                   }`}
                 >
-                  <span className="text-blue-400">📋</span>
+                  <span className="text-xl">{form.menu_icon || '📋'}</span>
                   <span>{form.title}</span>
                 </Link>
               ))}
