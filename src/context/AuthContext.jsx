@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../services/supabase'
-import { getMenuForms } from '../services/formService'
 import { getMenuItems } from '../services/menuService'
+import { getMenuForms } from '../services/formService'
 
 const AuthContext = createContext({})
 
@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null)
   const [menuForms, setMenuForms] = useState([])
   const [menuItems, setMenuItems] = useState([])
+  const [allMenuItems, setAllMenuItems] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export const AuthProvider = ({ children }) => {
           setProfile(null)
           setMenuForms([])
           setMenuItems([])
+          setAllMenuItems([])
           setLoading(false)
         }
       }
@@ -42,36 +44,48 @@ export const AuthProvider = ({ children }) => {
         .select('*')
         .eq('id', userId)
         .single()
-      if (error) {
-        console.error('Profile fetch error:', error)
-        setLoading(false)
-        return
-      }
+      if (error) { setLoading(false); return }
       setProfile(data)
-      await Promise.all([fetchMenuForms(), fetchMenuItems()])
+      await fetchAllMenuData()
     } catch (error) {
-      console.error('Error:', error)
+      console.error(error)
     } finally {
       setLoading(false)
     }
   }
 
-  const fetchMenuForms = async () => {
+  const fetchAllMenuData = async () => {
     try {
-      const forms = await getMenuForms()
+      const [items, forms] = await Promise.all([getMenuItems(), getMenuForms()])
       setMenuForms(forms)
+
+      // Merge menu items and forms into one sorted list
+      const menuItemsMapped = items.map(i => ({ ...i, _type: 'menu' }))
+      const formsMapped = forms.map(f => ({
+        ...f,
+        _type: 'form',
+        label: f.title,
+        icon: f.menu_icon || '📋',
+        path: `/forms/submit/${f.id}`,
+        roles: ['admin', 'branch_manager', 'branch_employee'],
+      }))
+
+      const combined = [...menuItemsMapped, ...formsMapped]
+        .sort((a, b) => (a.menu_order || 0) - (b.menu_order || 0))
+
+      setAllMenuItems(combined)
+      setMenuItems(items)
     } catch (error) {
-      console.error('Menu forms error:', error)
+      console.error(error)
     }
   }
 
+  const fetchMenuForms = async () => {
+    await fetchAllMenuData()
+  }
+
   const fetchMenuItems = async () => {
-    try {
-      const items = await getMenuItems()
-      setMenuItems(items)
-    } catch (error) {
-      console.error('Menu items error:', error)
-    }
+    await fetchAllMenuData()
   }
 
   const signOut = async () => {
@@ -80,12 +94,13 @@ export const AuthProvider = ({ children }) => {
     setProfile(null)
     setMenuForms([])
     setMenuItems([])
+    setAllMenuItems([])
   }
 
   return (
     <AuthContext.Provider value={{
-      user, profile, menuForms, menuItems, loading,
-      signOut, fetchProfile, fetchMenuForms, fetchMenuItems
+      user, profile, menuForms, menuItems, allMenuItems, loading,
+      signOut, fetchProfile, fetchMenuForms, fetchMenuItems, fetchAllMenuData
     }}>
       {children}
     </AuthContext.Provider>
