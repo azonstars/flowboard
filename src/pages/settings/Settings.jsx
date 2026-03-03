@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor,
-  useSensor, useSensors, DragOverlay,
+  useSensor, useSensors,
 } from '@dnd-kit/core'
 import {
   arrayMove, SortableContext, sortableKeyboardCoordinates,
@@ -29,7 +29,7 @@ const ALL_ROLES = [
   { value: 'branch_employee', label: 'Branch Employee' },
 ]
 
-const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, onAddSubMenu, allForms, allMenuItems }) => {
+const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, onAddSubMenu, allForms, isChild }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const [showIconPicker, setShowIconPicker] = useState(false)
   const [showSubMenuForm, setShowSubMenuForm] = useState(false)
@@ -48,8 +48,8 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
   const isVisible = item.is_active !== false
 
   return (
-    <div ref={setNodeRef} style={style} className="mb-2">
-      <div className={`border rounded-lg bg-white ${isDragging ? 'shadow-xl border-blue-300' : 'shadow-sm'}`}>
+    <div ref={setNodeRef} style={style} className={`mb-2 ${isChild ? 'ml-6' : ''}`}>
+      <div className={`border rounded-lg bg-white ${isDragging ? 'shadow-xl border-blue-300' : 'shadow-sm'} ${isChild ? 'border-l-4 border-l-blue-300' : ''}`}>
         {/* Header */}
         <div className="flex items-center gap-2 p-3">
           <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
@@ -60,19 +60,17 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
           <span className={`text-xl ${!isVisible ? 'opacity-40' : ''}`}>{item.icon || item.menu_icon || '📋'}</span>
           <span className={`flex-1 font-medium text-sm ${!isVisible ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
             {item.label || item.title}
+            {isChild && <span className="ml-2 text-xs text-blue-400">sub-menu</span>}
           </span>
           {children.length > 0 && (
             <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">{children.length} sub</span>
           )}
-          {/* Show/Hide Toggle */}
           <button
             onClick={() => onUpdate(item, 'is_active', !isVisible)}
-            className={`text-xs px-2 py-1 rounded-lg transition ${
-              isVisible ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-            }`}
-            title={isVisible ? 'Hide from menu' : 'Show in menu'}
+            className={`text-xs px-2 py-1 rounded-lg transition ${isVisible ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+            title={isVisible ? 'Hide' : 'Show'}
           >
-            {isVisible ? '👁 Show' : '🙈 Hide'}
+            {isVisible ? '👁' : '🙈'}
           </button>
           <button onClick={() => onToggleExpand(item.id)} className="text-gray-400 hover:text-gray-600 transition ml-1">
             <svg className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +82,6 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
         {/* Expanded */}
         {isExpanded && (
           <div className="border-t border-gray-100 p-4 space-y-4">
-            {/* Label */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Label</label>
               <input
@@ -95,7 +92,6 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               />
             </div>
 
-            {/* Link Type & Path */}
             {item._type !== 'form' && (
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Link To</label>
@@ -107,15 +103,14 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                   <option value="path">Custom Path</option>
                   <option value="form">Form (Submit Page)</option>
                 </select>
-
-                {(item.link_type === 'form') ? (
+                {item.link_type === 'form' ? (
                   <select
                     value={item.form_id || ''}
                     onChange={e => {
                       const form = allForms.find(f => f.id === e.target.value)
                       onUpdate(item, 'form_id', e.target.value)
                       onUpdate(item, 'path', `/forms/submit/${e.target.value}`)
-                      if (form) onUpdate(item, 'label', item.label || form.title)
+                      if (form && !item.label) onUpdate(item, 'label', form.title)
                     }}
                     className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -134,7 +129,6 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               </div>
             )}
 
-            {/* Icon */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-2">Icon</label>
               <div className="relative">
@@ -160,7 +154,6 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               </div>
             </div>
 
-            {/* Roles */}
             {item._type !== 'form' && (
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-2">Visible to Roles</label>
@@ -185,8 +178,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               </div>
             )}
 
-            {/* Sub Menu */}
-            {item._type !== 'form' && (
+            {item._type !== 'form' && !isChild && (
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-medium text-gray-600">Sub Menu Items</label>
@@ -198,7 +190,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                 {children.length > 0 && (
                   <div className="space-y-1 mb-3">
                     {children.map(child => (
-                      <div key={child.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                      <div key={child.id} className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg border-l-4 border-blue-300">
                         <span>{child.icon || '📌'}</span>
                         <span className="flex-1 text-sm text-gray-700">{child.label}</span>
                         <span className="text-xs text-gray-400 hidden sm:block">{child.path}</span>
@@ -224,7 +216,6 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                       <option value="custom">Custom Path</option>
                       <option value="form">Form (Submit Page)</option>
                     </select>
-
                     {subItem.link_type === 'form' ? (
                       <select
                         value={subItem.form_id || ''}
@@ -250,7 +241,6 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                         className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     )}
-
                     <div className="relative">
                       <button
                         onClick={() => setShowSubIconPicker(!showSubIconPicker)}
@@ -272,7 +262,6 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                         </div>
                       )}
                     </div>
-
                     <div className="flex gap-2">
                       <button
                         onClick={() => {
@@ -298,6 +287,24 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
           </div>
         )}
       </div>
+
+      {/* Sub items shown below parent */}
+      {!isChild && children.length > 0 && !expandedId !== item.id && (
+        <div className="ml-6 mt-1 space-y-1 border-l-2 border-blue-200 pl-2">
+          {children.map(child => (
+            <div key={child.id} className="flex items-center gap-2 p-2 bg-white border border-blue-200 rounded-lg">
+              <span className="text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+              <span>{child.icon || '📌'}</span>
+              <span className="flex-1 text-sm text-gray-700">{child.label}</span>
+              <span className="text-xs text-gray-400">{child.path}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -313,6 +320,7 @@ export default function Settings() {
   const [leftTab, setLeftTab] = useState('menu')
   const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'custom' })
   const [showIconPicker, setShowIconPicker] = useState(false)
+  const [dragInfo, setDragInfo] = useState(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -358,10 +366,37 @@ export default function Settings() {
   }
 
   const handleDragEnd = (event) => {
-    const { active, over } = event
+    const { active, over, delta } = event
     if (!over || active.id === over.id) return
+
     const oldIndex = menuStructure.findIndex(f => f.id === active.id)
     const newIndex = menuStructure.findIndex(f => f.id === over.id)
+    const activeItem = menuStructure[oldIndex]
+    const overItem = menuStructure[newIndex]
+
+    // Drag ডানে 80px+ → sub-menu করব
+    if (delta.x > 80 && overItem && overItem._type !== 'form' && activeItem._type !== 'form') {
+      const newStructure = menuStructure.filter(m => m.id !== activeItem.id)
+      const parentIndex = newStructure.findIndex(m => m.id === overItem.id)
+      newStructure[parentIndex] = {
+        ...newStructure[parentIndex],
+        children: [
+          ...(newStructure[parentIndex].children || []),
+          {
+            ...activeItem,
+            parent_id: overItem.id,
+            _type: 'new_child',
+            id: activeItem.id,
+            menu_order: (newStructure[parentIndex].children || []).length + 1,
+          }
+        ]
+      }
+      setMenuStructure(newStructure)
+      toast.success(`"${activeItem.label}" → sub-menu of "${overItem.label}"!`)
+      return
+    }
+
+    // Normal reorder
     setMenuStructure(arrayMove(menuStructure, oldIndex, newIndex))
   }
 
@@ -425,12 +460,9 @@ export default function Settings() {
     if (!path) { toast.error('Path or form is required!'); return }
     try {
       const data = await createMenuItem({
-        label: customLink.label,
-        path,
-        icon: customLink.icon,
-        menu_order: 99,
-        is_active: true,
-        roles: ['admin'],
+        label: customLink.label, path,
+        icon: customLink.icon, menu_order: 99,
+        is_active: true, roles: ['admin'],
       })
       setMenuStructure([...menuStructure, { ...data, _type: 'custom', children: [] }])
       setCustomLink({ label: '', path: '', icon: '📌', link_type: 'custom' })
@@ -448,24 +480,21 @@ export default function Settings() {
         const item = menuStructure[i]
         if (item._type === 'form') {
           await updateForm(item.id, {
-            menu_order: i + 1,
-            show_in_menu: true,
+            menu_order: i + 1, show_in_menu: true,
             menu_icon: item.icon || item.menu_icon,
           })
         } else {
           await updateMenuItem(item.id, {
-            menu_order: i + 1,
-            icon: item.icon,
-            label: item.label,
-            roles: item.roles,
+            menu_order: i + 1, icon: item.icon,
+            label: item.label, roles: item.roles,
             is_active: item.is_active !== false,
-            path: item.path,
+            path: item.path, parent_id: null,
           })
 
           const children = item.children || []
           for (let j = 0; j < children.length; j++) {
             const child = children[j]
-            if (child._type === 'new_child') {
+            if (child._type === 'new_child' && child.id.startsWith('new_')) {
               await createMenuItem({
                 label: child.label, path: child.path, icon: child.icon,
                 menu_order: j + 1, is_active: true,
@@ -473,13 +502,14 @@ export default function Settings() {
               })
             } else {
               await updateMenuItem(child.id, {
-                menu_order: j + 1, icon: child.icon, label: child.label, is_active: true,
+                menu_order: j + 1, icon: child.icon, label: child.label,
+                is_active: true, parent_id: item.id,
               })
             }
           }
 
           const existingChildren = allMenuItems.filter(m => m.parent_id === item.id)
-          const currentChildIds = children.filter(c => c._type !== 'new_child').map(c => c.id)
+          const currentChildIds = children.filter(c => !c.id.toString().startsWith('new_')).map(c => c.id)
           for (const ec of existingChildren) {
             if (!currentChildIds.includes(ec.id)) await deleteMenuItem(ec.id)
           }
@@ -516,7 +546,7 @@ export default function Settings() {
     <div className="space-y-6">
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-gray-800">Settings — Menu Manager</h1>
-        <p className="text-gray-500 mt-1">WordPress style menu management.</p>
+        <p className="text-gray-500 mt-1">Drag right to make sub-menu • Drag to reorder • Click ▼ to edit</p>
       </div>
 
       {loading ? (
@@ -578,7 +608,6 @@ export default function Settings() {
                       <option value="custom">Custom Path</option>
                       <option value="form">Form (Submit Page)</option>
                     </select>
-
                     {customLink.link_type === 'form' ? (
                       <select value={customLink.form_id || ''}
                         onChange={e => setCustomLink({ ...customLink, form_id: e.target.value })}
@@ -629,7 +658,9 @@ export default function Settings() {
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
               <div>
                 <h2 className="font-bold text-gray-800">Menu Structure</h2>
-                <p className="text-xs text-gray-500 mt-0.5">Drag to reorder • Click ▼ to edit • 👁 to show/hide</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  ↔️ Drag right to make sub-menu • 🔃 Drag up/down to reorder • ▼ to edit
+                </p>
               </div>
               <button onClick={handleSave} disabled={saving}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 font-medium">
@@ -654,7 +685,7 @@ export default function Settings() {
                         onRemove={handleRemove}
                         onAddSubMenu={handleAddSubMenu}
                         allForms={allForms}
-                        allMenuItems={allMenuItems}
+                        isChild={false}
                       />
                     ))}
                   </SortableContext>
