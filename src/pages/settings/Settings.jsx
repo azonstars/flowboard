@@ -1,24 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
+  DndContext, closestCenter, KeyboardSensor, PointerSensor,
+  useSensor, useSensors, DragOverlay,
 } from '@dnd-kit/core'
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
+  arrayMove, SortableContext, sortableKeyboardCoordinates,
+  useSortable, verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { getForms, updateForm } from '../../services/formService'
-import { getMenuItems, updateMenuOrder, updateMenuItem } from '../../services/menuService'
+import { getMenuItems, updateMenuItem, createMenuItem, deleteMenuItem } from '../../services/menuService'
 import { useAuth } from '../../context/AuthContext'
-import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
 
 const AVAILABLE_ICONS = [
@@ -37,41 +29,52 @@ const ALL_ROLES = [
   { value: 'branch_employee', label: 'Branch Employee' },
 ]
 
-const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove }) => {
-  const {
-    attributes, listeners, setNodeRef, transform, transition, isDragging,
-  } = useSortable({ id: item.id })
+const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, onAddSubMenu, allForms, allMenuItems }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
+  const [showIconPicker, setShowIconPicker] = useState(false)
+  const [showSubMenuForm, setShowSubMenuForm] = useState(false)
+  const [subItem, setSubItem] = useState({ label: '', path: '', icon: '📌', link_type: 'custom' })
+  const [showSubIconPicker, setShowSubIconPicker] = useState(false)
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : 1,
   }
 
   const isExpanded = expandedId === item.id
   const itemRoles = item.roles || []
+  const children = item.children || []
+  const isVisible = item.is_active !== false
 
   return (
     <div ref={setNodeRef} style={style} className="mb-2">
-      <div className={`border rounded-lg bg-white ${isDragging ? 'shadow-xl' : 'shadow-sm'}`}>
+      <div className={`border rounded-lg bg-white ${isDragging ? 'shadow-xl border-blue-300' : 'shadow-sm'}`}>
         {/* Header */}
         <div className="flex items-center gap-2 p-3">
-          <div
-            {...attributes}
-            {...listeners}
-            className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
-          >
+          <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
             </svg>
           </div>
-          <span className="text-xl">{item.icon || item.menu_icon || '📋'}</span>
-          <span className="flex-1 font-medium text-gray-800 text-sm">{item.label || item.title}</span>
-          <span className="text-xs text-gray-400 hidden sm:block">{item.path || `/forms/submit/${item.id}`}</span>
+          <span className={`text-xl ${!isVisible ? 'opacity-40' : ''}`}>{item.icon || item.menu_icon || '📋'}</span>
+          <span className={`flex-1 font-medium text-sm ${!isVisible ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+            {item.label || item.title}
+          </span>
+          {children.length > 0 && (
+            <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">{children.length} sub</span>
+          )}
+          {/* Show/Hide Toggle */}
           <button
-            onClick={() => onToggleExpand(item.id)}
-            className="text-gray-400 hover:text-gray-600 transition ml-2"
+            onClick={() => onUpdate(item, 'is_active', !isVisible)}
+            className={`text-xs px-2 py-1 rounded-lg transition ${
+              isVisible ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+            }`}
+            title={isVisible ? 'Hide from menu' : 'Show in menu'}
           >
+            {isVisible ? '👁 Show' : '🙈 Hide'}
+          </button>
+          <button onClick={() => onToggleExpand(item.id)} className="text-gray-400 hover:text-gray-600 transition ml-1">
             <svg className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -81,6 +84,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove }) 
         {/* Expanded */}
         {isExpanded && (
           <div className="border-t border-gray-100 p-4 space-y-4">
+            {/* Label */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Label</label>
               <input
@@ -91,37 +95,73 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove }) 
               />
             </div>
 
-            {item._type === 'custom' && (
+            {/* Link Type & Path */}
+            {item._type !== 'form' && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">URL / Path</label>
-                <input
-                  type="text"
-                  value={item.path || ''}
-                  onChange={e => onUpdate(item, 'path', e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="/custom-path"
-                />
+                <label className="block text-xs font-medium text-gray-600 mb-1">Link To</label>
+                <select
+                  value={item.link_type || 'path'}
+                  onChange={e => onUpdate(item, 'link_type', e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                >
+                  <option value="path">Custom Path</option>
+                  <option value="form">Form (Submit Page)</option>
+                </select>
+
+                {(item.link_type === 'form') ? (
+                  <select
+                    value={item.form_id || ''}
+                    onChange={e => {
+                      const form = allForms.find(f => f.id === e.target.value)
+                      onUpdate(item, 'form_id', e.target.value)
+                      onUpdate(item, 'path', `/forms/submit/${e.target.value}`)
+                      if (form) onUpdate(item, 'label', item.label || form.title)
+                    }}
+                    className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Form</option>
+                    {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={item.path || ''}
+                    onChange={e => onUpdate(item, 'path', e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="/dashboard"
+                  />
+                )}
               </div>
             )}
 
+            {/* Icon */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-2">Icon</label>
-              <div className="grid grid-cols-10 gap-1">
-                {AVAILABLE_ICONS.map(icon => (
-                  <button
-                    key={icon}
-                    onClick={() => onUpdate(item, 'icon', icon)}
-                    className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${
-                      (item.icon || item.menu_icon) === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
+              <div className="relative">
+                <button
+                  onClick={() => setShowIconPicker(!showIconPicker)}
+                  className="flex items-center gap-2 border border-gray-300 rounded-md px-3 py-1.5 text-sm hover:bg-gray-50"
+                >
+                  <span className="text-xl">{item.icon || item.menu_icon || '📋'}</span>
+                  <span className="text-gray-500">Change icon</span>
+                </button>
+                {showIconPicker && (
+                  <div className="absolute top-10 left-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-3 w-72">
+                    <div className="grid grid-cols-10 gap-1">
+                      {AVAILABLE_ICONS.map(icon => (
+                        <button key={icon} onClick={() => { onUpdate(item, 'icon', icon); setShowIconPicker(false) }}
+                          className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${(item.icon || item.menu_icon) === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
+                          {icon}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {(item._type === 'menu' || item._type === 'custom') && (
+            {/* Roles */}
+            {item._type !== 'form' && (
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-2">Visible to Roles</label>
                 <div className="grid grid-cols-2 gap-2">
@@ -145,11 +185,113 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove }) 
               </div>
             )}
 
-            <div className="flex justify-end">
-              <button
-                onClick={() => onRemove(item)}
-                className="text-sm text-red-500 hover:text-red-700 hover:underline"
-              >
+            {/* Sub Menu */}
+            {item._type !== 'form' && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-medium text-gray-600">Sub Menu Items</label>
+                  <button onClick={() => setShowSubMenuForm(!showSubMenuForm)} className="text-xs text-blue-600 hover:underline">
+                    + Add Sub Menu
+                  </button>
+                </div>
+
+                {children.length > 0 && (
+                  <div className="space-y-1 mb-3">
+                    {children.map(child => (
+                      <div key={child.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                        <span>{child.icon || '📌'}</span>
+                        <span className="flex-1 text-sm text-gray-700">{child.label}</span>
+                        <span className="text-xs text-gray-400 hidden sm:block">{child.path}</span>
+                        <button onClick={() => onUpdate(item, 'removeChild', child.id)} className="text-red-400 hover:text-red-600">✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {showSubMenuForm && (
+                  <div className="bg-blue-50 rounded-lg p-3 space-y-2">
+                    <input
+                      type="text" placeholder="Label"
+                      value={subItem.label}
+                      onChange={e => setSubItem({ ...subItem, label: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <select
+                      value={subItem.link_type}
+                      onChange={e => setSubItem({ ...subItem, link_type: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="custom">Custom Path</option>
+                      <option value="form">Form (Submit Page)</option>
+                    </select>
+
+                    {subItem.link_type === 'form' ? (
+                      <select
+                        value={subItem.form_id || ''}
+                        onChange={e => {
+                          const form = allForms.find(f => f.id === e.target.value)
+                          setSubItem({
+                            ...subItem,
+                            form_id: e.target.value,
+                            path: `/forms/submit/${e.target.value}`,
+                            label: subItem.label || (form ? form.title : ''),
+                          })
+                        }}
+                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select Form</option>
+                        {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        type="text" placeholder="Path (e.g. /reports)"
+                        value={subItem.path}
+                        onChange={e => setSubItem({ ...subItem, path: e.target.value })}
+                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    )}
+
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowSubIconPicker(!showSubIconPicker)}
+                        className="flex items-center gap-2 border border-gray-300 bg-white rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 w-full"
+                      >
+                        <span className="text-xl">{subItem.icon}</span>
+                        <span className="text-gray-500">Icon</span>
+                      </button>
+                      {showSubIconPicker && (
+                        <div className="absolute top-10 left-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-3 w-72">
+                          <div className="grid grid-cols-10 gap-1">
+                            {AVAILABLE_ICONS.map(icon => (
+                              <button key={icon} onClick={() => { setSubItem({ ...subItem, icon }); setShowSubIconPicker(false) }}
+                                className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${subItem.icon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
+                                {icon}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          if (!subItem.label || !subItem.path) { toast.error('Label and path required!'); return }
+                          onAddSubMenu(item, subItem)
+                          setSubItem({ label: '', path: '', icon: '📌', link_type: 'custom' })
+                          setShowSubMenuForm(false)
+                        }}
+                        className="flex-1 bg-blue-600 text-white py-1.5 rounded-lg text-sm hover:bg-blue-700"
+                      >Add</button>
+                      <button onClick={() => setShowSubMenuForm(false)} className="flex-1 bg-gray-200 text-gray-700 py-1.5 rounded-lg text-sm hover:bg-gray-300">Cancel</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2 border-t border-gray-100">
+              <button onClick={() => onRemove(item)} className="text-sm text-red-500 hover:text-red-700 hover:underline">
                 Remove from Menu
               </button>
             </div>
@@ -161,7 +303,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove }) 
 }
 
 export default function Settings() {
-  const { fetchMenuForms, fetchMenuItems } = useAuth()
+  const { fetchAllMenuData } = useAuth()
   const [allMenuItems, setAllMenuItems] = useState([])
   const [allForms, setAllForms] = useState([])
   const [menuStructure, setMenuStructure] = useState([])
@@ -169,14 +311,12 @@ export default function Settings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [leftTab, setLeftTab] = useState('menu')
-  const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌' })
+  const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'custom' })
   const [showIconPicker, setShowIconPicker] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
   useEffect(() => { loadAll() }, [])
@@ -188,12 +328,25 @@ export default function Settings() {
       setAllMenuItems(items)
       setAllForms(forms)
 
-      const activeMenuItems = items.map(i => ({ ...i, _type: 'menu' }))
-      const activeFormItems = forms
-        .filter(f => f.show_in_menu)
-        .map(f => ({ ...f, _type: 'form', label: f.title, icon: f.menu_icon || '📋' }))
+      const parentItems = items
+        .filter(i => !i.parent_id)
+        .map(i => ({
+          ...i,
+          _type: 'menu',
+          children: items.filter(c => c.parent_id === i.id)
+        }))
 
-      const combined = [...activeMenuItems, ...activeFormItems]
+      const formItems = forms
+        .filter(f => f.show_in_menu)
+        .map(f => ({
+          ...f,
+          _type: 'form',
+          label: f.title,
+          icon: f.menu_icon || '📋',
+          children: [],
+        }))
+
+      const combined = [...parentItems, ...formItems]
         .sort((a, b) => (a.menu_order || 0) - (b.menu_order || 0))
 
       setMenuStructure(combined)
@@ -212,68 +365,76 @@ export default function Settings() {
     setMenuStructure(arrayMove(menuStructure, oldIndex, newIndex))
   }
 
-  const handleToggleExpand = (id) => {
-    setExpandedId(expandedId === id ? null : id)
-  }
+  const handleToggleExpand = (id) => setExpandedId(expandedId === id ? null : id)
 
   const handleUpdate = (item, key, value) => {
-    setMenuStructure(menuStructure.map(m =>
-      m.id === item.id
-        ? { ...m, [key]: value, ...(key === 'icon' ? { menu_icon: value } : {}) }
-        : m
-    ))
+    setMenuStructure(menuStructure.map(m => {
+      if (m.id !== item.id) return m
+      if (key === 'removeChild') return { ...m, children: m.children.filter(c => c.id !== value) }
+      return { ...m, [key]: value, ...(key === 'icon' ? { menu_icon: value } : {}) }
+    }))
   }
 
   const handleRemove = (item) => {
     setMenuStructure(menuStructure.filter(m => m.id !== item.id))
-    toast.success('Removed from menu!')
+    toast.success('Removed!')
+  }
+
+  const handleAddSubMenu = (parentItem, subItem) => {
+    setMenuStructure(menuStructure.map(m => {
+      if (m.id !== parentItem.id) return m
+      return {
+        ...m,
+        children: [...(m.children || []), {
+          ...subItem,
+          id: `new_${Date.now()}`,
+          _type: 'new_child',
+          parent_id: parentItem.id,
+          roles: parentItem.roles || ['admin'],
+          menu_order: (m.children || []).length + 1,
+          is_active: true,
+        }]
+      }
+    }))
+    toast.success('Sub menu added!')
   }
 
   const handleAddMenuItem = (item) => {
-    if (menuStructure.find(m => m.id === item.id)) {
-      toast.error('Already in menu!')
-      return
-    }
-    setMenuStructure([...menuStructure, { ...item, _type: 'menu' }])
+    if (menuStructure.find(m => m.id === item.id)) { toast.error('Already in menu!'); return }
+    setMenuStructure([...menuStructure, {
+      ...item, _type: 'menu',
+      children: allMenuItems.filter(c => c.parent_id === item.id)
+    }])
     toast.success(`${item.label} added!`)
   }
 
   const handleAddForm = (form) => {
-    if (menuStructure.find(m => m.id === form.id)) {
-      toast.error('Already in menu!')
-      return
-    }
+    if (menuStructure.find(m => m.id === form.id)) { toast.error('Already in menu!'); return }
     setMenuStructure([...menuStructure, {
-      ...form,
-      _type: 'form',
-      label: form.title,
-      icon: form.menu_icon || '📋',
+      ...form, _type: 'form',
+      label: form.title, icon: form.menu_icon || '📋', children: [],
     }])
     toast.success(`${form.title} added!`)
   }
 
   const handleAddCustomLink = async () => {
     if (!customLink.label) { toast.error('Label is required!'); return }
-    if (!customLink.path) { toast.error('Path/URL is required!'); return }
-
+    const path = customLink.link_type === 'form' && customLink.form_id
+      ? `/forms/submit/${customLink.form_id}`
+      : customLink.path
+    if (!path) { toast.error('Path or form is required!'); return }
     try {
-      const { data, error } = await supabase
-        .from('menu_items')
-        .insert({
-          label: customLink.label,
-          path: customLink.path,
-          icon: customLink.icon,
-          menu_order: 99,
-          is_active: true,
-          roles: ['admin'],
-        })
-        .select()
-        .single()
-      if (error) throw error
-
-      setMenuStructure([...menuStructure, { ...data, _type: 'custom' }])
-      setCustomLink({ label: '', path: '', icon: '📌' })
-      toast.success('Custom link added!')
+      const data = await createMenuItem({
+        label: customLink.label,
+        path,
+        icon: customLink.icon,
+        menu_order: 99,
+        is_active: true,
+        roles: ['admin'],
+      })
+      setMenuStructure([...menuStructure, { ...data, _type: 'custom', children: [] }])
+      setCustomLink({ label: '', path: '', icon: '📌', link_type: 'custom' })
+      toast.success('Added to menu!')
       loadAll()
     } catch (error) {
       toast.error(error.message)
@@ -285,23 +446,46 @@ export default function Settings() {
     try {
       for (let i = 0; i < menuStructure.length; i++) {
         const item = menuStructure[i]
-        if (item._type === 'menu' || item._type === 'custom') {
-          await updateMenuItem(item.id, {
-            menu_order: i + 1,
-            icon: item.icon,
-            label: item.label,
-            roles: item.roles,
-          })
-        } else if (item._type === 'form') {
+        if (item._type === 'form') {
           await updateForm(item.id, {
             menu_order: i + 1,
             show_in_menu: true,
             menu_icon: item.icon || item.menu_icon,
           })
+        } else {
+          await updateMenuItem(item.id, {
+            menu_order: i + 1,
+            icon: item.icon,
+            label: item.label,
+            roles: item.roles,
+            is_active: item.is_active !== false,
+            path: item.path,
+          })
+
+          const children = item.children || []
+          for (let j = 0; j < children.length; j++) {
+            const child = children[j]
+            if (child._type === 'new_child') {
+              await createMenuItem({
+                label: child.label, path: child.path, icon: child.icon,
+                menu_order: j + 1, is_active: true,
+                roles: child.roles || item.roles, parent_id: item.id,
+              })
+            } else {
+              await updateMenuItem(child.id, {
+                menu_order: j + 1, icon: child.icon, label: child.label, is_active: true,
+              })
+            }
+          }
+
+          const existingChildren = allMenuItems.filter(m => m.parent_id === item.id)
+          const currentChildIds = children.filter(c => c._type !== 'new_child').map(c => c.id)
+          for (const ec of existingChildren) {
+            if (!currentChildIds.includes(ec.id)) await deleteMenuItem(ec.id)
+          }
         }
       }
 
-      // Remove forms no longer in menu
       const menuFormIds = menuStructure.filter(m => m._type === 'form').map(m => m.id)
       for (const form of allForms) {
         if (form.show_in_menu && !menuFormIds.includes(form.id)) {
@@ -309,20 +493,15 @@ export default function Settings() {
         }
       }
 
-      // Remove menu items no longer in menu (mark inactive)
-      const menuItemIds = menuStructure
-        .filter(m => m._type === 'menu' || m._type === 'custom')
-        .map(m => m.id)
-      for (const item of allMenuItems) {
+      const menuItemIds = menuStructure.filter(m => m._type !== 'form').map(m => m.id)
+      for (const item of allMenuItems.filter(i => !i.parent_id)) {
         if (!menuItemIds.includes(item.id)) {
           await updateMenuItem(item.id, { is_active: false })
-        } else {
-          await updateMenuItem(item.id, { is_active: true })
         }
       }
 
-      await Promise.all([fetchMenuItems(), fetchMenuForms()])
-      toast.success('Menu saved successfully!')
+      await fetchAllMenuData()
+      toast.success('Menu saved!')
       loadAll()
     } catch (error) {
       toast.error(error.message)
@@ -348,110 +527,86 @@ export default function Settings() {
           <div className="bg-white rounded-lg shadow-sm">
             <div className="flex border-b">
               {['menu', 'forms', 'custom'].map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setLeftTab(tab)}
-                  className={`flex-1 px-2 py-3 text-xs font-medium transition capitalize ${
-                    leftTab === tab
-                      ? 'border-b-2 border-blue-600 text-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
+                <button key={tab} onClick={() => setLeftTab(tab)}
+                  className={`flex-1 px-2 py-3 text-xs font-medium transition capitalize ${leftTab === tab ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>
                   {tab === 'menu' ? 'Menu Items' : tab === 'forms' ? 'Forms' : 'Custom Link'}
                 </button>
               ))}
             </div>
 
             <div className="p-4 space-y-2">
-              {/* Menu Items Tab */}
-              {leftTab === 'menu' && allMenuItems.map(item => (
+              {leftTab === 'menu' && allMenuItems.filter(i => !i.parent_id).map(item => (
                 <div key={item.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
                   <div className="flex items-center gap-2">
                     <span>{item.icon || '📋'}</span>
                     <span className="text-sm text-gray-800">{item.label}</span>
                   </div>
-                  <button
-                    onClick={() => handleAddMenuItem(item)}
-                    disabled={inMenuIds.includes(item.id)}
-                    className={`text-xs px-3 py-1 rounded-lg transition ${
-                      inMenuIds.includes(item.id)
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
+                  <button onClick={() => handleAddMenuItem(item)} disabled={inMenuIds.includes(item.id)}
+                    className={`text-xs px-3 py-1 rounded-lg transition ${inMenuIds.includes(item.id) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
                     {inMenuIds.includes(item.id) ? 'Added' : 'Add'}
                   </button>
                 </div>
               ))}
 
-              {/* Forms Tab */}
               {leftTab === 'forms' && allForms.map(form => (
                 <div key={form.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
                   <div className="flex items-center gap-2">
                     <span>{form.menu_icon || '📋'}</span>
                     <span className="text-sm text-gray-800">{form.title}</span>
                   </div>
-                  <button
-                    onClick={() => handleAddForm(form)}
-                    disabled={inMenuIds.includes(form.id)}
-                    className={`text-xs px-3 py-1 rounded-lg transition ${
-                      inMenuIds.includes(form.id)
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
+                  <button onClick={() => handleAddForm(form)} disabled={inMenuIds.includes(form.id)}
+                    className={`text-xs px-3 py-1 rounded-lg transition ${inMenuIds.includes(form.id) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
                     {inMenuIds.includes(form.id) ? 'Added' : 'Add'}
                   </button>
                 </div>
               ))}
 
-              {/* Custom Link Tab */}
               {leftTab === 'custom' && (
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Label</label>
-                    <input
-                      type="text"
-                      value={customLink.label}
+                    <input type="text" value={customLink.label}
                       onChange={e => setCustomLink({ ...customLink, label: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Menu label"
-                    />
+                      placeholder="Menu label" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Path / URL</label>
-                    <input
-                      type="text"
-                      value={customLink.path}
-                      onChange={e => setCustomLink({ ...customLink, path: e.target.value })}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="/custom-page"
-                    />
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Link To</label>
+                    <select value={customLink.link_type}
+                      onChange={e => setCustomLink({ ...customLink, link_type: e.target.value })}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2">
+                      <option value="custom">Custom Path</option>
+                      <option value="form">Form (Submit Page)</option>
+                    </select>
+
+                    {customLink.link_type === 'form' ? (
+                      <select value={customLink.form_id || ''}
+                        onChange={e => setCustomLink({ ...customLink, form_id: e.target.value })}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select Form</option>
+                        {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" value={customLink.path}
+                        onChange={e => setCustomLink({ ...customLink, path: e.target.value })}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="/custom-page" />
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Icon</label>
                     <div className="relative">
-                      <button
-                        onClick={() => setShowIconPicker(!showIconPicker)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm flex items-center gap-2 hover:bg-gray-50"
-                      >
+                      <button onClick={() => setShowIconPicker(!showIconPicker)}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm flex items-center gap-2 hover:bg-gray-50">
                         <span className="text-xl">{customLink.icon}</span>
-                        <span className="text-gray-600">Click to change icon</span>
+                        <span className="text-gray-600">Click to change</span>
                       </button>
                       {showIconPicker && (
                         <div className="absolute top-12 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-3">
                           <div className="grid grid-cols-8 gap-1">
                             {AVAILABLE_ICONS.map(icon => (
-                              <button
-                                key={icon}
-                                onClick={() => {
-                                  setCustomLink({ ...customLink, icon })
-                                  setShowIconPicker(false)
-                                }}
-                                className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${
-                                  customLink.icon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''
-                                }`}
-                              >
+                              <button key={icon} onClick={() => { setCustomLink({ ...customLink, icon }); setShowIconPicker(false) }}
+                                className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${customLink.icon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
                                 {icon}
                               </button>
                             ))}
@@ -460,10 +615,8 @@ export default function Settings() {
                       )}
                     </div>
                   </div>
-                  <button
-                    onClick={handleAddCustomLink}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-                  >
+                  <button onClick={handleAddCustomLink}
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
                     + Add to Menu
                   </button>
                 </div>
@@ -476,13 +629,10 @@ export default function Settings() {
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
               <div>
                 <h2 className="font-bold text-gray-800">Menu Structure</h2>
-                <p className="text-xs text-gray-500 mt-0.5">Drag to reorder • Click ▼ to edit label, icon & roles</p>
+                <p className="text-xs text-gray-500 mt-0.5">Drag to reorder • Click ▼ to edit • 👁 to show/hide</p>
               </div>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 font-medium"
-              >
+              <button onClick={handleSave} disabled={saving}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 font-medium">
                 {saving ? 'Saving...' : 'Save Menu'}
               </button>
             </div>
@@ -493,23 +643,18 @@ export default function Settings() {
                   Add items from the left panel
                 </div>
               ) : (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={menuStructure.map(m => m.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext items={menuStructure.map(m => m.id)} strategy={verticalListSortingStrategy}>
                     {menuStructure.map(item => (
                       <SortableItem
-                        key={item.id}
-                        item={item}
+                        key={item.id} item={item}
                         onToggleExpand={handleToggleExpand}
                         expandedId={expandedId}
                         onUpdate={handleUpdate}
                         onRemove={handleRemove}
+                        onAddSubMenu={handleAddSubMenu}
+                        allForms={allForms}
+                        allMenuItems={allMenuItems}
                       />
                     ))}
                   </SortableContext>

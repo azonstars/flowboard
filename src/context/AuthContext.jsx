@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../services/supabase'
-import { getMenuItems } from '../services/menuService'
+import { getMenuItemsWithChildren } from '../services/menuService'
 import { getMenuForms } from '../services/formService'
 
 const AuthContext = createContext({})
@@ -56,11 +56,20 @@ export const AuthProvider = ({ children }) => {
 
   const fetchAllMenuData = async () => {
     try {
-      const [items, forms] = await Promise.all([getMenuItems(), getMenuForms()])
-      setMenuForms(forms)
+      const [itemsWithChildren, forms] = await Promise.all([
+        getMenuItemsWithChildren(),
+        getMenuForms()
+      ])
 
-      // Merge menu items and forms into one sorted list
-      const menuItemsMapped = items.map(i => ({ ...i, _type: 'menu' }))
+      setMenuForms(forms)
+      setMenuItems(itemsWithChildren)
+
+      // Flat list for sidebar — parents only at top level
+      // forms get inserted by menu_order
+      const parentItems = itemsWithChildren
+        .filter(i => !i.parent_id)
+        .map(i => ({ ...i, _type: 'menu' }))
+
       const formsMapped = forms.map(f => ({
         ...f,
         _type: 'form',
@@ -68,25 +77,20 @@ export const AuthProvider = ({ children }) => {
         icon: f.menu_icon || '📋',
         path: `/forms/submit/${f.id}`,
         roles: ['admin', 'branch_manager', 'branch_employee'],
+        children: [],
       }))
 
-      const combined = [...menuItemsMapped, ...formsMapped]
+      const combined = [...parentItems, ...formsMapped]
         .sort((a, b) => (a.menu_order || 0) - (b.menu_order || 0))
 
       setAllMenuItems(combined)
-      setMenuItems(items)
     } catch (error) {
       console.error(error)
     }
   }
 
-  const fetchMenuForms = async () => {
-    await fetchAllMenuData()
-  }
-
-  const fetchMenuItems = async () => {
-    await fetchAllMenuData()
-  }
+  const fetchMenuForms = async () => { await fetchAllMenuData() }
+  const fetchMenuItems = async () => { await fetchAllMenuData() }
 
   const signOut = async () => {
     await supabase.auth.signOut()
