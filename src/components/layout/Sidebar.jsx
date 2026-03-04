@@ -11,7 +11,7 @@ export default function Sidebar({ isOpen, onClose }) {
     item.roles && item.roles.includes(profile?.role)
   )
 
-  const isActive = (path) => location.pathname.startsWith(path)
+  const isActive = (path) => path && path !== '#' && location.pathname.startsWith(path)
 
   const toggleExpand = (id) => {
     setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }))
@@ -57,48 +57,35 @@ export default function Sidebar({ isOpen, onClose }) {
                     ? 'bg-white text-blue-900'
                     : 'text-blue-200 hover:bg-blue-800 hover:text-white'
                 }`}>
-                  {hasChildren(item) ? (
-  <button
-    onClick={() => toggleExpand(item.id)}
-    className="flex items-center gap-3 px-4 py-3 flex-1 text-left"
-  >
-    <span className="text-xl">{item.icon || '📋'}</span>
-    <span className={`font-medium ${isParentActive ? 'text-blue-900 font-semibold' : ''}`}>
-      {item.label}
-    </span>
-  </button>
-) : (
-  <Link
-    to={item.path}
-    onClick={onClose}
-    className="flex items-center gap-3 px-4 py-3 flex-1"
-  >
-    <span className="text-xl">{item.icon || '📋'}</span>
-    <span className={`font-medium ${isParentActive ? 'text-blue-900 font-semibold' : ''}`}>
-      {item.label}
-    </span>
-  </Link>
-)}
-                    <span className="text-xl">{item.icon || '📋'}</span>
-                    <span className={`font-medium ${isParentActive ? 'text-blue-900 font-semibold' : ''}`}>
-                      {item.label}
-                    </span>
-                  </Link>
-
-                  {hasChildren(item) && (
+                  {hasChildren(item) || item.path === '#' ? (
                     <button
                       onClick={() => toggleExpand(item.id)}
-                      className={`pr-4 py-3 transition ${
-                        isParentActive ? 'text-blue-900' : 'text-blue-300 hover:text-white'
-                      }`}
+                      className="flex items-center gap-3 px-4 py-3 flex-1 text-left w-full"
                     >
-                      <svg
-                        className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <span className="text-xl">{item.icon || '📋'}</span>
+                      <span className={`font-medium flex-1 ${isParentActive ? 'font-semibold' : ''}`}>
+                        {item.label}
+                      </span>
+                      {hasChildren(item) && (
+                        <svg
+                          className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      )}
                     </button>
+                  ) : (
+                    <Link
+                      to={item.path}
+                      onClick={onClose}
+                      className="flex items-center gap-3 px-4 py-3 flex-1"
+                    >
+                      <span className="text-xl">{item.icon || '📋'}</span>
+                      <span className={`font-medium ${isParentActive ? 'font-semibold' : ''}`}>
+                        {item.label}
+                      </span>
+                    </Link>
                   )}
                 </div>
 
@@ -108,7 +95,7 @@ export default function Sidebar({ isOpen, onClose }) {
                     {children.map(child => (
                       <Link
                         key={child.id}
-                        to={child.path}
+                        to={child.path || '#'}
                         onClick={onClose}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition text-sm ${
                           isActive(child.path)
