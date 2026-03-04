@@ -387,39 +387,44 @@ export default function Settings() {
   useEffect(() => { loadAll() }, [])
 
   const loadAll = async () => {
-    setLoading(true)
+  setLoading(true)
+  try {
+    const [items, forms] = await Promise.all([getMenuItems(), getForms()])
+    setAllMenuItems(items)
+    setAllForms(forms)
+
+    // Reports আলাদা load করব — error হলেও বাকিটা চলবে
     try {
-      const [items, forms, reports] = await Promise.all([
-  getMenuItems(), getForms(), getReportLayouts(user?.id)
-])
-      setAllMenuItems(items)
-      setAllForms(forms)
-      setAllReports(reports)
-
-      const parentItems = items
-        .filter(i => !i.parent_id)
-        .map(i => ({
-          ...i, _type: 'menu',
-          children: items.filter(c => c.parent_id === i.id)
-        }))
-
-      const formItems = forms
-        .filter(f => f.show_in_menu)
-        .map(f => ({
-          ...f, _type: 'form',
-          label: f.title, icon: f.menu_icon || '📋', children: [],
-        }))
-
-      const combined = [...parentItems, ...formItems]
-        .sort((a, b) => (a.menu_order || 0) - (b.menu_order || 0))
-
-      setMenuStructure(combined)
-    } catch (error) {
-      toast.error(error.message)
-    } finally {
-      setLoading(false)
+      const reports = await getReportLayouts(user?.id)
+      setAllReports(reports || [])
+    } catch {
+      setAllReports([])
     }
+
+    const parentItems = items
+      .filter(i => !i.parent_id)
+      .map(i => ({
+        ...i, _type: 'menu',
+        children: items.filter(c => c.parent_id === i.id)
+      }))
+
+    const formItems = forms
+      .filter(f => f.show_in_menu)
+      .map(f => ({
+        ...f, _type: 'form',
+        label: f.title, icon: f.menu_icon || '📋', children: [],
+      }))
+
+    const combined = [...parentItems, ...formItems]
+      .sort((a, b) => (a.menu_order || 0) - (b.menu_order || 0))
+
+    setMenuStructure(combined)
+  } catch (error) {
+    toast.error(error.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleDragEnd = (event) => {
     const { active, over } = event
