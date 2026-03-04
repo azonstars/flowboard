@@ -29,7 +29,7 @@ const ALL_ROLES = [
   { value: 'branch_employee', label: 'Branch Employee' },
 ]
 
-const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, onAddSubMenu, allForms }) => {
+const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, onAddSubMenu, onChangeParent, allForms, menuStructure }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const [showIconPicker, setShowIconPicker] = useState(false)
   const [showSubMenuForm, setShowSubMenuForm] = useState(false)
@@ -46,10 +46,14 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
   const itemRoles = item.roles || []
   const children = item.children || []
   const isVisible = item.is_active !== false
+  const isSubItem = !!item.parent_id
+
+  // Possible parents — exclude self and forms
+  const possibleParents = menuStructure.filter(m => m.id !== item.id && m._type !== 'form')
 
   return (
-    <div ref={setNodeRef} style={style} className="mb-2">
-      <div className={`border rounded-lg bg-white ${isDragging ? 'shadow-xl border-blue-300' : 'shadow-sm'}`}>
+    <div ref={setNodeRef} style={style} className={`mb-2 ${isSubItem ? 'ml-8' : ''}`}>
+      <div className={`border rounded-lg bg-white ${isDragging ? 'shadow-xl border-blue-300' : 'shadow-sm'} ${isSubItem ? 'border-l-4 border-l-blue-400' : ''}`}>
         {/* Header */}
         <div className="flex items-center gap-2 p-3">
           <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
@@ -58,9 +62,12 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
             </svg>
           </div>
           <span className={`text-xl ${!isVisible ? 'opacity-40' : ''}`}>{item.icon || item.menu_icon || '📋'}</span>
-          <span className={`flex-1 font-medium text-sm ${!isVisible ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
-            {item.label || item.title}
-          </span>
+          <div className="flex-1 min-w-0">
+            <span className={`font-medium text-sm ${!isVisible ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+              {item.label || item.title}
+            </span>
+            {isSubItem && <span className="ml-2 text-xs text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">sub-menu</span>}
+          </div>
           {children.length > 0 && (
             <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">{children.length} sub</span>
           )}
@@ -80,6 +87,26 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
         {/* Expanded */}
         {isExpanded && (
           <div className="border-t border-gray-100 p-4 space-y-4">
+
+            {/* Parent Selection */}
+            <div className="bg-blue-50 rounded-lg p-3">
+              <label className="block text-xs font-medium text-blue-700 mb-1">
+                📂 Parent Menu (Sub-menu of)
+              </label>
+              <select
+                value={item.parent_id || ''}
+                onChange={e => onChangeParent(item, e.target.value || null)}
+                className="w-full border border-blue-200 bg-white rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">— Top Level (No Parent) —</option>
+                {possibleParents.map(p => (
+                  <option key={p.id} value={p.id}>{p.icon || '📋'} {p.label || p.title}</option>
+                ))}
+              </select>
+              <p className="text-xs text-blue-500 mt-1">Select a parent to make this a sub-menu item</p>
+            </div>
+
+            {/* Label */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Label</label>
               <input
@@ -90,6 +117,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               />
             </div>
 
+            {/* Link To */}
             {item._type !== 'form' && (
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Link To</label>
@@ -127,6 +155,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               </div>
             )}
 
+            {/* Icon */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-2">Icon</label>
               <div className="relative">
@@ -152,6 +181,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               </div>
             </div>
 
+            {/* Roles */}
             {item._type !== 'form' && (
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-2">Visible to Roles</label>
@@ -176,7 +206,8 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               </div>
             )}
 
-            {item._type !== 'form' && (
+            {/* Add Sub Menu — only for top level */}
+            {item._type !== 'form' && !isSubItem && (
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-medium text-gray-600">Sub Menu Items</label>
@@ -200,14 +231,12 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
 
                 {showSubMenuForm && (
                   <div className="bg-blue-50 rounded-lg p-3 space-y-2">
-                    <input
-                      type="text" placeholder="Label"
+                    <input type="text" placeholder="Label"
                       value={subItem.label}
                       onChange={e => setSubItem({ ...subItem, label: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <select
-                      value={subItem.link_type}
+                    <select value={subItem.link_type}
                       onChange={e => setSubItem({ ...subItem, link_type: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
@@ -215,13 +244,11 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                       <option value="form">Form (Submit Page)</option>
                     </select>
                     {subItem.link_type === 'form' ? (
-                      <select
-                        value={subItem.form_id || ''}
+                      <select value={subItem.form_id || ''}
                         onChange={e => {
                           const form = allForms.find(f => f.id === e.target.value)
                           setSubItem({
-                            ...subItem,
-                            form_id: e.target.value,
+                            ...subItem, form_id: e.target.value,
                             path: `/forms/submit/${e.target.value}`,
                             label: subItem.label || (form ? form.title : ''),
                           })
@@ -232,16 +259,14 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                         {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
                       </select>
                     ) : (
-                      <input
-                        type="text" placeholder="Path (e.g. /reports)"
+                      <input type="text" placeholder="Path (e.g. /reports)"
                         value={subItem.path}
                         onChange={e => setSubItem({ ...subItem, path: e.target.value })}
                         className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     )}
                     <div className="relative">
-                      <button
-                        onClick={() => setShowSubIconPicker(!showSubIconPicker)}
+                      <button onClick={() => setShowSubIconPicker(!showSubIconPicker)}
                         className="flex items-center gap-2 border border-gray-300 bg-white rounded-md px-3 py-1.5 text-sm hover:bg-gray-50 w-full"
                       >
                         <span className="text-xl">{subItem.icon}</span>
@@ -285,8 +310,8 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
           </div>
         )}
 
-        {/* Sub items preview below parent */}
-        {children.length > 0 && (
+        {/* Sub items preview */}
+        {children.length > 0 && !isExpanded && (
           <div className="border-t border-gray-100 ml-8 mr-3 mb-2 mt-1 space-y-1">
             {children.map(child => (
               <div key={child.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border-l-4 border-blue-200">
@@ -313,12 +338,9 @@ export default function Settings() {
   const [leftTab, setLeftTab] = useState('menu')
   const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'custom' })
   const [showIconPicker, setShowIconPicker] = useState(false)
-  const [dragDelta, setDragDelta] = useState({ x: 0, y: 0 })
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
@@ -356,46 +378,11 @@ export default function Settings() {
     }
   }
 
-  const handleDragMove = (event) => {
-    setDragDelta(event.delta)
-  }
-
   const handleDragEnd = (event) => {
     const { active, over } = event
-    const currentDelta = dragDelta
-    setDragDelta({ x: 0, y: 0 })
-
     if (!over || active.id === over.id) return
-
     const oldIndex = menuStructure.findIndex(f => f.id === active.id)
     const newIndex = menuStructure.findIndex(f => f.id === over.id)
-    const activeItem = menuStructure[oldIndex]
-    const overItem = menuStructure[newIndex]
-
-    // Drag ডানে 80px+ হলে sub-menu করব
-    if (currentDelta.x > 80 && overItem && overItem._type !== 'form' && activeItem._type !== 'form') {
-      const newStructure = menuStructure.filter(m => m.id !== activeItem.id)
-      const parentIndex = newStructure.findIndex(m => m.id === overItem.id)
-      if (parentIndex === -1) return
-
-      newStructure[parentIndex] = {
-        ...newStructure[parentIndex],
-        children: [
-          ...(newStructure[parentIndex].children || []),
-          {
-            ...activeItem,
-            parent_id: overItem.id,
-            _type: 'new_child',
-            menu_order: (newStructure[parentIndex].children || []).length + 1,
-          }
-        ]
-      }
-      setMenuStructure(newStructure)
-      toast.success(`"${activeItem.label}" → sub-menu of "${overItem.label}"!`)
-      return
-    }
-
-    // Normal reorder
     setMenuStructure(arrayMove(menuStructure, oldIndex, newIndex))
   }
 
@@ -409,8 +396,51 @@ export default function Settings() {
     }))
   }
 
+  const handleChangeParent = (item, newParentId) => {
+    if (newParentId) {
+      // Move to sub-menu of newParentId
+      const newStructure = menuStructure.map(m => {
+        // Remove from old parent if was sub-item
+        if (m.children) {
+          return { ...m, children: m.children.filter(c => c.id !== item.id) }
+        }
+        return m
+      }).filter(m => m.id !== item.id) // Remove from top level
+
+      const parentIndex = newStructure.findIndex(m => m.id === newParentId)
+      if (parentIndex !== -1) {
+        newStructure[parentIndex] = {
+          ...newStructure[parentIndex],
+          children: [
+            ...(newStructure[parentIndex].children || []),
+            { ...item, parent_id: newParentId, _type: 'new_child' }
+          ]
+        }
+      }
+      setMenuStructure(newStructure)
+      toast.success(`"${item.label}" is now a sub-menu!`)
+    } else {
+      // Move to top level
+      const newStructure = menuStructure.map(m => ({
+        ...m,
+        children: (m.children || []).filter(c => c.id !== item.id)
+      }))
+
+      const alreadyTop = newStructure.find(m => m.id === item.id)
+      if (!alreadyTop) {
+        newStructure.push({ ...item, parent_id: null, _type: 'menu', children: item.children || [] })
+      }
+      setMenuStructure(newStructure)
+      toast.success(`"${item.label}" moved to top level!`)
+    }
+    setExpandedId(null)
+  }
+
   const handleRemove = (item) => {
-    setMenuStructure(menuStructure.filter(m => m.id !== item.id))
+    const newStructure = menuStructure
+      .filter(m => m.id !== item.id)
+      .map(m => ({ ...m, children: (m.children || []).filter(c => c.id !== item.id) }))
+    setMenuStructure(newStructure)
     toast.success('Removed!')
   }
 
@@ -493,7 +523,7 @@ export default function Settings() {
           const children = item.children || []
           for (let j = 0; j < children.length; j++) {
             const child = children[j]
-            if (child._type === 'new_child' && String(child.id).startsWith('new_')) {
+            if (String(child.id).startsWith('new_')) {
               await createMenuItem({
                 label: child.label, path: child.path, icon: child.icon,
                 menu_order: j + 1, is_active: true,
@@ -508,9 +538,7 @@ export default function Settings() {
           }
 
           const existingChildren = allMenuItems.filter(m => m.parent_id === item.id)
-          const currentChildIds = children
-            .filter(c => !String(c.id).startsWith('new_'))
-            .map(c => c.id)
+          const currentChildIds = children.filter(c => !String(c.id).startsWith('new_')).map(c => c.id)
           for (const ec of existingChildren) {
             if (!currentChildIds.includes(ec.id)) await deleteMenuItem(ec.id)
           }
@@ -547,7 +575,7 @@ export default function Settings() {
     <div className="space-y-6">
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-gray-800">Settings — Menu Manager</h1>
-        <p className="text-gray-500 mt-1">Drag right 80px+ to make sub-menu • Drag up/down to reorder • Click ▼ to edit</p>
+        <p className="text-gray-500 mt-1">Drag to reorder • Click ▼ to edit, set parent, show/hide</p>
       </div>
 
       {loading ? (
@@ -659,7 +687,7 @@ export default function Settings() {
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
               <div>
                 <h2 className="font-bold text-gray-800">Menu Structure</h2>
-                <p className="text-xs text-gray-500 mt-0.5">➡️ Drag right 80px+ → sub-menu • 🔃 Drag up/down → reorder • ▼ edit</p>
+                <p className="text-xs text-gray-500 mt-0.5">🔃 Drag to reorder • ▼ Click to edit & set parent</p>
               </div>
               <button onClick={handleSave} disabled={saving}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 font-medium">
@@ -673,12 +701,7 @@ export default function Settings() {
                   Add items from the left panel
                 </div>
               ) : (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragMove={handleDragMove}
-                  onDragEnd={handleDragEnd}
-                >
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                   <SortableContext items={menuStructure.map(m => m.id)} strategy={verticalListSortingStrategy}>
                     {menuStructure.map(item => (
                       <SortableItem
@@ -688,7 +711,9 @@ export default function Settings() {
                         onUpdate={handleUpdate}
                         onRemove={handleRemove}
                         onAddSubMenu={handleAddSubMenu}
+                        onChangeParent={handleChangeParent}
                         allForms={allForms}
+                        menuStructure={menuStructure}
                       />
                     ))}
                   </SortableContext>
