@@ -10,6 +10,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { getForms, updateForm } from '../../services/formService'
 import { getMenuItems, updateMenuItem, createMenuItem, deleteMenuItem } from '../../services/menuService'
+import { getReportLayouts } from '../../services/reportService'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 
@@ -29,7 +30,7 @@ const ALL_ROLES = [
   { value: 'branch_employee', label: 'Branch Employee' },
 ]
 
-const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, onAddSubMenu, onChangeParent, allForms, menuStructure }) => {
+const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, onAddSubMenu, onChangeParent, allForms, allReports, menuStructure }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const [showIconPicker, setShowIconPicker] = useState(false)
   const [showSubMenuForm, setShowSubMenuForm] = useState(false)
@@ -47,8 +48,6 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
   const children = item.children || []
   const isVisible = item.is_active !== false
   const isSubItem = !!item.parent_id
-
-  // Possible parents — exclude self and forms
   const possibleParents = menuStructure.filter(m => m.id !== item.id && m._type !== 'form')
 
   return (
@@ -90,9 +89,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
 
             {/* Parent Selection */}
             <div className="bg-blue-50 rounded-lg p-3">
-              <label className="block text-xs font-medium text-blue-700 mb-1">
-                📂 Parent Menu (Sub-menu of)
-              </label>
+              <label className="block text-xs font-medium text-blue-700 mb-1">📂 Parent Menu (Sub-menu of)</label>
               <select
                 value={item.parent_id || ''}
                 onChange={e => onChangeParent(item, e.target.value || null)}
@@ -123,12 +120,18 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                 <label className="block text-xs font-medium text-gray-600 mb-1">Link To</label>
                 <select
                   value={item.link_type || 'path'}
-                  onChange={e => onUpdate(item, 'link_type', e.target.value)}
+                  onChange={e => {
+                    onUpdate(item, 'link_type', e.target.value)
+                    if (e.target.value === 'blank') onUpdate(item, 'path', '#')
+                  }}
                   className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                 >
                   <option value="path">Custom Path</option>
                   <option value="form">Form (Submit Page)</option>
+                  <option value="blank">Blank (No Link)</option>
+                  <option value="report">Report Summary</option>
                 </select>
+
                 {item.link_type === 'form' ? (
                   <select
                     value={item.form_id || ''}
@@ -142,6 +145,22 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                   >
                     <option value="">Select Form</option>
                     {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                  </select>
+                ) : item.link_type === 'blank' ? (
+                  <div className="bg-gray-50 rounded-md px-3 py-2 text-sm text-gray-500 border border-gray-200">
+                    No link — item will only expand sub-menu
+                  </div>
+                ) : item.link_type === 'report' ? (
+                  <select
+                    value={item.report_id || ''}
+                    onChange={e => {
+                      onUpdate(item, 'report_id', e.target.value)
+                      onUpdate(item, 'path', `/reports?report_id=${e.target.value}`)
+                    }}
+                    className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Report</option>
+                    {allReports.map(r => <option key={r.id} value={r.id}>{r.title || r.name}</option>)}
                   </select>
                 ) : (
                   <input
@@ -206,7 +225,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               </div>
             )}
 
-            {/* Add Sub Menu — only for top level */}
+            {/* Add Sub Menu */}
             {item._type !== 'form' && !isSubItem && (
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -242,6 +261,8 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                     >
                       <option value="custom">Custom Path</option>
                       <option value="form">Form (Submit Page)</option>
+                      <option value="blank">Blank (No Link)</option>
+                      <option value="report">Report Summary</option>
                     </select>
                     {subItem.link_type === 'form' ? (
                       <select value={subItem.form_id || ''}
@@ -257,6 +278,23 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                       >
                         <option value="">Select Form</option>
                         {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                      </select>
+                    ) : subItem.link_type === 'blank' ? (
+                      <div className="bg-gray-50 rounded-md px-3 py-2 text-sm text-gray-500 border border-gray-200">
+                        No link — sub-menu only
+                      </div>
+                    ) : subItem.link_type === 'report' ? (
+                      <select value={subItem.report_id || ''}
+                        onChange={e => {
+                          setSubItem({
+                            ...subItem, report_id: e.target.value,
+                            path: `/reports?report_id=${e.target.value}`,
+                          })
+                        }}
+                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Select Report</option>
+                        {allReports.map(r => <option key={r.id} value={r.id}>{r.title || r.name}</option>)}
                       </select>
                     ) : (
                       <input type="text" placeholder="Path (e.g. /reports)"
@@ -288,8 +326,9 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                     <div className="flex gap-2">
                       <button
                         onClick={() => {
-                          if (!subItem.label || !subItem.path) { toast.error('Label and path required!'); return }
-                          onAddSubMenu(item, subItem)
+                          if (!subItem.label) { toast.error('Label required!'); return }
+                          if (subItem.link_type !== 'blank' && !subItem.path) { toast.error('Path required!'); return }
+                          onAddSubMenu(item, { ...subItem, path: subItem.link_type === 'blank' ? '#' : subItem.path })
                           setSubItem({ label: '', path: '', icon: '📌', link_type: 'custom' })
                           setShowSubMenuForm(false)
                         }}
@@ -331,12 +370,13 @@ export default function Settings() {
   const { fetchAllMenuData } = useAuth()
   const [allMenuItems, setAllMenuItems] = useState([])
   const [allForms, setAllForms] = useState([])
+  const [allReports, setAllReports] = useState([])
   const [menuStructure, setMenuStructure] = useState([])
   const [expandedId, setExpandedId] = useState(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [leftTab, setLeftTab] = useState('menu')
-  const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'custom' })
+  const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'path' })
   const [showIconPicker, setShowIconPicker] = useState(false)
 
   const sensors = useSensors(
@@ -349,9 +389,12 @@ export default function Settings() {
   const loadAll = async () => {
     setLoading(true)
     try {
-      const [items, forms] = await Promise.all([getMenuItems(), getForms()])
+      const [items, forms, reports] = await Promise.all([
+        getMenuItems(), getForms(), getReportLayouts()
+      ])
       setAllMenuItems(items)
       setAllForms(forms)
+      setAllReports(reports)
 
       const parentItems = items
         .filter(i => !i.parent_id)
@@ -398,14 +441,9 @@ export default function Settings() {
 
   const handleChangeParent = (item, newParentId) => {
     if (newParentId) {
-      // Move to sub-menu of newParentId
-      const newStructure = menuStructure.map(m => {
-        // Remove from old parent if was sub-item
-        if (m.children) {
-          return { ...m, children: m.children.filter(c => c.id !== item.id) }
-        }
-        return m
-      }).filter(m => m.id !== item.id) // Remove from top level
+      const newStructure = menuStructure.map(m => ({
+        ...m, children: (m.children || []).filter(c => c.id !== item.id)
+      })).filter(m => m.id !== item.id)
 
       const parentIndex = newStructure.findIndex(m => m.id === newParentId)
       if (parentIndex !== -1) {
@@ -420,12 +458,9 @@ export default function Settings() {
       setMenuStructure(newStructure)
       toast.success(`"${item.label}" is now a sub-menu!`)
     } else {
-      // Move to top level
       const newStructure = menuStructure.map(m => ({
-        ...m,
-        children: (m.children || []).filter(c => c.id !== item.id)
+        ...m, children: (m.children || []).filter(c => c.id !== item.id)
       }))
-
       const alreadyTop = newStructure.find(m => m.id === item.id)
       if (!alreadyTop) {
         newStructure.push({ ...item, parent_id: null, _type: 'menu', children: item.children || [] })
@@ -483,18 +518,25 @@ export default function Settings() {
 
   const handleAddCustomLink = async () => {
     if (!customLink.label) { toast.error('Label is required!'); return }
-    const path = customLink.link_type === 'form' && customLink.form_id
-      ? `/forms/submit/${customLink.form_id}`
-      : customLink.path
-    if (!path) { toast.error('Path or form is required!'); return }
+    let path = '#'
+    if (customLink.link_type === 'form' && customLink.form_id) {
+      path = `/forms/submit/${customLink.form_id}`
+    } else if (customLink.link_type === 'report' && customLink.report_id) {
+      path = `/reports?report_id=${customLink.report_id}`
+    } else if (customLink.link_type === 'path') {
+      if (!customLink.path) { toast.error('Path is required!'); return }
+      path = customLink.path
+    }
     try {
       const data = await createMenuItem({
         label: customLink.label, path,
         icon: customLink.icon, menu_order: 99,
         is_active: true, roles: ['admin'],
+        link_type: customLink.link_type,
+        report_id: customLink.report_id || null,
       })
       setMenuStructure([...menuStructure, { ...data, _type: 'custom', children: [] }])
-      setCustomLink({ label: '', path: '', icon: '📌', link_type: 'custom' })
+      setCustomLink({ label: '', path: '', icon: '📌', link_type: 'path' })
       toast.success('Added to menu!')
       loadAll()
     } catch (error) {
@@ -518,6 +560,8 @@ export default function Settings() {
             label: item.label, roles: item.roles,
             is_active: item.is_active !== false,
             path: item.path, parent_id: null,
+            link_type: item.link_type || 'path',
+            report_id: item.report_id || null,
           })
 
           const children = item.children || []
@@ -525,14 +569,18 @@ export default function Settings() {
             const child = children[j]
             if (String(child.id).startsWith('new_')) {
               await createMenuItem({
-                label: child.label, path: child.path, icon: child.icon,
+                label: child.label, path: child.path || '#', icon: child.icon,
                 menu_order: j + 1, is_active: true,
                 roles: child.roles || item.roles, parent_id: item.id,
+                link_type: child.link_type || 'path',
+                report_id: child.report_id || null,
               })
             } else {
               await updateMenuItem(child.id, {
                 menu_order: j + 1, icon: child.icon, label: child.label,
                 is_active: true, parent_id: item.id,
+                link_type: child.link_type || 'path',
+                report_id: child.report_id || null,
               })
             }
           }
@@ -634,8 +682,10 @@ export default function Settings() {
                     <select value={customLink.link_type}
                       onChange={e => setCustomLink({ ...customLink, link_type: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2">
-                      <option value="custom">Custom Path</option>
+                      <option value="path">Custom Path</option>
                       <option value="form">Form (Submit Page)</option>
+                      <option value="blank">Blank (No Link)</option>
+                      <option value="report">Report Summary</option>
                     </select>
                     {customLink.link_type === 'form' ? (
                       <select value={customLink.form_id || ''}
@@ -643,6 +693,17 @@ export default function Settings() {
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Select Form</option>
                         {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                      </select>
+                    ) : customLink.link_type === 'blank' ? (
+                      <div className="bg-gray-50 rounded-md px-3 py-2 text-sm text-gray-500 border border-gray-200">
+                        No link — parent menu only
+                      </div>
+                    ) : customLink.link_type === 'report' ? (
+                      <select value={customLink.report_id || ''}
+                        onChange={e => setCustomLink({ ...customLink, report_id: e.target.value })}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select Report</option>
+                        {allReports.map(r => <option key={r.id} value={r.id}>{r.title || r.name}</option>)}
                       </select>
                     ) : (
                       <input type="text" value={customLink.path}
@@ -713,6 +774,7 @@ export default function Settings() {
                         onAddSubMenu={handleAddSubMenu}
                         onChangeParent={handleChangeParent}
                         allForms={allForms}
+                        allReports={allReports}
                         menuStructure={menuStructure}
                       />
                     ))}
