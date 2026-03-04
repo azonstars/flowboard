@@ -57,11 +57,28 @@ export default function Sidebar({ isOpen, onClose }) {
                     ? 'bg-white text-blue-900'
                     : 'text-blue-200 hover:bg-blue-800 hover:text-white'
                 }`}>
-                  <Link
-                    to={item.path}
-                    onClick={() => { if (!hasChildren(item)) onClose() }}
-                    className="flex items-center gap-3 px-4 py-3 flex-1"
-                  >
+                  {hasChildren(item) ? (
+  <button
+    onClick={() => toggleExpand(item.id)}
+    className="flex items-center gap-3 px-4 py-3 flex-1 text-left"
+  >
+    <span className="text-xl">{item.icon || '📋'}</span>
+    <span className={`font-medium ${isParentActive ? 'text-blue-900 font-semibold' : ''}`}>
+      {item.label}
+    </span>
+  </button>
+) : (
+  <Link
+    to={item.path}
+    onClick={onClose}
+    className="flex items-center gap-3 px-4 py-3 flex-1"
+  >
+    <span className="text-xl">{item.icon || '📋'}</span>
+    <span className={`font-medium ${isParentActive ? 'text-blue-900 font-semibold' : ''}`}>
+      {item.label}
+    </span>
+  </Link>
+)}
                     <span className="text-xl">{item.icon || '📋'}</span>
                     <span className={`font-medium ${isParentActive ? 'text-blue-900 font-semibold' : ''}`}>
                       {item.label}
