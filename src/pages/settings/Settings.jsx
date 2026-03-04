@@ -390,8 +390,8 @@ export default function Settings() {
     setLoading(true)
     try {
       const [items, forms, reports] = await Promise.all([
-        getMenuItems(), getForms(), getReportLayouts()
-      ])
+  getMenuItems(), getForms(), getReportLayouts(user?.id)
+])
       setAllMenuItems(items)
       setAllForms(forms)
       setAllReports(reports)
