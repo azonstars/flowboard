@@ -545,77 +545,76 @@ export default function Settings() {
   }
 
   const handleSave = async () => {
-    setSaving(true)
-    try {
-      for (let i = 0; i < menuStructure.length; i++) {
-        const item = menuStructure[i]
-        if (item._type === 'form') {
-          await updateForm(item.id, {
-            menu_order: i + 1, show_in_menu: true,
-            menu_icon: item.icon || item.menu_icon,
-          })
-        } else {
-          await updateMenuItem(item.id, {
-            menu_order: i + 1, icon: item.icon,
-            label: item.label, roles: item.roles,
-            is_active: item.is_active !== false,
-            path: item.path, parent_id: null,
-            link_type: item.link_type || 'path',
-            report_id: item.report_id || null,
-          })
+  setSaving(true)
+  try {
+    for (let i = 0; i < menuStructure.length; i++) {
+      const item = menuStructure[i]
+      if (item._type === 'form') {
+        await updateForm(item.id, {
+          menu_order: i + 1, show_in_menu: true,
+          menu_icon: item.icon || item.menu_icon,
+        })
+      } else {
+        const menuUpdate = {
+          menu_order: i + 1, icon: item.icon,
+          label: item.label, roles: item.roles,
+          is_active: item.is_active !== false,
+          path: item.path, parent_id: null,
+          link_type: item.link_type || 'path',
+        }
+        if (item.report_id) menuUpdate.report_id = item.report_id
 
-          const children = item.children || []
-          for (let j = 0; j < children.length; j++) {
-            const child = children[j]
-            if (String(child.id).startsWith('new_')) {
-              await createMenuItem({
-                label: child.label, path: child.path || '#', icon: child.icon,
-                menu_order: j + 1, is_active: true,
-                roles: child.roles || item.roles, parent_id: item.id,
-                link_type: child.link_type || 'path',
-                report_id: child.report_id || null,
-              })
-            } else {
-              await updateMenuItem(child.id, {
-                menu_order: j + 1, icon: child.icon, label: child.label,
-                is_active: true, parent_id: item.id,
-                link_type: child.link_type || 'path',
-                report_id: child.report_id || null,
-              })
-            }
+        await updateMenuItem(item.id, menuUpdate)
+
+        const children = item.children || []
+        for (let j = 0; j < children.length; j++) {
+          const child = children[j]
+          const childData = {
+            label: child.label, path: child.path || '#', icon: child.icon,
+            menu_order: j + 1, is_active: true,
+            roles: child.roles || item.roles, parent_id: item.id,
+            link_type: child.link_type || 'path',
           }
+          if (child.report_id) childData.report_id = child.report_id
 
-          const existingChildren = allMenuItems.filter(m => m.parent_id === item.id)
-          const currentChildIds = children.filter(c => !String(c.id).startsWith('new_')).map(c => c.id)
-          for (const ec of existingChildren) {
-            if (!currentChildIds.includes(ec.id)) await deleteMenuItem(ec.id)
+          if (String(child.id).startsWith('new_')) {
+            await createMenuItem(childData)
+          } else {
+            await updateMenuItem(child.id, childData)
           }
         }
-      }
 
-      const menuFormIds = menuStructure.filter(m => m._type === 'form').map(m => m.id)
-      for (const form of allForms) {
-        if (form.show_in_menu && !menuFormIds.includes(form.id)) {
-          await updateForm(form.id, { show_in_menu: false })
+        const existingChildren = allMenuItems.filter(m => m.parent_id === item.id)
+        const currentChildIds = children.filter(c => !String(c.id).startsWith('new_')).map(c => c.id)
+        for (const ec of existingChildren) {
+          if (!currentChildIds.includes(ec.id)) await deleteMenuItem(ec.id)
         }
       }
-
-      const menuItemIds = menuStructure.filter(m => m._type !== 'form').map(m => m.id)
-      for (const item of allMenuItems.filter(i => !i.parent_id)) {
-        if (!menuItemIds.includes(item.id)) {
-          await updateMenuItem(item.id, { is_active: false })
-        }
-      }
-
-      await fetchAllMenuData()
-      toast.success('Menu saved!')
-      loadAll()
-    } catch (error) {
-      toast.error(error.message)
-    } finally {
-      setSaving(false)
     }
+
+    const menuFormIds = menuStructure.filter(m => m._type === 'form').map(m => m.id)
+    for (const form of allForms) {
+      if (form.show_in_menu && !menuFormIds.includes(form.id)) {
+        await updateForm(form.id, { show_in_menu: false })
+      }
+    }
+
+    const menuItemIds = menuStructure.filter(m => m._type !== 'form').map(m => m.id)
+    for (const item of allMenuItems.filter(i => !i.parent_id)) {
+      if (!menuItemIds.includes(item.id)) {
+        await updateMenuItem(item.id, { is_active: false })
+      }
+    }
+
+    await fetchAllMenuData()
+    toast.success('Menu saved!')
+    loadAll()
+  } catch (error) {
+    toast.error(error.message)
+  } finally {
+    setSaving(false)
   }
+}
 
   const inMenuIds = menuStructure.map(m => m.id)
 
