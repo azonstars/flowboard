@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getForms, deleteForm } from '../../services/formService'
+import { getForms, deleteForm, duplicateForm } from '../../services/formService'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { ROLES } from '../../constants/roles'
@@ -30,6 +30,17 @@ export default function FormListPage() {
     try {
       await deleteForm(id)
       toast.success('Form deleted!')
+      loadForms()
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+  const handleDuplicate = async (form) => {
+    if (!confirm(`"${form.title}" ফর্মটি duplicate করবেন?\nনতুন ফর্মটি Inactive অবস্থায় তৈরি হবে।`)) return
+    try {
+      await duplicateForm(form.id, profile.id)
+      toast.success(`"${form.title} (Copy)" তৈরি হয়েছে!`)
       loadForms()
     } catch (error) {
       toast.error(error.message)
@@ -96,6 +107,12 @@ export default function FormListPage() {
                           className="text-blue-600 hover:underline text-sm"
                         >
                           Edit
+                        </button>
+                        <button
+                          onClick={() => handleDuplicate(form)}
+                          className="text-purple-600 hover:underline text-sm"
+                        >
+                          📋 Copy
                         </button>
                         <button
                           onClick={() => handleDelete(form.id)}

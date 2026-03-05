@@ -51,6 +51,31 @@ export const updateForm = async (id, updates) => {
   return data
 }
 
+export const duplicateForm = async (id, createdBy) => {
+  const { data: original, error: fetchError } = await supabase
+    .from('forms')
+    .select('*')
+    .eq('id', id)
+    .single()
+  if (fetchError) throw fetchError
+
+  const { data, error } = await supabase
+    .from('forms')
+    .insert({
+      title: `${original.title} (Copy)`,
+      description: original.description,
+      fields: original.fields,
+      menu_icon: original.menu_icon,
+      menu_order: original.menu_order,
+      is_active: false, // default inactive
+      created_by: createdBy,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
 export const deleteForm = async (id) => {
   const { error } = await supabase
     .from('forms')
