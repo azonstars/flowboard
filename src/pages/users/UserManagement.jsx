@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getUsers, updateUser, toggleUserStatus, createUser } from '../../services/userService'
+import { getUsers, updateUser, toggleUserStatus, createUser, deleteUser } from '../../services/userService'
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import { ROLE_LABELS } from '../../constants/roles'
 import toast from 'react-hot-toast'
@@ -129,6 +129,17 @@ export default function UserManagement() {
     }
   }
 
+  const handleDeleteUser = async (user) => {
+    if (!window.confirm(`"${user.full_name}" কে স্থায়ীভাবে ডিলিট করবেন?\n\nএই কাজটি আর ফেরানো যাবে না!`)) return
+    try {
+      await deleteUser(user.id)
+      toast.success(`"${user.full_name}" ডিলিট হয়েছে!`)
+      loadData()
+    } catch (error) {
+      toast.error('ডিলিট করতে সমস্যা হয়েছে: ' + error.message)
+    }
+  }
+
   const isBranchUser = (role) => ['branch_manager', 'branch_employee'].includes(role)
   const isDivisionalChecker = (role) => role === 'divisional_checker'
   const isRegionalChecker = (role) => role === 'regional_checker'
@@ -238,6 +249,9 @@ export default function UserManagement() {
                     <button onClick={() => openEditModal(user)} className="text-blue-600 hover:underline text-sm">Edit</button>
                     <button onClick={() => handleToggleStatus(user)} className={`text-sm hover:underline ${user.is_active ? 'text-red-600' : 'text-green-600'}`}>
                       {user.is_active ? 'Deactivate' : 'Activate'}
+                    </button>
+                    <button onClick={() => handleDeleteUser(user)} className="text-sm text-red-700 hover:underline">
+                      🗑️ Delete
                     </button>
                   </td>
                 </tr>
