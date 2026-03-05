@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getReportLayouts, getReportLayoutById, deleteReportLayout } from '../../services/reportService'
-import { getSubmissionsForReport } from '../../services/reportService'
+import { getReportLayouts, deleteReportLayout, getSubmissionsForReport } from '../../services/reportService'
+import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { ROLES } from '../../constants/roles'
@@ -13,12 +13,52 @@ export default function ReportViewPage() {
   const [selectedLayout, setSelectedLayout] = useState(null)
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(false)
+
+  const [divisions, setDivisions] = useState([])
+  const [regions, setRegions] = useState([])
+  const [allBranches, setAllBranches] = useState([])
+  const [filteredRegions, setFilteredRegions] = useState([])
+  const [filteredBranches, setFilteredBranches] = useState([])
+
   const [filters, setFilters] = useState({
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
+    division_id: '',
+    region_id: '',
+    branch_code: '',
   })
 
-  useEffect(() => { loadLayouts() }, [])
+  const isAdmin = profile?.role === ROLES.ADMIN
+  const isCentral = profile?.role === ROLES.CENTRAL_CHECKER
+  const isDivisional = profile?.role === ROLES.DIVISIONAL_CHECKER
+  const isRegional = profile?.role === ROLES.REGIONAL_CHECKER
+
+  useEffect(() => {
+    loadLayouts()
+    loadHierarchy()
+  }, [])
+
+  const loadHierarchy = async () => {
+    try {
+      const [d, r, b] = await Promise.all([getDivisions(), getRegions(), getBranches()])
+      setDivisions(d)
+      setRegions(r)
+      setAllBranches(b)
+      if (isDivisional && profile?.division_id) {
+        setFilteredRegions(r.filter(reg => reg.division_id === profile.division_id))
+        setFilteredBranches(b.filter(br => br.division_id === profile.division_id))
+        setFilters(prev => ({ ...prev, division_id: profile.division_id }))
+      } else if (isRegional && profile?.region_id) {
+        setFilteredBranches(b.filter(br => br.region_id === profile.region_id))
+        setFilters(prev => ({ ...prev, region_id: profile.region_id }))
+      } else {
+        setFilteredRegions(r)
+        setFilteredBranches(b)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   const loadLayouts = async () => {
     try {
@@ -29,7 +69,29 @@ export default function ReportViewPage() {
     }
   }
 
-  const handleSelectLayout = async (layout) => {
+  const handleDivisionChange = (divisionId) => {
+    setFilters({ ...filters, division_id: divisionId, region_id: '', branch_code: '' })
+    if (divisionId) {
+      setFilteredRegions(regions.filter(r => r.division_id === divisionId))
+      setFilteredBranches(allBranches.filter(b => b.division_id === divisionId))
+    } else {
+      setFilteredRegions(regions)
+      setFilteredBranches(allBranches)
+    }
+  }
+
+  const handleRegionChange = (regionId) => {
+    setFilters({ ...filters, region_id: regionId, branch_code: '' })
+    if (regionId) {
+      setFilteredBranches(allBranches.filter(b => b.region_id === regionId))
+    } else if (filters.division_id) {
+      setFilteredBranches(allBranches.filter(b => b.division_id === filters.division_id))
+    } else {
+      setFilteredBranches(allBranches)
+    }
+  }
+
+  const handleSelectLayout = (layout) => {
     setSelectedLayout(layout)
     loadReport(layout, filters)
   }
@@ -37,8 +99,21 @@ export default function ReportViewPage() {
   const loadReport = async (layout, f) => {
     setLoading(true)
     try {
-      const data = await getSubmissionsForReport(layout.layout?.formId, f)
-      setSubmissions(data)
+      const data = await getSubmissionsForReport(layout.layout?.formId, {
+        startDate: f.startDate,
+        endDate: f.endDate,
+      })
+      let filtered = data
+      if (f.branch_code) {
+        filtered = data.filter(s => s.branch_code === f.branch_code)
+      } else if (f.region_id) {
+        const codes = allBranches.filter(b => b.region_id === f.region_id).map(b => b.branch_code)
+        filtered = data.filter(s => codes.includes(s.branch_code))
+      } else if (f.division_id) {
+        const codes = allBranches.filter(b => b.division_id === f.division_id).map(b => b.branch_code)
+        filtered = data.filter(s => codes.includes(s.branch_code))
+      }
+      setSubmissions(filtered)
     } catch (error) {
       toast.error(error.message)
     } finally {
@@ -61,13 +136,28 @@ export default function ReportViewPage() {
   const calculateValue = (row) => {
     if (!submissions.length) return 0
     const values = submissions.map(s => parseFloat(s.data?.[row.fieldId] || 0))
-    if (row.calcType === 'sum') return values.reduce((a, b) => a + b, 0)
+    if (row.calcType === 'sum') return values.reduce((a, b) => a + b, 0).toLocaleString()
     if (row.calcType === 'average') return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
     if (row.calcType === 'percentage') return ((values.filter(v => v > 0).length / values.length) * 100).toFixed(2) + '%'
-    return values.reduce((a, b) => a + b, 0)
+    return values.reduce((a, b) => a + b, 0).toLocaleString()
   }
 
-  const isAdmin = profile?.role === ROLES.ADMIN
+  const getFilterSummary = () => {
+    const parts = []
+    if (filters.division_id) {
+      const div = divisions.find(d => d.id === filters.division_id)
+      if (div) parts.push(div.name)
+    }
+    if (filters.region_id) {
+      const reg = regions.find(r => r.id === filters.region_id)
+      if (reg) parts.push(reg.name)
+    }
+    if (filters.branch_code) {
+      const br = allBranches.find(b => b.branch_code === filters.branch_code)
+      if (br) parts.push(`${br.name} (${filters.branch_code})`)
+    }
+    return parts.length ? parts.join(' › ') : 'সব Branch'
+  }
 
   return (
     <div className="space-y-6">
@@ -128,30 +218,95 @@ export default function ReportViewPage() {
           {selectedLayout ? (
             <div className="space-y-4">
               {/* Filters */}
-              <div className="bg-white rounded-lg p-4 shadow-sm flex gap-4 items-end">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                  <input
-                    type="date"
-                    value={filters.startDate}
-                    onChange={e => setFilters({ ...filters, startDate: e.target.value })}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+              <div className="bg-white rounded-lg p-4 shadow-sm space-y-3">
+                <h3 className="text-sm font-semibold text-gray-700">🔍 ফিল্টার করুন</h3>
+
+                <div className="flex flex-wrap gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">শুরুর তারিখ</label>
+                    <input type="date" value={filters.startDate}
+                      onChange={e => setFilters({ ...filters, startDate: e.target.value })}
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">শেষের তারিখ</label>
+                    <input type="date" value={filters.endDate}
+                      onChange={e => setFilters({ ...filters, endDate: e.target.value })}
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                  <input
-                    type="date"
-                    value={filters.endDate}
-                    onChange={e => setFilters({ ...filters, endDate: e.target.value })}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+
+                {/* Admin + Central: Division → Region → Branch */}
+                {(isAdmin || isCentral) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Division</label>
+                      <select value={filters.division_id} onChange={e => handleDivisionChange(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">সব Division</option>
+                        {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Region</label>
+                      <select value={filters.region_id} onChange={e => handleRegionChange(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">সব Region</option>
+                        {filteredRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
+                      <select value={filters.branch_code} onChange={e => setFilters({ ...filters, branch_code: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">সব Branch</option>
+                        {filteredBranches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Divisional: Region → Branch */}
+                {isDivisional && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Region</label>
+                      <select value={filters.region_id} onChange={e => handleRegionChange(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">সব Region</option>
+                        {filteredRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
+                      <select value={filters.branch_code} onChange={e => setFilters({ ...filters, branch_code: e.target.value })}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">সব Branch</option>
+                        {filteredBranches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Regional: শুধু Branch */}
+                {isRegional && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
+                    <select value={filters.branch_code} onChange={e => setFilters({ ...filters, branch_code: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="">সব Branch</option>
+                      {filteredBranches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
+                    </select>
+                  </div>
+                )}
+
                 <button
                   onClick={() => loadReport(selectedLayout, filters)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
                 >
-                  Apply
+                  🔍 Apply Filter
                 </button>
               </div>
 
@@ -159,13 +314,20 @@ export default function ReportViewPage() {
               <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                 <div className="p-4 border-b border-gray-200">
                   <h2 className="font-bold text-gray-800">{selectedLayout.title}</h2>
-                  <p className="text-sm text-gray-500">
-                    {filters.startDate} to {filters.endDate} | {submissions.length} submissions
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    📅 {filters.startDate} — {filters.endDate} &nbsp;|&nbsp;
+                    🏢 {getFilterSummary()} &nbsp;|&nbsp;
+                    📊 {submissions.length} submissions
                   </p>
                 </div>
 
                 {loading ? (
                   <div className="text-center py-8 text-gray-500">Loading...</div>
+                ) : submissions.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <p className="text-3xl mb-2">📭</p>
+                    <p>এই ফিল্টারে কোনো data পাওয়া যায়নি</p>
+                  </div>
                 ) : (
                   <table className="w-full">
                     <thead className="bg-gray-50">
@@ -180,7 +342,7 @@ export default function ReportViewPage() {
                         <tr key={row.id} className={row.type === 'subtotal' ? 'bg-yellow-50 font-semibold' : 'hover:bg-gray-50'}>
                           <td className="px-6 py-3 text-sm text-gray-800">{row.label}</td>
                           <td className="px-6 py-3 text-sm text-gray-500 capitalize">{row.calcType}</td>
-                          <td className="px-6 py-3 text-sm text-gray-800 text-right">{calculateValue(row)}</td>
+                          <td className="px-6 py-3 text-sm text-gray-800 text-right font-medium">{calculateValue(row)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -190,7 +352,8 @@ export default function ReportViewPage() {
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
-              Select a report layout from the left to view data.
+              <p className="text-4xl mb-3">📊</p>
+              <p>বাম দিক থেকে একটি Report Layout সিলেক্ট করুন</p>
             </div>
           )}
         </div>
