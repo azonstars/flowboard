@@ -239,6 +239,12 @@ export default function Topbar({ onMenuClick }) {
                 <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
               </div>
               <button
+                onClick={() => { setDropdownOpen(false); navigate('/profile') }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+              >
+                👤 My Profile
+              </button>
+              <button
                 onClick={handleSignOut}
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
               >
