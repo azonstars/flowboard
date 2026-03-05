@@ -83,6 +83,45 @@ export const submitForm = async (submission) => {
   return data
 }
 
+export const getSubmissionsForApproval = async (filters = {}) => {
+  let query = supabase
+    .from('form_submissions')
+    .select('*, forms(title), profiles(full_name)')
+    .order('created_at', { ascending: false })
+
+  if (filters.status) query = query.eq('status', filters.status)
+  if (filters.branch_code) query = query.eq('branch_code', filters.branch_code)
+  if (filters.startDate) query = query.gte('submission_date', filters.startDate)
+  if (filters.endDate) query = query.lte('submission_date', filters.endDate)
+  if (filters.branchCodes) query = query.in('branch_code', filters.branchCodes)
+
+  const { data, error } = await query
+  if (error) throw error
+  return data
+}
+
+export const approveSubmission = async (id, approvedBy) => {
+  const { data, error } = await supabase
+    .from('form_submissions')
+    .update({ status: 'approved', approved_by: approvedBy, approved_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export const rejectSubmission = async (id, rejectedBy, reason) => {
+  const { data, error } = await supabase
+    .from('form_submissions')
+    .update({ status: 'rejected', rejected_by: rejectedBy, rejection_reason: reason, approved_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
 export const getTodaySubmission = async (formId, branchCode) => {
   const today = new Date().toISOString().split('T')[0]
   const { data, error } = await supabase

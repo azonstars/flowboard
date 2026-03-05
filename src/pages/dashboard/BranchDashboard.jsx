@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
 export default function BranchDashboard() {
   const { profile } = useAuth()
@@ -13,6 +14,7 @@ export default function BranchDashboard() {
     totalForms: 0,
   })
   const [recentSubmissions, setRecentSubmissions] = useState([])
+  const prevStatusMap = useRef({})
 
   useEffect(() => { loadStats() }, [])
 
@@ -31,16 +33,51 @@ export default function BranchDashboard() {
           .order('created_at', { ascending: false })
           .limit(5),
       ])
+
+      // Status পরিবর্তন হলে toast দেখাও
+      const newSubs = recent.data || []
+      newSubs.forEach(sub => {
+        const prevStatus = prevStatusMap.current[sub.id]
+        if (prevStatus && prevStatus !== sub.status) {
+          if (sub.status === 'approved') {
+            toast.success(`✅ "${sub.forms?.title}" Approved হয়েছে!`, { duration: 5000 })
+          } else if (sub.status === 'rejected') {
+            toast.error(`❌ "${sub.forms?.title}" Rejected হয়েছে!`, { duration: 5000 })
+          }
+        }
+        prevStatusMap.current[sub.id] = sub.status
+      })
+
       setStats({
         todaySubmissions: todaySub.count || 0,
         totalSubmissions: totalSub.count || 0,
         totalForms: totalForms.count || 0,
         pendingForms: (totalForms.count || 0) - (todaySub.count || 0),
       })
-      setRecentSubmissions(recent.data || [])
+      setRecentSubmissions(newSubs)
     } catch (error) {
       console.error(error)
     }
+  }
+
+  // প্রতি ৩০ সেকেন্ডে auto-refresh
+  useEffect(() => {
+    const interval = setInterval(() => { loadStats() }, 30000)
+    return () => clearInterval(interval)
+  }, [profile])
+
+  const STATUS_COLORS = {
+    draft: 'bg-gray-100 text-gray-600',
+    submitted: 'bg-yellow-100 text-yellow-700',
+    approved: 'bg-green-100 text-green-700',
+    rejected: 'bg-red-100 text-red-700',
+  }
+
+  const STATUS_LABELS = {
+    draft: '📝 Draft',
+    submitted: '⏳ Pending',
+    approved: '✅ Approved',
+    rejected: '❌ Rejected',
   }
 
   return (
@@ -91,13 +128,12 @@ export default function BranchDashboard() {
                 <div>
                   <p className="font-medium text-gray-800">{sub.forms?.title}</p>
                   <p className="text-sm text-gray-500">{sub.submission_date}</p>
+                  {sub.status === 'rejected' && sub.rejection_reason && (
+                    <p className="text-xs text-red-500 mt-1">কারণ: {sub.rejection_reason}</p>
+                  )}
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  sub.status === 'submitted' ? 'bg-green-100 text-green-700' :
-                  sub.status === 'approved' ? 'bg-blue-100 text-blue-700' :
-                  'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {sub.status}
+                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-600'}`}>
+                  {STATUS_LABELS[sub.status] || sub.status}
                 </span>
               </div>
             ))
