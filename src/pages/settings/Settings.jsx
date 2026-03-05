@@ -659,19 +659,28 @@ export default function Settings() {
                 </div>
               ))}
 
-              {leftTab === 'forms' && allForms.map(form => (
-                <div key={form.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                  <div className="flex items-center gap-2">
-                    <span>{form.menu_icon || '📋'}</span>
-                    <span className="text-sm text-gray-800">{form.title}</span>
-                  </div>
-                  <button onClick={() => handleAddForm(form)} disabled={inMenuIds.includes(form.id)}
-                    className={`text-xs px-3 py-1 rounded-lg transition ${inMenuIds.includes(form.id) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
-                    {inMenuIds.includes(form.id) ? 'Added' : 'Add'}
-                  </button>
-                </div>
-              ))}
-
+{leftTab === 'forms' && allForms.map(form => (
+  <div key={form.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+    <div className="flex items-center gap-2 flex-1 min-w-0">
+      <span>{form.menu_icon || '📋'}</span>
+      <span className="text-sm text-gray-800 truncate">{form.title}</span>
+    </div>
+    <div className="flex items-center gap-2 shrink-0">
+      
+        href={`/forms/builder?id=${form.id}`}
+        target="_blank"
+        rel="noreferrer"
+        className="text-xs px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+      >
+        ✏️ Edit
+      </a>
+      <button onClick={() => handleAddForm(form)} disabled={inMenuIds.includes(form.id)}
+        className={`text-xs px-3 py-1 rounded-lg transition ${inMenuIds.includes(form.id) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+        {inMenuIds.includes(form.id) ? 'Added' : 'Add'}
+      </button>
+    </div>
+  </div>
+))}
               {leftTab === 'custom' && (
                 <div className="space-y-3">
                   <div>
