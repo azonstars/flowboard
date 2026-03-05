@@ -64,7 +64,7 @@ export default function FormListPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
         {loading ? (
           <div className="text-center py-8 text-gray-500">Loading...</div>
         ) : forms.length === 0 ? (
