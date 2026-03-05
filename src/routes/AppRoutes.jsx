@@ -20,6 +20,7 @@ import ReportBuilderPage from '../pages/reports/ReportBuilderPage'
 import PermissionManagement from '../pages/permissions/PermissionManagement'
 import Settings from '../pages/settings/Settings'
 import SubmissionsPage from '../pages/submissions/SubmissionsPage'
+import SubmissionHistoryPage from '../pages/submissions/SubmissionHistoryPage'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -152,6 +153,12 @@ export default function AppRoutes() {
             <RoleRoute roles={[ROLES.ADMIN, ROLES.REGIONAL_CHECKER]}>
               <DashboardLayout><PermissionManagement /></DashboardLayout>
             </RoleRoute>
+          </PrivateRoute>
+        } />
+
+        <Route path="/submissions/history" element={
+          <PrivateRoute>
+            <DashboardLayout><SubmissionHistoryPage /></DashboardLayout>
           </PrivateRoute>
         } />
 
