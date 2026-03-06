@@ -10,9 +10,15 @@ export const getUsers = async () => {
 }
 
 export const updateUser = async (id, updates) => {
+  // empty string গুলো null করো — uuid field এ empty string error দেয়
+  const cleaned = { ...updates }
+  if (cleaned.division_id === '') cleaned.division_id = null
+  if (cleaned.region_id === '') cleaned.region_id = null
+  if (cleaned.branch_code === '') cleaned.branch_code = null
+
   const { data, error } = await supabase
     .from('profiles')
-    .update(updates)
+    .update(cleaned)
     .eq('id', id)
     .select()
     .single()
