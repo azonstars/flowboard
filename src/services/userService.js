@@ -57,7 +57,15 @@ export const getUsersByRole = async (role) => {
 }
 
 export const createUser = async (email, password, fullName, role, extraData = {}) => {
-  const { data, error } = await supabase.auth.signUp({
+  // আলাদা client দিয়ে signUp করো — main client এর session affected হবে না
+  const { createClient } = await import('@supabase/supabase-js')
+  const tempClient = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY,
+    { auth: { persistSession: false, autoRefreshToken: false } }
+  )
+
+  const { data, error } = await tempClient.auth.signUp({
     email,
     password,
     options: {
