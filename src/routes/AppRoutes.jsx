@@ -78,6 +78,7 @@ const DashboardRouter = () => {
 const ADMIN_ONLY = [ROLES.ADMIN]
 const CHECKERS = [ROLES.ADMIN, ROLES.CENTRAL_CHECKER, ROLES.DIVISIONAL_CHECKER, ROLES.REGIONAL_CHECKER]
 const BRANCH_USERS = [ROLES.ADMIN, ROLES.BRANCH_MANAGER, ROLES.BRANCH_EMPLOYEE]
+const ALL_ROLES = [ROLES.ADMIN, ROLES.CENTRAL_CHECKER, ROLES.DIVISIONAL_CHECKER, ROLES.REGIONAL_CHECKER, ROLES.BRANCH_MANAGER, ROLES.BRANCH_EMPLOYEE]
 
 export default function AppRoutes() {
   return (
@@ -135,7 +136,7 @@ export default function AppRoutes() {
 
         <Route path="/reports" element={
           <PrivateRoute>
-            <RoleRoute roles={CHECKERS}>
+            <RoleRoute roles={ALL_ROLES}>
               <DashboardLayout><ReportViewPage /></DashboardLayout>
             </RoleRoute>
           </PrivateRoute>
