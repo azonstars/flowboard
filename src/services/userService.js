@@ -64,10 +64,9 @@ export const createUser = async (email, password, fullName, role, extraData = {}
 }
 
 export const deleteUser = async (id) => {
-  // প্রথমে profile deactivate করো
-  const { error: profileError } = await supabase
+  const { error } = await supabase
     .from('profiles')
-    .update({ is_active: false, role: 'deleted' })
+    .update({ is_active: false })
     .eq('id', id)
-  if (profileError) throw profileError
+  if (error) throw error
 }
