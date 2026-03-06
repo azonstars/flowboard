@@ -34,7 +34,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const [showIconPicker, setShowIconPicker] = useState(false)
   const [showSubMenuForm, setShowSubMenuForm] = useState(false)
-  const [subItem, setSubItem] = useState({ label: '', path: '', icon: '📌', link_type: 'custom' })
+  const [subItem, setSubItem] = useState({ label: '', path: '', icon: '📌', link_type: 'custom', roles: [] })
   const [showSubIconPicker, setShowSubIconPicker] = useState(false)
 
   const style = {
@@ -321,13 +321,37 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                         </div>
                       )}
                     </div>
+                    {/* Sub-menu Roles */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Visible to Roles</label>
+                      <div className="grid grid-cols-2 gap-1">
+                        {ALL_ROLES.map(role => (
+                          <label key={role.value} className="flex items-center gap-1.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={(subItem.roles || []).includes(role.value)}
+                              onChange={e => {
+                                const newRoles = e.target.checked
+                                  ? [...(subItem.roles || []), role.value]
+                                  : (subItem.roles || []).filter(r => r !== role.value)
+                                setSubItem({ ...subItem, roles: newRoles })
+                              }}
+                              className="rounded"
+                            />
+                            <span className="text-xs text-gray-700">{role.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">কোনো role না দিলে সবাই দেখবে</p>
+                    </div>
+
                     <div className="flex gap-2">
                       <button
                         onClick={() => {
                           if (!subItem.label) { toast.error('Label required!'); return }
                           if (subItem.link_type !== 'blank' && !subItem.path) { toast.error('Path required!'); return }
                           onAddSubMenu(item, { ...subItem, path: subItem.link_type === 'blank' ? '#' : subItem.path })
-                          setSubItem({ label: '', path: '', icon: '📌', link_type: 'custom' })
+                          setSubItem({ label: '', path: '', icon: '📌', link_type: 'custom', roles: [] })
                           setShowSubMenuForm(false)
                         }}
                         className="flex-1 bg-blue-600 text-white py-1.5 rounded-lg text-sm hover:bg-blue-700"
@@ -354,7 +378,9 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               <div key={child.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border-l-4 border-blue-200">
                 <span className="text-sm">{child.icon || '📌'}</span>
                 <span className="flex-1 text-xs text-gray-600">{child.label}</span>
-                <span className="text-xs text-gray-400">{child.path}</span>
+                <span className="text-xs text-gray-400">
+                  {child.roles?.length > 0 ? `${child.roles.length} roles` : 'সবাই'}
+                </span>
               </div>
             ))}
           </div>

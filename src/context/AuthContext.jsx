@@ -46,7 +46,8 @@ export const AuthProvider = ({ children }) => {
         .single()
       if (error) { setLoading(false); return }
       setProfile(data)
-      await fetchAllMenuData()
+      // profile data সরাসরি pass করো — state update এর জন্য অপেক্ষা করতে হবে না
+      await fetchAllMenuData(data)
     } catch (error) {
       console.error(error)
     } finally {
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const fetchAllMenuData = async () => {
+  const fetchAllMenuData = async (currentProfile = null) => {
     try {
       const [itemsWithChildren, forms] = await Promise.all([
         getMenuItemsWithChildren(),
@@ -64,11 +65,20 @@ export const AuthProvider = ({ children }) => {
       setMenuForms(forms)
       setMenuItems(itemsWithChildren)
 
-      // Flat list for sidebar — parents only at top level
-      // forms get inserted by menu_order
+      // currentProfile parameter অথবা state থেকে নাও
+      const activeProfile = currentProfile || profile
+
+      // Parent items — role filter সহ children রাখো
       const parentItems = itemsWithChildren
         .filter(i => !i.parent_id)
-        .map(i => ({ ...i, _type: 'menu' }))
+        .map(i => ({
+          ...i,
+          _type: 'menu',
+          // children এও role filter করো
+          children: (i.children || []).filter(child =>
+            !child.roles || child.roles.length === 0 || child.roles.includes(activeProfile?.role)
+          )
+        }))
 
       const formsMapped = forms.map(f => ({
         ...f,
