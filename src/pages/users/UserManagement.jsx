@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { getUsers, updateUser, toggleUserStatus, createUser, deleteUser } from '../../services/userService'
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import { ROLE_LABELS } from '../../constants/roles'
+import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
 
 export default function UserManagement() {
@@ -89,6 +90,9 @@ export default function UserManagement() {
     }
     setCreating(true)
     try {
+      // admin এর current session সেভ করো
+      const { data: { session: adminSession } } = await supabase.auth.getSession()
+
       await createUser(
         createData.email,
         createData.password,
@@ -96,10 +100,19 @@ export default function UserManagement() {
         createData.role,
         {
           branch_code: createData.branch_code,
-          division_id: createData.division_id,
-          region_id: createData.region_id,
+          division_id: createData.division_id || null,
+          region_id: createData.region_id || null,
         }
       )
+
+      // admin session জোর করে restore করো
+      if (adminSession?.access_token) {
+        await supabase.auth.setSession({
+          access_token: adminSession.access_token,
+          refresh_token: adminSession.refresh_token,
+        })
+      }
+
       toast.success('User created successfully!')
       setCreateModalOpen(false)
       setCreateData({
