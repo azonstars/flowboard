@@ -68,17 +68,10 @@ export const AuthProvider = ({ children }) => {
       // currentProfile parameter অথবা state থেকে নাও
       const activeProfile = currentProfile || profile
 
-      // Parent items — role filter সহ children রাখো
+      // Parent items — children সহ রাখো, Sidebar নিজে filter করবে
       const parentItems = itemsWithChildren
         .filter(i => !i.parent_id)
-        .map(i => ({
-          ...i,
-          _type: 'menu',
-          // children এও role filter করো
-          children: (i.children || []).filter(child =>
-            !child.roles || child.roles.length === 0 || child.roles.includes(activeProfile?.role)
-          )
-        }))
+        .map(i => ({ ...i, _type: 'menu' }))
 
       const formsMapped = forms.map(f => ({
         ...f,

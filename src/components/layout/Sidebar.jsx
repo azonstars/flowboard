@@ -7,15 +7,28 @@ export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation()
   const [expandedItems, setExpandedItems] = useState({})
 
-  const filteredItems = allMenuItems.filter(item =>
-    item.roles && item.roles.includes(profile?.role)
-  )
+  const filteredItems = allMenuItems.filter(item => {
+    // roles না থাকলে বা empty হলে সবাই দেখবে
+    if (!item.roles || item.roles.length === 0) return true
+    return item.roles.includes(profile?.role)
+  })
 
   const isActive = (path) => path && path !== '#' && location.pathname.startsWith(path)
   const toggleExpand = (id) => setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }))
-  const hasChildren = (item) => item.children && item.children.length > 0
-  const filteredChildren = (children) =>
-    (children || []).filter(child => child.roles && child.roles.includes(profile?.role))
+
+  const filteredChildren = (children) => {
+    if (!children || children.length === 0) return []
+    return children.filter(child => {
+      if (!child.roles || child.roles.length === 0) return true
+      return child.roles.includes(profile?.role)
+    })
+  }
+
+  // children আছে কিনা — role filter এর পরে
+  const hasChildren = (item) => {
+    const visible = filteredChildren(item.children)
+    return visible.length > 0
+  }
 
   return (
     <>
