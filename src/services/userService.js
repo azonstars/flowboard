@@ -57,6 +57,9 @@ export const getUsersByRole = async (role) => {
 }
 
 export const createUser = async (email, password, fullName, role, extraData = {}) => {
+  // আগে current admin session সেভ করো
+  const { data: { session: adminSession } } = await supabase.auth.getSession()
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -69,6 +72,15 @@ export const createUser = async (email, password, fullName, role, extraData = {}
     },
   })
   if (error) throw error
+
+  // admin session restore করো
+  if (adminSession) {
+    await supabase.auth.setSession({
+      access_token: adminSession.access_token,
+      refresh_token: adminSession.refresh_token,
+    })
+  }
+
   return data
 }
 
