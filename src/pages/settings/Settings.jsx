@@ -238,11 +238,57 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                 {children.length > 0 && (
                   <div className="space-y-1 mb-3">
                     {children.map(child => (
-                      <div key={child.id} className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg border-l-4 border-blue-300">
-                        <span>{child.icon || '📌'}</span>
-                        <span className="flex-1 text-sm text-gray-700">{child.label}</span>
-                        <span className="text-xs text-gray-400 hidden sm:block">{child.path}</span>
-                        <button onClick={() => onUpdate(item, 'removeChild', child.id)} className="text-red-400 hover:text-red-600">✕</button>
+                      <div key={child.id} className="bg-blue-50 rounded-lg border-l-4 border-blue-300">
+                        {/* Child preview row */}
+                        <div className="flex items-center gap-2 p-2">
+                          <span>{child.icon || '📌'}</span>
+                          <span className="flex-1 text-sm text-gray-700">{child.label}</span>
+                          <span className="text-xs text-gray-400 hidden sm:block">{child.path}</span>
+                          <button
+                            onClick={() => onUpdate(item, 'editingChild', child.id === item._editingChild ? null : child.id)}
+                            className="text-xs text-blue-500 hover:text-blue-700 px-1"
+                            title="Edit"
+                          >✏️</button>
+                          <button onClick={() => onUpdate(item, 'removeChild', child.id)} className="text-red-400 hover:text-red-600 px-1">✕</button>
+                        </div>
+
+                        {/* Child edit form */}
+                        {item._editingChild === child.id && (
+                          <div className="px-3 pb-3 space-y-2 border-t border-blue-200">
+                            <input type="text" value={child.label}
+                              onChange={e => onUpdate(item, 'updateChild', { ...child, label: e.target.value })}
+                              className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Label" />
+                            <input type="text" value={child.path || ''}
+                              onChange={e => onUpdate(item, 'updateChild', { ...child, path: e.target.value })}
+                              className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Path (e.g. /reports)" />
+                            {/* Child Roles */}
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Visible to Roles</label>
+                              <div className="grid grid-cols-2 gap-1">
+                                {ALL_ROLES.map(role => (
+                                  <label key={role.value} className="flex items-center gap-1.5 cursor-pointer">
+                                    <input type="checkbox"
+                                      checked={(child.roles || []).includes(role.value)}
+                                      onChange={e => {
+                                        const newRoles = e.target.checked
+                                          ? [...(child.roles || []), role.value]
+                                          : (child.roles || []).filter(r => r !== role.value)
+                                        onUpdate(item, 'updateChild', { ...child, roles: newRoles })
+                                      }}
+                                      className="rounded" />
+                                    <span className="text-xs text-gray-700">{role.label}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => onUpdate(item, 'editingChild', null)}
+                              className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700"
+                            >Done</button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -463,6 +509,8 @@ export default function Settings() {
     setMenuStructure(menuStructure.map(m => {
       if (m.id !== item.id) return m
       if (key === 'removeChild') return { ...m, children: m.children.filter(c => c.id !== value) }
+      if (key === 'editingChild') return { ...m, _editingChild: value }
+      if (key === 'updateChild') return { ...m, children: m.children.map(c => c.id === value.id ? value : c) }
       return { ...m, [key]: value, ...(key === 'icon' ? { menu_icon: value } : {}) }
     }))
   }
@@ -545,7 +593,7 @@ export default function Settings() {
   }
 
   const handleEditForm = (form) => {
-    window.open(`/forms/builder?id=${form.id}`, '_blank')
+    window.open(`/forms/builder?edit=${form.id}`, '_blank')
   }
 
   const handleDeleteForm = async (form) => {
