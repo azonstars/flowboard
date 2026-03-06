@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { getReportLayouts, deleteReportLayout, getSubmissionsForReport } from '../../services/reportService'
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import { useAuth } from '../../context/AuthContext'
@@ -37,7 +38,18 @@ export default function ReportViewPage() {
   const isDivisional = profile?.role === ROLES.DIVISIONAL_CHECKER
   const isRegional = profile?.role === ROLES.REGIONAL_CHECKER
 
+  const [searchParams] = useSearchParams()
+  const reportIdFromUrl = searchParams.get('report_id')
+
   useEffect(() => { loadLayouts(); loadHierarchy() }, [])
+
+  // URL থেকে report_id আসলে auto-select করো
+  useEffect(() => {
+    if (reportIdFromUrl && layouts.length > 0) {
+      const found = layouts.find(l => l.id === reportIdFromUrl)
+      if (found) handleSelectLayout(found)
+    }
+  }, [reportIdFromUrl, layouts])
 
   const loadHierarchy = async () => {
     try {
