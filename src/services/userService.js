@@ -4,8 +4,17 @@ export const getUsers = async () => {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
+    .eq('is_deleted', false)
     .order('full_name')
-  if (error) throw error
+  if (error) {
+    // is_deleted column না থাকলে সব আনো
+    const { data: allData, error: allError } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('full_name')
+    if (allError) throw allError
+    return allData
+  }
   return data
 }
 
@@ -66,7 +75,7 @@ export const createUser = async (email, password, fullName, role, extraData = {}
 export const deleteUser = async (id) => {
   const { error } = await supabase
     .from('profiles')
-    .update({ is_active: false })
+    .update({ is_active: false, is_deleted: true })
     .eq('id', id)
   if (error) throw error
 }
