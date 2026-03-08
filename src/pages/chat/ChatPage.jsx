@@ -60,6 +60,8 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [showNewChat, setShowNewChat] = useState(false)
+  const [newChatStep, setNewChatStep] = useState('compose') // 'compose' | 'select_user'
+  const [newChatText, setNewChatText] = useState('')
   const [showNewGroup, setShowNewGroup] = useState(false)
   const [showNewBroadcast, setShowNewBroadcast] = useState(false)
   const [allUsers, setAllUsers] = useState([])
@@ -283,6 +285,16 @@ export default function ChatPage() {
       await loadConversations()
       setActiveConvId(convId)
       setShowNewChat(false)
+      setNewChatText('')
+      setNewChatStep('compose')
+      setSearchUser('')
+      // compose করা message পাঠাও
+      if (newChatText.trim()) {
+        const msg = await sendMessage({ conversationId: convId, senderId: profile.id, content: newChatText.trim() })
+        setMessages(prev => [...prev.filter(m => m.id !== msg.id), msg])
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+        loadConversations()
+      }
     } catch (err) { toast.error(err.message) }
   }
 
@@ -329,8 +341,10 @@ export default function ChatPage() {
   }
 
   const openNewChat = async () => {
+    setNewChatStep('compose')
+    setNewChatText('')
+    setSearchUser('')
     setShowNewChat(true)
-    await loadHierarchyData()
   }
 
   const openNewGroup = async () => {
@@ -707,25 +721,66 @@ export default function ChatPage() {
       {showNewChat && !showNewBroadcast && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[85vh]">
-            <div className="flex items-center justify-between p-5 border-b shrink-0">
-              <h3 className="font-bold text-gray-800">নতুন Chat শুরু করুন</h3>
-              <button onClick={() => { setShowNewChat(false); setSearchUser('') }} className="text-gray-400 hover:text-gray-600">✕</button>
-            </div>
-            <div className="p-4 shrink-0">
-              <input
-                type="text" placeholder="নাম, email বা role দিয়ে খুঁজুন..."
-                value={searchUser} onChange={e => setSearchUser(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                autoFocus
-              />
-            </div>
-            <div className="overflow-y-auto flex-1 px-4 pb-4">
-              {allUsers.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">Loading...</div>
-              ) : (
-                <HierarchyUserList onSelectUser={handleStartP2P} />
-              )}
-            </div>
+
+            {/* Step 1: Compose message */}
+            {newChatStep === 'compose' && (
+              <>
+                <div className="flex items-center justify-between p-5 border-b shrink-0">
+                  <h3 className="font-bold text-gray-800">✏️ নতুন Message</h3>
+                  <button onClick={() => { setShowNewChat(false); setNewChatText('') }} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+                </div>
+                <div className="p-5 space-y-4">
+                  <textarea
+                    autoFocus
+                    value={newChatText}
+                    onChange={e => setNewChatText(e.target.value)}
+                    placeholder="Message লিখুন..."
+                    rows={4}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!newChatText.trim()) { toast.error('Message লিখুন!'); return }
+                      setNewChatStep('select_user')
+                      await loadHierarchyData()
+                    }}
+                    className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
+                  >
+                    পাঠাবো কাকে? →
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Step 2: Select user */}
+            {newChatStep === 'select_user' && (
+              <>
+                <div className="flex items-center gap-3 p-5 border-b shrink-0">
+                  <button onClick={() => setNewChatStep('compose')} className="text-gray-400 hover:text-gray-600">←</button>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-800">কাকে পাঠাবেন?</h3>
+                    <p className="text-xs text-gray-400 truncate">"{newChatText}"</p>
+                  </div>
+                  <button onClick={() => { setShowNewChat(false); setNewChatText(''); setNewChatStep('compose') }} className="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+                <div className="p-4 shrink-0">
+                  <input
+                    type="text" placeholder="নাম, email বা role দিয়ে খুঁজুন..."
+                    value={searchUser} onChange={e => setSearchUser(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autoFocus
+                  />
+                </div>
+                <div className="overflow-y-auto flex-1 px-4 pb-4">
+                  {allUsers.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">Loading...</div>
+                  ) : (
+                    <HierarchyUserList onSelectUser={handleStartP2P} />
+                  )}
+                </div>
+              </>
+            )}
+
           </div>
         </div>
       )}
