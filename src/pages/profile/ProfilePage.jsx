@@ -74,7 +74,7 @@ export default function ProfilePage() {
     { label: 'Status', value: profile?.is_active ? 'Active ✅' : 'Inactive ❌', icon: '🔘' },
   ]
 
-  const PwInput = ({ label, field, placeholder }) => (
+  const PwInput = ({ label, field, placeholder, autoFocus }) => (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <div className="relative">
@@ -82,6 +82,8 @@ export default function ProfilePage() {
           type={showPw[field] ? 'text' : 'password'}
           value={pwData[field]}
           onChange={e => setPwData({ ...pwData, [field]: e.target.value })}
+          onKeyDown={e => e.key === 'Enter' && handlePasswordChange()}
+          autoFocus={autoFocus}
           className="w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder={placeholder}
         />
@@ -188,7 +190,7 @@ export default function ProfilePage() {
         {activeTab === 'password' && (
           <div className="p-6 space-y-4">
             <p className="text-sm text-gray-500">নতুন password কমপক্ষে ৬ অক্ষর হতে হবে।</p>
-            <PwInput label="বর্তমান Password" field="current" placeholder="বর্তমান password লিখুন" />
+            <PwInput label="বর্তমান Password" field="current" placeholder="বর্তমান password লিখুন" autoFocus />
             <PwInput label="নতুন Password" field="newPw" placeholder="নতুন password লিখুন" />
             <PwInput label="নতুন Password নিশ্চিত করুন" field="confirm" placeholder="আবার লিখুন" />
 
