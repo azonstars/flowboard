@@ -65,6 +65,7 @@ export default function ChatPage() {
   const [showNewGroup, setShowNewGroup] = useState(false)
   const [showNewBroadcast, setShowNewBroadcast] = useState(false)
   const [allUsers, setAllUsers] = useState([])
+  const [hierarchyLoading, setHierarchyLoading] = useState(false)
   const [divisions, setDivisions] = useState([])
   const [regions, setRegions] = useState([])
   const [branches, setBranches] = useState([])
@@ -345,6 +346,7 @@ export default function ChatPage() {
   }
 
   const loadHierarchyData = async () => {
+    setHierarchyLoading(true)
     try {
       const [users, divs, regs, brs] = await Promise.all([
         getAllUsers(profile.id),
@@ -359,11 +361,12 @@ export default function ChatPage() {
     } catch (err) {
       console.error('loadHierarchyData error:', err)
       toast.error('User list load হয়নি: ' + err.message)
-      // fallback: শুধু users load করো
       try {
         const users = await getAllUsers(profile.id)
         setAllUsers(users || [])
       } catch (e) { console.error(e) }
+    } finally {
+      setHierarchyLoading(false)
     }
   }
 
@@ -686,8 +689,10 @@ export default function ChatPage() {
                   />
                 </div>
                 <div className="overflow-y-auto flex-1 px-4 py-3">
-                  {allUsers.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400">Loading...</div>
+                  {hierarchyLoading ? (
+                    <div className="text-center py-10 text-gray-400">⏳ Loading...</div>
+                  ) : allUsers.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400">কোনো user পাওয়া যায়নি</div>
                   ) : (
                     <HierarchyUserList onSelectUser={handleStartP2P} />
                   )}
@@ -854,8 +859,10 @@ export default function ChatPage() {
               )}
             </div>
             <div className="overflow-y-auto flex-1 px-4">
-              {allUsers.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">Loading...</div>
+              {hierarchyLoading ? (
+                <div className="text-center py-8 text-gray-400">⏳ Loading...</div>
+              ) : allUsers.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">কোনো user পাওয়া যায়নি</div>
               ) : (
                 <HierarchyUserList
                   onSelectUser={(user) => setSelectedUsers(prev => [...prev, user.id])}
