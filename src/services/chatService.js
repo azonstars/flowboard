@@ -233,7 +233,18 @@ export const getAllUsers = async (excludeId) => {
     .eq('is_deleted', false)
     .neq('id', excludeId)
     .order('full_name')
-  if (error) throw error
+  if (error) {
+    // email field না থাকলে email ছাড়া retry
+    const { data: data2, error: error2 } = await supabase
+      .from('profiles')
+      .select('id, full_name, role, branch_code, division_id, region_id')
+      .eq('is_active', true)
+      .eq('is_deleted', false)
+      .neq('id', excludeId)
+      .order('full_name')
+    if (error2) throw error2
+    return data2
+  }
   return data
 }
 

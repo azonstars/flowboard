@@ -352,11 +352,19 @@ export default function ChatPage() {
         getRegions(),
         getBranches(),
       ])
-      setAllUsers(users)
-      setDivisions(divs)
-      setRegions(regs)
-      setBranches(brs)
-    } catch (err) { toast.error(err.message) }
+      setAllUsers(users || [])
+      setDivisions(divs || [])
+      setRegions(regs || [])
+      setBranches(brs || [])
+    } catch (err) {
+      console.error('loadHierarchyData error:', err)
+      toast.error('User list load হয়নি: ' + err.message)
+      // fallback: শুধু users load করো
+      try {
+        const users = await getAllUsers(profile.id)
+        setAllUsers(users || [])
+      } catch (e) { console.error(e) }
+    }
   }
 
   const openNewChat = async () => {
