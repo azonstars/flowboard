@@ -83,6 +83,8 @@ export default function ChatPage() {
   const audioChunksRef = useRef([])
 
   const isAdmin = profile?.role === 'admin'
+  const [unreadCounts, setUnreadCounts] = useState({})
+
   const loadConversations = useCallback(async () => {
     if (!profile?.id) return
     try {
@@ -96,7 +98,24 @@ export default function ChatPage() {
         participants: p.chat_conversations.chat_participants,
       }))
       const broadcastConvs = broadcasts.filter(b => !myConvs.find(c => c.id === b.id))
-      setConversations([...myConvs, ...broadcastConvs])
+      const allConvs = [...myConvs, ...broadcastConvs]
+      setConversations(allConvs)
+
+      // unread count calculate
+      const { supabase } = await import('../../services/supabase')
+      const counts = {}
+      await Promise.all(allConvs.map(async (conv) => {
+        const lastRead = conv.last_read_at
+        if (!lastRead) { counts[conv.id] = 99; return }
+        const { count } = await supabase
+          .from('chat_messages')
+          .select('id', { count: 'exact' })
+          .eq('conversation_id', conv.id)
+          .neq('sender_id', profile.id)
+          .gt('created_at', lastRead)
+        counts[conv.id] = count || 0
+      }))
+      setUnreadCounts(counts)
     } catch (err) {
       console.error(err)
     }
@@ -584,28 +603,45 @@ export default function ChatPage() {
               <p className="text-4xl mb-2">💬</p>
               <p className="text-sm">কোনো chat নেই।<br />✏️ বাটন দিয়ে শুরু করুন!</p>
             </div>
-          ) : conversations.map(conv => (
+          ) : conversations.map(conv => {
+            const unread = unreadCounts[conv.id] || 0
+            const isActive = activeConvId === conv.id
+            return (
             <button
               key={conv.id}
               onClick={() => { setActiveConvId(conv.id); setShowSidebar(false) }}
-              className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left ${activeConvId === conv.id ? 'bg-blue-50 border-r-2 border-blue-600' : ''}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left ${isActive ? 'bg-blue-50 border-r-2 border-blue-600' : ''}`}
             >
-              {conv.type === 'broadcast' ? (
-                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white text-lg shrink-0">📢</div>
-              ) : conv.type === 'group' ? (
-                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white text-lg shrink-0">👥</div>
-              ) : (
-                <Avatar name={getConvName(conv)} />
-              )}
+              <div className="relative shrink-0">
+                {conv.type === 'broadcast' ? (
+                  <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white text-lg">📢</div>
+                ) : conv.type === 'group' ? (
+                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white text-lg">👥</div>
+                ) : (
+                  <Avatar name={getConvName(conv)} />
+                )}
+                {unread > 0 && !isActive && (
+                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-bold shadow">
+                    {unread > 99 ? '99+' : unread}
+                  </span>
+                )}
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center">
-                  <p className="font-medium text-gray-800 text-sm truncate">{getConvName(conv)}</p>
-                  <span className="text-xs text-gray-400 shrink-0 ml-1">{formatTime(conv.updated_at)}</span>
+                  <p className={`text-sm truncate ${unread > 0 && !isActive ? 'font-bold text-gray-900' : 'font-medium text-gray-800'}`}>
+                    {getConvName(conv)}
+                  </p>
+                  <span className={`text-xs shrink-0 ml-1 ${unread > 0 && !isActive ? 'text-blue-600 font-semibold' : 'text-gray-400'}`}>
+                    {formatTime(conv.updated_at)}
+                  </span>
                 </div>
-                <p className="text-xs text-gray-500 truncate">{getConvSubtitle(conv)}</p>
+                <p className={`text-xs truncate ${unread > 0 && !isActive ? 'text-blue-500 font-medium' : 'text-gray-500'}`}>
+                  {getConvSubtitle(conv)}
+                </p>
               </div>
             </button>
-          ))}
+            )
+          })}
         </div>
       </div>
 
