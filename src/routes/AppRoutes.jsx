@@ -22,6 +22,7 @@ import Settings from '../pages/settings/Settings'
 import SubmissionsPage from '../pages/submissions/SubmissionsPage'
 import SubmissionHistoryPage from '../pages/submissions/SubmissionHistoryPage'
 import ProfilePage from '../pages/profile/ProfilePage'
+import ChatPage from '../pages/chat/ChatPage'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -161,6 +162,12 @@ export default function AppRoutes() {
         <Route path="/profile" element={
           <PrivateRoute>
             <DashboardLayout><ProfilePage /></DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/chat" element={
+          <PrivateRoute>
+            <DashboardLayout><ChatPage /></DashboardLayout>
           </PrivateRoute>
         } />
 
