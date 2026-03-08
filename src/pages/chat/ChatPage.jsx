@@ -476,93 +476,41 @@ export default function ChatPage() {
     )
   }
 
-  // ── Hierarchy User List ──
+  // ── Simple Flat User List ──
   const HierarchyUserList = ({ onSelectUser, selectedIds = [], multiSelect = false }) => {
     const searchLower = searchUser.toLowerCase()
+    const filtered = searchLower
+      ? allUsers.filter(u =>
+          u.full_name?.toLowerCase().includes(searchLower) ||
+          u.email?.toLowerCase().includes(searchLower) ||
+          ROLE_LABELS[u.role]?.toLowerCase().includes(searchLower)
+        )
+      : allUsers
 
-    if (searchLower) {
-      const filtered = allUsers.filter(u =>
-        u.full_name?.toLowerCase().includes(searchLower) ||
-        u.email?.toLowerCase().includes(searchLower) ||
-        ROLE_LABELS[u.role]?.toLowerCase().includes(searchLower)
-      )
-      return (
-        <div className="space-y-1">
-          {filtered.map(user => (
-            <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} />
-          ))}
-          {filtered.length === 0 && <p className="text-center text-gray-400 text-sm py-4">কোনো user পাওয়া যায়নি</p>}
-        </div>
-      )
-    }
-
-    const topUsers = allUsers.filter(u => u.role === 'admin' || u.role === 'central_checker')
+    if (filtered.length === 0) return <p className="text-center text-gray-400 text-sm py-4">কোনো user পাওয়া যায়নি</p>
 
     return (
-      <div className="space-y-2">
-        {topUsers.length > 0 && (
-          <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide px-2 py-1">Admin / Central</p>
-            {topUsers.map(user => (
-              <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} />
-            ))}
-          </div>
-        )}
-
-        {divisions.map(div => {
-          const divRegions = regions.filter(r => r.division_id === div.id)
-          const divCheckers = allUsers.filter(u => u.role === 'divisional_checker' && u.division_id === div.id)
-          if (divCheckers.length === 0 && divRegions.length === 0) return null
-
-          return (
-            <div key={div.id} className="border border-gray-100 rounded-xl overflow-hidden">
-              <div className="bg-blue-50 px-3 py-2 flex items-center gap-2">
-                <span className="text-blue-600">🏛️</span>
-                <span className="text-sm font-bold text-blue-700">{div.name}</span>
+      <div className="space-y-1">
+        {filtered.map(user => (
+          <button
+            key={user.id}
+            onClick={() => !selectedIds.includes(user.id) && onSelectUser(user)}
+            disabled={multiSelect && selectedIds.includes(user.id)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-left ${
+              selectedIds.includes(user.id) ? 'bg-blue-50 opacity-60 cursor-default' : 'hover:bg-gray-50'
+            }`}
+          >
+            <Avatar name={user.full_name} size="sm" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium text-sm text-gray-800 truncate">{user.full_name}</p>
+                <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${ROLE_COLORS[user.role]}`}>{ROLE_LABELS[user.role]}</span>
               </div>
-              <div className="px-2 py-1">
-                {divCheckers.map(user => (
-                  <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} indent={1} />
-                ))}
-                {divRegions.map(reg => {
-                  const regBranches = branches.filter(b => b.region_id === reg.id)
-                  const regCheckers = allUsers.filter(u => u.role === 'regional_checker' && u.region_id === reg.id)
-                  if (regCheckers.length === 0 && regBranches.length === 0) return null
-
-                  return (
-                    <div key={reg.id} className="mt-1">
-                      <div className="flex items-center gap-2 px-2 py-1.5 bg-green-50 rounded-lg mb-1">
-                        <span className="text-green-600 text-xs">📍</span>
-                        <span className="text-xs font-bold text-green-700">{reg.name}</span>
-                      </div>
-                      {regCheckers.map(user => (
-                        <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} indent={2} />
-                      ))}
-                      {regBranches.map(branch => {
-                        const branchUsers = allUsers.filter(u =>
-                          u.branch_code === branch.branch_code &&
-                          (u.role === 'branch_manager' || u.role === 'branch_employee')
-                        )
-                        if (branchUsers.length === 0) return null
-                        return (
-                          <div key={branch.branch_code} className="ml-3 mb-1">
-                            <div className="flex items-center gap-1 px-2 py-1">
-                              <span className="text-gray-400 text-xs">🏢</span>
-                              <span className="text-xs font-semibold text-gray-500">{branch.name} ({branch.branch_code})</span>
-                            </div>
-                            {branchUsers.map(user => (
-                              <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} indent={3} />
-                            ))}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )
-                })}
-              </div>
+              <p className="text-xs text-gray-400 truncate">{user.email}</p>
             </div>
-          )
-        })}
+            {multiSelect && selectedIds.includes(user.id) && <span className="text-blue-500 shrink-0">✓</span>}
+          </button>
+        ))}
       </div>
     )
   }
