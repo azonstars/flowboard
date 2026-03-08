@@ -112,7 +112,7 @@ export default function AppRoutes() {
 
         <Route path="/forms" element={
           <PrivateRoute>
-            <RoleRoute roles={BRANCH_USERS}>
+            <RoleRoute roles={ALL_ROLES}>
               <DashboardLayout><FormListPage /></DashboardLayout>
             </RoleRoute>
           </PrivateRoute>
@@ -128,7 +128,7 @@ export default function AppRoutes() {
 
         <Route path="/forms/submit/:formId" element={
           <PrivateRoute>
-            <RoleRoute roles={BRANCH_USERS}>
+            <RoleRoute roles={ALL_ROLES}>
               <DashboardLayout><FormSubmitPage /></DashboardLayout>
             </RoleRoute>
           </PrivateRoute>
