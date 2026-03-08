@@ -568,7 +568,7 @@ export default function ChatPage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-gray-800">💬 Chat</h2>
             <div className="flex gap-1">
-              <button onClick={openNewChat} title="নতুন Chat" className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition">✏️</button>
+              <button onClick={() => { setActiveConvId(null); setNewChatStep('compose'); setNewChatText(''); setSearchUser('') }} title="নতুন Chat" className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition">✏️</button>
               <button onClick={openNewGroup} title="নতুন Group" className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition">👥</button>
               {isAdmin && (
                 <button onClick={() => { setShowNewBroadcast(true); openNewChat() }} title="Broadcast" className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition">📢</button>
@@ -612,12 +612,76 @@ export default function ChatPage() {
       {/* ── Chat Area ── */}
       <div className={`${!showSidebar ? 'flex' : 'hidden'} md:flex flex-col flex-1 min-w-0`}>
         {!activeConvId ? (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
-            <div className="text-center text-gray-400">
-              <p className="text-6xl mb-4">💬</p>
-              <p className="text-lg font-medium">FlowBoard Chat</p>
-              <p className="text-sm mt-1">বাম দিক থেকে conversation select করুন</p>
-            </div>
+          <div className="flex flex-col flex-1 bg-gray-50">
+            {/* Top area */}
+            {newChatStep === 'compose' && (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center text-gray-300">
+                  <p className="text-6xl mb-3">💬</p>
+                  <p className="text-base font-medium">নিচে message লিখুন</p>
+                </div>
+              </div>
+            )}
+
+            {/* User select step */}
+            {newChatStep === 'select_user' && (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="px-6 pt-5 pb-3 border-b bg-white">
+                  <div className="flex items-center gap-3 mb-3">
+                    <button onClick={() => setNewChatStep('compose')} className="text-gray-400 hover:text-gray-600 text-lg">←</button>
+                    <div>
+                      <p className="font-semibold text-gray-800 text-sm">কাকে পাঠাবেন?</p>
+                      <p className="text-xs text-gray-400 truncate max-w-xs">"{newChatText}"</p>
+                    </div>
+                  </div>
+                  <input
+                    type="text" placeholder="নাম, email বা role দিয়ে খুঁজুন..."
+                    value={searchUser} onChange={e => setSearchUser(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autoFocus
+                  />
+                </div>
+                <div className="overflow-y-auto flex-1 px-4 py-3">
+                  {allUsers.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400">Loading...</div>
+                  ) : (
+                    <HierarchyUserList onSelectUser={handleStartP2P} />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Bottom compose bar */}
+            {newChatStep === 'compose' && (
+              <div className="bg-white border-t border-gray-200 px-4 py-3">
+                <div className="flex items-end gap-2">
+                  <textarea
+                    value={newChatText}
+                    onChange={e => setNewChatText(e.target.value)}
+                    placeholder="নতুন message লিখুন..."
+                    rows={1}
+                    className="flex-1 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none max-h-32 overflow-y-auto"
+                    style={{ minHeight: '44px' }}
+                    onKeyDown={async e => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        if (!newChatText.trim()) return
+                        setNewChatStep('select_user')
+                        await loadHierarchyData()
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!newChatText.trim()) { toast.error('Message লিখুন!'); return }
+                      setNewChatStep('select_user')
+                      await loadHierarchyData()
+                    }}
+                    className="p-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition shrink-0"
+                  >➤</button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -718,72 +782,6 @@ export default function ChatPage() {
         )}
       </div>
 
-      {showNewChat && !showNewBroadcast && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[85vh]">
-
-            {/* Step 1: Compose message */}
-            {newChatStep === 'compose' && (
-              <>
-                <div className="flex items-center justify-between p-5 border-b shrink-0">
-                  <h3 className="font-bold text-gray-800">✏️ নতুন Message</h3>
-                  <button onClick={() => { setShowNewChat(false); setNewChatText('') }} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
-                </div>
-                <div className="p-5 space-y-4">
-                  <textarea
-                    autoFocus
-                    value={newChatText}
-                    onChange={e => setNewChatText(e.target.value)}
-                    placeholder="Message লিখুন..."
-                    rows={4}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  />
-                  <button
-                    onClick={async () => {
-                      if (!newChatText.trim()) { toast.error('Message লিখুন!'); return }
-                      setNewChatStep('select_user')
-                      await loadHierarchyData()
-                    }}
-                    className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
-                  >
-                    পাঠাবো কাকে? →
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* Step 2: Select user */}
-            {newChatStep === 'select_user' && (
-              <>
-                <div className="flex items-center gap-3 p-5 border-b shrink-0">
-                  <button onClick={() => setNewChatStep('compose')} className="text-gray-400 hover:text-gray-600">←</button>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-800">কাকে পাঠাবেন?</h3>
-                    <p className="text-xs text-gray-400 truncate">"{newChatText}"</p>
-                  </div>
-                  <button onClick={() => { setShowNewChat(false); setNewChatText(''); setNewChatStep('compose') }} className="text-gray-400 hover:text-gray-600">✕</button>
-                </div>
-                <div className="p-4 shrink-0">
-                  <input
-                    type="text" placeholder="নাম, email বা role দিয়ে খুঁজুন..."
-                    value={searchUser} onChange={e => setSearchUser(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    autoFocus
-                  />
-                </div>
-                <div className="overflow-y-auto flex-1 px-4 pb-4">
-                  {allUsers.length === 0 ? (
-                    <div className="text-center py-8 text-gray-400">Loading...</div>
-                  ) : (
-                    <HierarchyUserList onSelectUser={handleStartP2P} />
-                  )}
-                </div>
-              </>
-            )}
-
-          </div>
-        </div>
-      )}
 
       {showNewGroup && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
