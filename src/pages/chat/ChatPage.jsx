@@ -537,7 +537,7 @@ export default function ChatPage() {
   )
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gray-100 rounded-xl overflow-hidden shadow-sm">
+    <div className="chat-fullpage flex h-full bg-gray-100 overflow-hidden" style={{height: 'calc(100vh - 4rem)'}}>
 
       {/* ── Sidebar ── */}
       <div className={`${showSidebar ? 'flex' : 'hidden'} md:flex flex-col w-full md:w-80 bg-white border-r border-gray-200 shrink-0`}>

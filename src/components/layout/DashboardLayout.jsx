@@ -19,8 +19,10 @@ export default function DashboardLayout({ children }) {
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          {children}
+        <main className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto p-4 lg:p-6 h-full [&:has(.chat-fullpage)]:p-0 [&:has(.chat-fullpage)]:overflow-hidden">
+            {children}
+          </div>
         </main>
       </div>
     </div>
