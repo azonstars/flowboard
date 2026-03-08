@@ -16,7 +16,7 @@ const STATUS_COLORS = {
 }
 
 export default function DivisionalCheckerDashboard() {
-  const { profile } = useAuth()
+  const { profile, appSettings } = useAuth()
   const navigate = useNavigate()
   const [stats, setStats] = useState({ totalBranches: 0, todaySubmissions: 0, totalSubmissions: 0, pendingSubmissions: 0 })
   const [recentSubmissions, setRecentSubmissions] = useState([])
@@ -126,7 +126,9 @@ export default function DivisionalCheckerDashboard() {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="font-bold text-gray-800">Recent Submissions</h2>
-          <button onClick={() => navigate('/submissions')} className="text-sm text-blue-600 hover:underline">সব দেখুন →</button>
+          {appSettings?.feature_checker_all_submissions_btn !== false && (
+            <button onClick={() => navigate('/submissions')} className="text-sm text-blue-600 hover:underline">সব দেখুন →</button>
+          )}
         </div>
         <div className="divide-y divide-gray-200">
           {recentSubmissions.length === 0 ? (

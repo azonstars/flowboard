@@ -11,6 +11,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { getForms, updateForm, deleteForm } from '../../services/formService'
 import { getMenuItems, updateMenuItem, createMenuItem, deleteMenuItem } from '../../services/menuService'
 import { getReportLayouts } from '../../services/reportService'
+import { getAllAppSettings, updateAppSetting } from '../../services/appSettingsService'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 
@@ -446,6 +447,9 @@ export default function Settings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [leftTab, setLeftTab] = useState('menu')
+  const [activeTab, setActiveTab] = useState('menu_manager') // menu_manager | features
+  const [features, setFeatures] = useState([])
+  const [featuresLoading, setFeaturesLoading] = useState(false)
   const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'path' })
   const [showIconPicker, setShowIconPicker] = useState(false)
 
@@ -455,6 +459,29 @@ export default function Settings() {
   )
 
   useEffect(() => { loadAll() }, [])
+  useEffect(() => { if (activeTab === 'features') loadFeatures() }, [activeTab])
+
+  const loadFeatures = async () => {
+    setFeaturesLoading(true)
+    try {
+      const data = await getAllAppSettings()
+      setFeatures(data)
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setFeaturesLoading(false)
+    }
+  }
+
+  const handleToggleFeature = async (key, currentValue) => {
+    try {
+      await updateAppSetting(key, currentValue !== 'true')
+      setFeatures(features.map(f => f.key === key ? { ...f, value: currentValue === 'true' ? 'false' : 'true' } : f))
+      toast.success('Updated!')
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
 
   const loadAll = async () => {
     setLoading(true)
@@ -710,11 +737,60 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-800">Settings — Menu Manager</h1>
-        <p className="text-gray-500 mt-1">Drag to reorder • Click ▼ to edit, set parent, show/hide</p>
+      {/* Header with tabs */}
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="px-6 pt-6">
+          <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
+        </div>
+        <div className="flex border-b border-gray-200 mt-4 px-6">
+          <button
+            onClick={() => setActiveTab('menu_manager')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'menu_manager' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            📋 Menu Manager
+          </button>
+          <button
+            onClick={() => setActiveTab('features')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'features' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            ⚙️ Feature Toggles
+          </button>
+        </div>
       </div>
 
+      {/* Features Tab */}
+      {activeTab === 'features' && (
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-800 mb-1">Feature Toggles</h2>
+          <p className="text-sm text-gray-500 mb-6">প্রতিটি feature on/off করুন — সাথে সাথে সব user এর জন্য apply হবে।</p>
+          {featuresLoading ? (
+            <div className="text-center py-8 text-gray-400">Loading...</div>
+          ) : (
+            <div className="space-y-3">
+              {features.map(feature => (
+                <div key={feature.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-blue-200 hover:bg-blue-50 transition">
+                  <div className="flex-1 mr-4">
+                    <p className="font-medium text-gray-800 text-sm">{feature.label || feature.key}</p>
+                    {feature.description && (
+                      <p className="text-xs text-gray-500 mt-0.5">{feature.description}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleToggleFeature(feature.key, feature.value)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${feature.value === 'true' ? 'bg-blue-600' : 'bg-gray-300'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${feature.value === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Menu Manager Tab */}
+      {activeTab === 'menu_manager' && (
+      <>
       {loading ? (
         <div className="text-center py-8 text-gray-500">Loading...</div>
       ) : (
@@ -889,6 +965,8 @@ export default function Settings() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   )

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../services/supabase'
 import { getMenuItemsWithChildren } from '../services/menuService'
 import { getMenuForms } from '../services/formService'
+import { getAppSettings } from '../services/appSettingsService'
 
 const AuthContext = createContext({})
 
@@ -11,6 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [menuForms, setMenuForms] = useState([])
   const [menuItems, setMenuItems] = useState([])
   const [allMenuItems, setAllMenuItems] = useState([])
+  const [appSettings, setAppSettings] = useState({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -57,13 +59,15 @@ export const AuthProvider = ({ children }) => {
 
   const fetchAllMenuData = async (currentProfile = null) => {
     try {
-      const [itemsWithChildren, forms] = await Promise.all([
+      const [itemsWithChildren, forms, settings] = await Promise.all([
         getMenuItemsWithChildren(),
-        getMenuForms()
+        getMenuForms(),
+        getAppSettings(),
       ])
 
       setMenuForms(forms)
       setMenuItems(itemsWithChildren)
+      setAppSettings(settings)
 
       // currentProfile parameter অথবা state থেকে নাও
       const activeProfile = currentProfile || profile
@@ -106,7 +110,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{
-      user, profile, menuForms, menuItems, allMenuItems, loading,
+      user, profile, menuForms, menuItems, allMenuItems, appSettings, loading,
       signOut, fetchProfile, fetchMenuForms, fetchMenuItems, fetchAllMenuData
     }}>
       {children}

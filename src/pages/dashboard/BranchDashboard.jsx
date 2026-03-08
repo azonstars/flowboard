@@ -19,7 +19,7 @@ const STATUS_LABELS = {
 }
 
 export default function BranchDashboard() {
-  const { profile } = useAuth()
+  const { profile, appSettings } = useAuth()
   const navigate = useNavigate()
   const [stats, setStats] = useState({
     todaySubmissions: 0,
@@ -210,12 +210,11 @@ export default function BranchDashboard() {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="font-bold text-gray-800">সাম্প্রতিক Submissions</h2>
-          <button
-            onClick={() => navigate('/forms')}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            সব Forms →
-          </button>
+          {appSettings?.feature_branch_all_forms_btn !== false && (
+            <button onClick={() => navigate('/forms')} className="text-sm text-blue-600 hover:underline">
+              সব Forms →
+            </button>
+          )}
         </div>
         <div className="divide-y divide-gray-200">
           {recentSubmissions.length === 0 ? (
