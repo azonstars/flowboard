@@ -8,6 +8,7 @@ import {
   uploadChatFile, toggleReaction, markAsRead, getAllUsers,
   subscribeToMessages, subscribeToConversations,
 } from '../../services/chatService'
+import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import toast from 'react-hot-toast'
 
 const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
@@ -62,6 +63,9 @@ export default function ChatPage() {
   const [showNewGroup, setShowNewGroup] = useState(false)
   const [showNewBroadcast, setShowNewBroadcast] = useState(false)
   const [allUsers, setAllUsers] = useState([])
+  const [divisions, setDivisions] = useState([])
+  const [regions, setRegions] = useState([])
+  const [branches, setBranches] = useState([])
   const [selectedUsers, setSelectedUsers] = useState([])
   const [groupName, setGroupName] = useState('')
   const [broadcastName, setBroadcastName] = useState('')
@@ -77,8 +81,6 @@ export default function ChatPage() {
   const audioChunksRef = useRef([])
 
   const isAdmin = profile?.role === 'admin'
-
-  // ── Load conversations ──
   const loadConversations = useCallback(async () => {
     if (!profile?.id) return
     try {
@@ -311,21 +313,29 @@ export default function ChatPage() {
     } catch (err) { toast.error(err.message) }
   }
 
-  // ── Load users for new chat ──
+  const loadHierarchyData = async () => {
+    try {
+      const [users, divs, regs, brs] = await Promise.all([
+        getAllUsers(profile.id),
+        getDivisions(),
+        getRegions(),
+        getBranches(),
+      ])
+      setAllUsers(users)
+      setDivisions(divs)
+      setRegions(regs)
+      setBranches(brs)
+    } catch (err) { toast.error(err.message) }
+  }
+
   const openNewChat = async () => {
     setShowNewChat(true)
-    try {
-      const users = await getAllUsers(profile.id)
-      setAllUsers(users)
-    } catch (err) { toast.error(err.message) }
+    await loadHierarchyData()
   }
 
   const openNewGroup = async () => {
     setShowNewGroup(true)
-    try {
-      const users = await getAllUsers(profile.id)
-      setAllUsers(users)
-    } catch (err) { toast.error(err.message) }
+    await loadHierarchyData()
   }
 
   // ── Grouped reactions ──
@@ -337,11 +347,6 @@ export default function ChatPage() {
     })
     return grouped
   }
-
-  const filteredUsers = allUsers.filter(u =>
-    u.full_name?.toLowerCase().includes(searchUser.toLowerCase()) ||
-    ROLE_LABELS[u.role]?.toLowerCase().includes(searchUser.toLowerCase())
-  )
 
   // ── Render message bubble ──
   const MessageBubble = ({ msg }) => {
@@ -426,6 +431,118 @@ export default function ChatPage() {
       </div>
     )
   }
+
+  // ── Hierarchy User List ──
+  const HierarchyUserList = ({ onSelectUser, selectedIds = [], multiSelect = false }) => {
+    const searchLower = searchUser.toLowerCase()
+
+    if (searchLower) {
+      const filtered = allUsers.filter(u =>
+        u.full_name?.toLowerCase().includes(searchLower) ||
+        u.email?.toLowerCase().includes(searchLower) ||
+        ROLE_LABELS[u.role]?.toLowerCase().includes(searchLower)
+      )
+      return (
+        <div className="space-y-1">
+          {filtered.map(user => (
+            <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} />
+          ))}
+          {filtered.length === 0 && <p className="text-center text-gray-400 text-sm py-4">কোনো user পাওয়া যায়নি</p>}
+        </div>
+      )
+    }
+
+    const topUsers = allUsers.filter(u => u.role === 'admin' || u.role === 'central_checker')
+
+    return (
+      <div className="space-y-2">
+        {topUsers.length > 0 && (
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide px-2 py-1">Admin / Central</p>
+            {topUsers.map(user => (
+              <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} />
+            ))}
+          </div>
+        )}
+
+        {divisions.map(div => {
+          const divRegions = regions.filter(r => r.division_id === div.id)
+          const divCheckers = allUsers.filter(u => u.role === 'divisional_checker' && u.division_id === div.id)
+          if (divCheckers.length === 0 && divRegions.length === 0) return null
+
+          return (
+            <div key={div.id} className="border border-gray-100 rounded-xl overflow-hidden">
+              <div className="bg-blue-50 px-3 py-2 flex items-center gap-2">
+                <span className="text-blue-600">🏛️</span>
+                <span className="text-sm font-bold text-blue-700">{div.name}</span>
+              </div>
+              <div className="px-2 py-1">
+                {divCheckers.map(user => (
+                  <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} indent={1} />
+                ))}
+                {divRegions.map(reg => {
+                  const regBranches = branches.filter(b => b.region_id === reg.id)
+                  const regCheckers = allUsers.filter(u => u.role === 'regional_checker' && u.region_id === reg.id)
+                  if (regCheckers.length === 0 && regBranches.length === 0) return null
+
+                  return (
+                    <div key={reg.id} className="mt-1">
+                      <div className="flex items-center gap-2 px-2 py-1.5 bg-green-50 rounded-lg mb-1">
+                        <span className="text-green-600 text-xs">📍</span>
+                        <span className="text-xs font-bold text-green-700">{reg.name}</span>
+                      </div>
+                      {regCheckers.map(user => (
+                        <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} indent={2} />
+                      ))}
+                      {regBranches.map(branch => {
+                        const branchUsers = allUsers.filter(u =>
+                          u.branch_code === branch.branch_code &&
+                          (u.role === 'branch_manager' || u.role === 'branch_employee')
+                        )
+                        if (branchUsers.length === 0) return null
+                        return (
+                          <div key={branch.branch_code} className="ml-3 mb-1">
+                            <div className="flex items-center gap-1 px-2 py-1">
+                              <span className="text-gray-400 text-xs">🏢</span>
+                              <span className="text-xs font-semibold text-gray-500">{branch.name} ({branch.branch_code})</span>
+                            </div>
+                            {branchUsers.map(user => (
+                              <UserRow key={user.id} user={user} onSelect={onSelectUser} selected={selectedIds.includes(user.id)} multiSelect={multiSelect} indent={3} />
+                            ))}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const UserRow = ({ user, onSelect, selected, multiSelect, indent = 0 }) => (
+    <button
+      onClick={() => !selected && onSelect(user)}
+      disabled={multiSelect && selected}
+      className={`w-full flex items-center gap-3 py-2.5 rounded-xl transition text-left ${
+        selected ? 'bg-blue-50 opacity-60 cursor-default' : 'hover:bg-gray-50'
+      }`}
+      style={{ paddingLeft: `${(indent * 10) + 12}px`, paddingRight: '12px' }}
+    >
+      <Avatar name={user.full_name} size="sm" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="font-medium text-sm text-gray-800 truncate">{user.full_name}</p>
+          <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${ROLE_COLORS[user.role]}`}>{ROLE_LABELS[user.role]}</span>
+        </div>
+        <p className="text-xs text-gray-400 truncate">{user.email}</p>
+      </div>
+      {multiSelect && selected && <span className="text-blue-500 shrink-0">✓</span>}
+    </button>
+  )
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-gray-100 rounded-xl overflow-hidden shadow-sm">
@@ -587,49 +704,43 @@ export default function ChatPage() {
         )}
       </div>
 
-      {/* ── New P2P Modal ── */}
       {showNewChat && !showNewBroadcast && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
-            <div className="flex items-center justify-between p-5 border-b">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between p-5 border-b shrink-0">
               <h3 className="font-bold text-gray-800">নতুন Chat শুরু করুন</h3>
-              <button onClick={() => setShowNewChat(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+              <button onClick={() => { setShowNewChat(false); setSearchUser('') }} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
-            <div className="p-4">
+            <div className="p-4 shrink-0">
               <input
-                type="text" placeholder="নাম বা role দিয়ে খুঁজুন..."
+                type="text" placeholder="নাম, email বা role দিয়ে খুঁজুন..."
                 value={searchUser} onChange={e => setSearchUser(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
               />
-              <div className="space-y-1 max-h-80 overflow-y-auto">
-                {filteredUsers.map(user => (
-                  <button key={user.id} onClick={() => handleStartP2P(user)}
-                    className="w-full flex items-center gap-3 p-3 hover:bg-blue-50 rounded-xl transition text-left">
-                    <Avatar name={user.full_name} size="sm" />
-                    <div>
-                      <p className="font-medium text-sm text-gray-800">{user.full_name}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${ROLE_COLORS[user.role]}`}>{ROLE_LABELS[user.role]}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+            </div>
+            <div className="overflow-y-auto flex-1 px-4 pb-4">
+              {allUsers.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">Loading...</div>
+              ) : (
+                <HierarchyUserList onSelectUser={handleStartP2P} />
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* ── New Group Modal ── */}
       {showNewGroup && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
-            <div className="flex items-center justify-between p-5 border-b">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between p-5 border-b shrink-0">
               <h3 className="font-bold text-gray-800">নতুন Group তৈরি করুন</h3>
-              <button onClick={() => { setShowNewGroup(false); setSelectedUsers([]); setGroupName('') }} className="text-gray-400 hover:text-gray-600">✕</button>
+              <button onClick={() => { setShowNewGroup(false); setSelectedUsers([]); setGroupName(''); setSearchUser('') }} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 shrink-0">
               <input type="text" placeholder="Group নাম..." value={groupName} onChange={e => setGroupName(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <input type="text" placeholder="Member খুঁজুন..." value={searchUser} onChange={e => setSearchUser(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" autoFocus />
+              <input type="text" placeholder="নাম, email বা role দিয়ে Member খুঁজুন..." value={searchUser} onChange={e => setSearchUser(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               {selectedUsers.length > 0 && (
                 <div className="flex flex-wrap gap-1">
@@ -644,18 +755,19 @@ export default function ChatPage() {
                   })}
                 </div>
               )}
-              <div className="space-y-1 max-h-52 overflow-y-auto">
-                {filteredUsers.filter(u => !selectedUsers.includes(u.id)).map(user => (
-                  <button key={user.id} onClick={() => setSelectedUsers(prev => [...prev, user.id])}
-                    className="w-full flex items-center gap-3 p-2.5 hover:bg-blue-50 rounded-xl transition text-left">
-                    <Avatar name={user.full_name} size="sm" />
-                    <div>
-                      <p className="font-medium text-sm text-gray-800">{user.full_name}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${ROLE_COLORS[user.role]}`}>{ROLE_LABELS[user.role]}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+            </div>
+            <div className="overflow-y-auto flex-1 px-4">
+              {allUsers.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">Loading...</div>
+              ) : (
+                <HierarchyUserList
+                  onSelectUser={(user) => setSelectedUsers(prev => [...prev, user.id])}
+                  selectedIds={selectedUsers}
+                  multiSelect
+                />
+              )}
+            </div>
+            <div className="p-4 border-t shrink-0">
               <button onClick={handleCreateGroup} className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
                 Group তৈরি করুন ({selectedUsers.length} জন selected)
               </button>

@@ -228,7 +228,7 @@ export const getUnreadCount = async (conversationId, userId, lastReadAt) => {
 export const getAllUsers = async (excludeId) => {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name, role, branch_code')
+    .select('id, full_name, role, email, branch_code, division_id, region_id')
     .eq('is_active', true)
     .eq('is_deleted', false)
     .neq('id', excludeId)
