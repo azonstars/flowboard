@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { getSubmissionsForApproval, approveSubmission, rejectSubmission } from '../../services/formService'
 import { getBranches } from '../../services/branchService'
+import { notifyBranchOnCheckerAction } from '../../services/notificationService'
 import { ROLES } from '../../constants/roles'
 import toast from 'react-hot-toast'
 
@@ -94,6 +95,7 @@ export default function SubmissionsPage() {
     setProcessing(true)
     try {
       await approveSubmission(sub.id, profile.id)
+      if (sub.submitted_by) await notifyBranchOnCheckerAction(sub.submitted_by, 'approved', sub.forms?.title || 'Submission').catch(() => {})
       toast.success(`✅ Approved! Branch ${sub.branch_code} কে জানানো হয়েছে।`)
       loadSubmissions()
     } catch (error) {
@@ -114,6 +116,7 @@ export default function SubmissionsPage() {
     setProcessing(true)
     try {
       await rejectSubmission(rejectTarget.id, profile.id, rejectReason)
+      if (rejectTarget.submitted_by) await notifyBranchOnCheckerAction(rejectTarget.submitted_by, 'rejected', rejectTarget.forms?.title || 'Submission').catch(() => {})
       toast.success(`❌ Rejected! Branch ${rejectTarget.branch_code} কে জানানো হয়েছে।`)
       setShowRejectModal(false)
       setRejectTarget(null)
