@@ -39,12 +39,18 @@ export default function BranchDashboard() {
   useEffect(() => {
     loadStats(); loadEditRequests()
 
-    // Realtime: edit_requests পরিবর্তন হলে auto-reload
-    const channel = supabase.channel('branch-edit-requests')
+    const channel = supabase.channel(`branch-dashboard-${profile?.branch_code}`)
+      // edit_request approve/reject হলে → reload + toast
       .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'edit_requests',
+        event: 'UPDATE', schema: 'public', table: 'edit_requests',
         filter: `branch_code=eq.${profile?.branch_code}`
-      }, () => { loadEditRequests(); loadStats() })
+      }, (payload) => {
+        loadEditRequests(); loadStats()
+        const s = payload.new?.status
+        if (s === 'approved') toast.success('✅ Edit Permission পেয়েছেন! এখন edit করুন।', { duration: 6000 })
+        else if (s === 'rejected') toast.error('❌ Edit Request বাতিল হয়েছে।', { duration: 5000 })
+      })
+      // form_submission status বদলালে → reload
       .on('postgres_changes', {
         event: 'UPDATE', schema: 'public', table: 'form_submissions',
         filter: `branch_code=eq.${profile?.branch_code}`

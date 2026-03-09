@@ -35,10 +35,21 @@ export default function RegionalCheckerDashboard() {
   useEffect(() => {
     loadStats(); loadEditRequests()
 
-    // Realtime: নতুন edit_request এলে auto-reload
-    const channel = supabase.channel('regional-edit-requests')
+    const channel = supabase.channel(`regional-checker-${profile?.id}`)
+      // নতুন edit_request INSERT → toast + reload
       .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'edit_requests'
+        event: 'INSERT', schema: 'public', table: 'edit_requests',
+        filter: `required_checker=eq.regional_checker`
+      }, (payload) => {
+        loadEditRequests()
+        toast(`📝 নতুন Edit Request এসেছে — Branch: ${payload.new?.branch_code}`, {
+          duration: 6000, icon: '🔔'
+        })
+      })
+      // UPDATE (approve/reject) হলে → reload
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'edit_requests',
+        filter: `required_checker=eq.regional_checker`
       }, () => { loadEditRequests() })
       .subscribe()
 

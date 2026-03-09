@@ -33,7 +33,25 @@ export default function DivisionalCheckerDashboard() {
   const [rejectTarget, setRejectTarget] = useState(null)
   const [rejectReason, setRejectReason] = useState('')
 
-  useEffect(() => { loadStats(); loadEditRequests() }, [])
+  useEffect(() => {
+    loadStats(); loadEditRequests()
+
+    const channel = supabase.channel(`divisional-checker-${profile?.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'edit_requests',
+        filter: `required_checker=eq.divisional_checker`
+      }, (payload) => {
+        loadEditRequests()
+        toast(`📝 নতুন Edit Request — Branch: ${payload.new?.branch_code}`, { duration: 6000, icon: '🔔' })
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'edit_requests',
+        filter: `required_checker=eq.divisional_checker`
+      }, () => { loadEditRequests() })
+      .subscribe()
+
+    return () => channel.unsubscribe()
+  }, [profile?.id])
 
   const loadStats = async () => {
     try {
