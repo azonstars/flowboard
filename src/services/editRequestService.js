@@ -138,9 +138,15 @@ export const rejectEditRequest = async (requestId, reviewerId, reason) => {
 
 // Branch এর কোনো submission এ active edit permission আছে কিনা
 export const checkEditPermission = async (submissionId, branchCode) => {
-  const { data } = await supabase.from('edit_requests')
+  // edit_requests এ approved আছে কিনা চেক করো
+  const { data: reqData } = await supabase.from('edit_requests')
     .select('id, status').eq('submission_id', submissionId)
     .eq('branch_code', branchCode).eq('status', 'approved')
     .order('created_at', { ascending: false }).limit(1)
-  return data?.length > 0
+  if (reqData?.length > 0) return true
+
+  // অথবা form_submissions এ edit_allowed status আছে কিনা
+  const { data: subData } = await supabase.from('form_submissions')
+    .select('id, status').eq('id', submissionId).eq('status', 'edit_allowed').limit(1)
+  return subData?.length > 0
 }

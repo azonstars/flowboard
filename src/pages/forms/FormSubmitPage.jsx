@@ -54,8 +54,7 @@ export default function FormSubmitPage() {
         ])
         setForm(f)
         setExisting(todaySub)
-        // Draft আর দেখাবে না — শুধু আজকের approved submission থাকলে show করব
-        if (todaySub && todaySub.status !== 'draft') setFormData(todaySub.data || {})
+        // Normal mode এ সবসময় blank — data load করব না
       }
     } catch (error) {
       toast.error(error.message)
