@@ -35,36 +35,33 @@ export default function RegionalCheckerDashboard() {
   const prevRequestCountRef = useRef(null)
 
   useEffect(() => {
-    if (!profile?.id) return  // profile load না হওয়া পর্যন্ত অপেক্ষা করো
+    if (!profile?.id) return
     loadStats(); loadEditRequests()
+  }, [profile?.id])
 
-    // Polling: প্রতি ৫ সেকেন্ডে নতুন request আছে কিনা check
+  // Polling — stable, একবারই mount
+  useEffect(() => {
     const interval = setInterval(async () => {
-      const { count } = await supabase.from('edit_requests')
+      const { count } = await supabase
+        .from('edit_requests')
         .select('id', { count: 'exact', head: true })
         .eq('required_checker', 'regional_checker')
         .eq('status', 'pending')
 
       if (prevRequestCountRef.current === null) {
+        prevRequestCountRef.current = count ?? 0
+      } else if ((count ?? 0) > prevRequestCountRef.current) {
         prevRequestCountRef.current = count
-      } else if (count > prevRequestCountRef.current) {
-        prevRequestCountRef.current = count
-        toast(`📝 নতুন Edit Request এসেছে!`, { duration: 6000, icon: '🔔', id: 'new-edit-req' })
+        toast('📝 নতুন Edit Request এসেছে!', { duration: 6000, icon: '🔔', id: 'new-req-reg' })
         loadEditRequests()
       } else if (count !== prevRequestCountRef.current) {
-        prevRequestCountRef.current = count
+        prevRequestCountRef.current = count ?? 0
         loadEditRequests()
       }
     }, 5000)
 
-    // Supabase realtime — চালু থাকলে extra
-    const channel = supabase.channel(`regional-checker-${profile?.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'edit_requests' },
-        () => { loadEditRequests() })
-      .subscribe()
-
-    return () => { clearInterval(interval); channel.unsubscribe() }
-  }, [profile?.id])
+    return () => clearInterval(interval)
+  }, [])
 
   const loadStats = async () => {
     try {

@@ -38,32 +38,30 @@ export default function DivisionalCheckerDashboard() {
   useEffect(() => {
     if (!profile?.id) return
     loadStats(); loadEditRequests()
+  }, [profile?.id])
 
+  useEffect(() => {
     const interval = setInterval(async () => {
-      const { count } = await supabase.from('edit_requests')
+      const { count } = await supabase
+        .from('edit_requests')
         .select('id', { count: 'exact', head: true })
         .eq('required_checker', 'divisional_checker')
         .eq('status', 'pending')
 
       if (prevRequestCountRef.current === null) {
+        prevRequestCountRef.current = count ?? 0
+      } else if ((count ?? 0) > prevRequestCountRef.current) {
         prevRequestCountRef.current = count
-      } else if (count > prevRequestCountRef.current) {
-        prevRequestCountRef.current = count
-        toast(`📝 নতুন Edit Request এসেছে!`, { duration: 6000, icon: '🔔', id: 'new-edit-req-div' })
+        toast('📝 নতুন Edit Request এসেছে!', { duration: 6000, icon: '🔔', id: 'new-req-div' })
         loadEditRequests()
       } else if (count !== prevRequestCountRef.current) {
-        prevRequestCountRef.current = count
+        prevRequestCountRef.current = count ?? 0
         loadEditRequests()
       }
     }, 5000)
 
-    const channel = supabase.channel(`divisional-checker-${profile?.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'edit_requests' },
-        () => { loadEditRequests() })
-      .subscribe()
-
-    return () => { clearInterval(interval); channel.unsubscribe() }
-  }, [profile?.id])
+    return () => clearInterval(interval)
+  }, [])
 
   const loadStats = async () => {
     try {

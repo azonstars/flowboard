@@ -36,52 +36,55 @@ export default function BranchDashboard() {
   const [submitting, setSubmitting] = useState(false)
   const prevStatusMap = useRef({})
 
-  // edit_requests এর আগের status track করার জন্য
   const prevEditRequestsRef = useRef({})
+  const branchCodeRef = useRef(null)
 
+  // profile load হলে branchCodeRef আপডেট করো
+  useEffect(() => {
+    if (profile?.branch_code) branchCodeRef.current = profile.branch_code
+  }, [profile?.branch_code])
+
+  // Initial load
   useEffect(() => {
     if (!profile?.branch_code) return
     loadStats(); loadEditRequests()
+  }, [profile?.branch_code])
 
-    // Polling: প্রতি ৫ সেকেন্ডে check করো
+  // Polling — আলাদা, stable useEffect (একবারই mount হয়)
+  useEffect(() => {
     const interval = setInterval(async () => {
-      // edit_requests check — status পরিবর্তন হলে toast
-      const { data } = await supabase.from('edit_requests')
-        .select('id, status, submission_id')
-        .eq('branch_code', profile?.branch_code)
-        .in('status', ['approved', 'rejected'])
+      const bc = branchCodeRef.current
+      if (!bc) return
 
-      if (data) {
-        data.forEach(req => {
-          const prev = prevEditRequestsRef.current[req.id]
-          if (prev === undefined) {
-            // প্রথমবার — শুধু track করো, toast না
-            prevEditRequestsRef.current[req.id] = req.status
-          } else if (prev !== req.status) {
-            // status বদলেছে!
-            prevEditRequestsRef.current[req.id] = req.status
-            if (req.status === 'approved') {
-              toast.success('✅ Edit Permission পেয়েছেন! এখন edit করুন।', { duration: 6000, id: `edit-approved-${req.id}` })
-            } else if (req.status === 'rejected') {
-              toast.error('❌ Edit Request বাতিল হয়েছে।', { duration: 5000, id: `edit-rejected-${req.id}` })
-            }
-            loadEditRequests()
-            loadStats()
+      const { data } = await supabase
+        .from('edit_requests')
+        .select('id, status')
+        .eq('branch_code', bc)
+
+      if (!data) return
+      let changed = false
+      data.forEach(req => {
+        const prev = prevEditRequestsRef.current[req.id]
+        if (prev === undefined) {
+          prevEditRequestsRef.current[req.id] = req.status
+        } else if (prev !== req.status) {
+          prevEditRequestsRef.current[req.id] = req.status
+          changed = true
+          if (req.status === 'approved') {
+            toast.success('✅ Edit Permission পেয়েছেন! এখন edit করুন।', { duration: 6000, id: `ea-${req.id}` })
+          } else if (req.status === 'rejected') {
+            toast.error('❌ Edit Request বাতিল হয়েছে।', { duration: 5000, id: `er-${req.id}` })
           }
-        })
+        }
+      })
+      if (changed) {
+        loadEditRequests()
+        loadStats()
       }
     }, 5000)
 
-    // Supabase realtime — চালু থাকলে extra benefit
-    const channel = supabase.channel(`branch-dashboard-${profile?.branch_code}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'edit_requests', filter: `branch_code=eq.${profile?.branch_code}` },
-        () => { loadEditRequests(); loadStats() })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'form_submissions', filter: `branch_code=eq.${profile?.branch_code}` },
-        () => { loadStats() })
-      .subscribe()
-
-    return () => { clearInterval(interval); channel.unsubscribe() }
-  }, [profile])
+    return () => clearInterval(interval)
+  }, []) // ← empty: একবারই mount, interval কখনো clear হয় না
 
   const loadStats = async () => {
     try {
