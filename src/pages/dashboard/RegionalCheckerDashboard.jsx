@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
 import { useNavigate } from 'react-router-dom'
@@ -33,27 +33,37 @@ export default function RegionalCheckerDashboard() {
   const [escalateReason, setEscalateReason] = useState('')
 
   useEffect(() => {
+  const prevRequestCountRef = useRef(null)
+
+  useEffect(() => {
     loadStats(); loadEditRequests()
 
-    const channel = supabase.channel(`regional-checker-${profile?.id}`)
-      // নতুন edit_request INSERT → toast + reload
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'edit_requests',
-        filter: `required_checker=eq.regional_checker`
-      }, (payload) => {
+    // Polling: প্রতি ৫ সেকেন্ডে নতুন request আছে কিনা check
+    const interval = setInterval(async () => {
+      const { count } = await supabase.from('edit_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('required_checker', 'regional_checker')
+        .eq('status', 'pending')
+
+      if (prevRequestCountRef.current === null) {
+        prevRequestCountRef.current = count
+      } else if (count > prevRequestCountRef.current) {
+        prevRequestCountRef.current = count
+        toast(`📝 নতুন Edit Request এসেছে!`, { duration: 6000, icon: '🔔', id: 'new-edit-req' })
         loadEditRequests()
-        toast(`📝 নতুন Edit Request এসেছে — Branch: ${payload.new?.branch_code}`, {
-          duration: 6000, icon: '🔔'
-        })
-      })
-      // UPDATE (approve/reject) হলে → reload
-      .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'edit_requests',
-        filter: `required_checker=eq.regional_checker`
-      }, () => { loadEditRequests() })
+      } else if (count !== prevRequestCountRef.current) {
+        prevRequestCountRef.current = count
+        loadEditRequests()
+      }
+    }, 5000)
+
+    // Supabase realtime — চালু থাকলে extra
+    const channel = supabase.channel(`regional-checker-${profile?.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'edit_requests' },
+        () => { loadEditRequests() })
       .subscribe()
 
-    return () => channel.unsubscribe()
+    return () => { clearInterval(interval); channel.unsubscribe() }
   }, [profile?.id])
 
   const loadStats = async () => {

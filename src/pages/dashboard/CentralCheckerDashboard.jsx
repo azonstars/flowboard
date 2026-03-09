@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
 import { useNavigate } from 'react-router-dom'
@@ -33,22 +33,34 @@ export default function CentralCheckerDashboard() {
   const [rejectTarget, setRejectTarget] = useState(null)
   const [rejectReason, setRejectReason] = useState('')
 
+  const prevRequestCountRef = useRef(null)
+
   useEffect(() => {
     loadStats(); loadEditRequests()
 
-    const channel = supabase.channel(`central-checker-${profile?.id}`)
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'edit_requests'
-      }, (payload) => {
+    const interval = setInterval(async () => {
+      const { count } = await supabase.from('edit_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending')
+
+      if (prevRequestCountRef.current === null) {
+        prevRequestCountRef.current = count
+      } else if (count > prevRequestCountRef.current) {
+        prevRequestCountRef.current = count
+        toast(`📝 নতুন Edit Request এসেছে!`, { duration: 6000, icon: '🔔', id: 'new-edit-req-cen' })
         loadEditRequests()
-        toast(`📝 নতুন Edit Request — Branch: ${payload.new?.branch_code}`, { duration: 6000, icon: '🔔' })
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'edit_requests'
-      }, () => { loadEditRequests() })
+      } else if (count !== prevRequestCountRef.current) {
+        prevRequestCountRef.current = count
+        loadEditRequests()
+      }
+    }, 5000)
+
+    const channel = supabase.channel(`central-checker-${profile?.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'edit_requests' },
+        () => { loadEditRequests() })
       .subscribe()
 
-    return () => channel.unsubscribe()
+    return () => { clearInterval(interval); channel.unsubscribe() }
   }, [profile?.id])
 
   const loadStats = async () => {

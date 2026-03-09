@@ -36,29 +36,50 @@ export default function BranchDashboard() {
   const [submitting, setSubmitting] = useState(false)
   const prevStatusMap = useRef({})
 
+  // edit_requests এর আগের status track করার জন্য
+  const prevEditRequestsRef = useRef({})
+
   useEffect(() => {
     loadStats(); loadEditRequests()
 
+    // Polling: প্রতি ৫ সেকেন্ডে check করো
+    const interval = setInterval(async () => {
+      // edit_requests check — status পরিবর্তন হলে toast
+      const { data } = await supabase.from('edit_requests')
+        .select('id, status, submission_id')
+        .eq('branch_code', profile?.branch_code)
+        .in('status', ['approved', 'rejected'])
+
+      if (data) {
+        data.forEach(req => {
+          const prev = prevEditRequestsRef.current[req.id]
+          if (prev === undefined) {
+            // প্রথমবার — শুধু track করো, toast না
+            prevEditRequestsRef.current[req.id] = req.status
+          } else if (prev !== req.status) {
+            // status বদলেছে!
+            prevEditRequestsRef.current[req.id] = req.status
+            if (req.status === 'approved') {
+              toast.success('✅ Edit Permission পেয়েছেন! এখন edit করুন।', { duration: 6000, id: `edit-approved-${req.id}` })
+            } else if (req.status === 'rejected') {
+              toast.error('❌ Edit Request বাতিল হয়েছে।', { duration: 5000, id: `edit-rejected-${req.id}` })
+            }
+            loadEditRequests()
+            loadStats()
+          }
+        })
+      }
+    }, 5000)
+
+    // Supabase realtime — চালু থাকলে extra benefit
     const channel = supabase.channel(`branch-dashboard-${profile?.branch_code}`)
-      // edit_request approve/reject হলে → reload + toast
-      .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'edit_requests',
-        filter: `branch_code=eq.${profile?.branch_code}`
-      }, (payload) => {
-        loadEditRequests(); loadStats()
-        const s = payload.new?.status
-        if (s === 'approved') toast.success('✅ Edit Permission পেয়েছেন! এখন edit করুন।', { duration: 6000 })
-        else if (s === 'rejected') toast.error('❌ Edit Request বাতিল হয়েছে।', { duration: 5000 })
-      })
-      // form_submission status বদলালে → reload
-      .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'form_submissions',
-        filter: `branch_code=eq.${profile?.branch_code}`
-      }, () => { loadStats() })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'edit_requests', filter: `branch_code=eq.${profile?.branch_code}` },
+        () => { loadEditRequests(); loadStats() })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'form_submissions', filter: `branch_code=eq.${profile?.branch_code}` },
+        () => { loadStats() })
       .subscribe()
 
-    const interval = setInterval(() => { loadStats() }, 30000)
-    return () => { channel.unsubscribe(); clearInterval(interval) }
+    return () => { clearInterval(interval); channel.unsubscribe() }
   }, [profile])
 
   const loadStats = async () => {
