@@ -18,7 +18,7 @@ const STATUS_LABELS = {
   submitted: '⏳ Pending',
   approved: '✅ Approved',
   rejected: '❌ Rejected',
-  edit_allowed: '✏️ Edit করুন',
+  edit_allowed: '✏️ Edit Allowed',
 }
 
 export default function BranchDashboard() {
@@ -240,9 +240,9 @@ export default function BranchDashboard() {
                   </div>
                   <div className="flex items-center gap-2">
                     {isEditAllowed && (
-                      <button onClick={() => navigate(`/forms/submit/${sub.form_id}`)}
-                        className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-                        ✏️ Edit করুন
+                      <button onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
+                        className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-1">
+                        ✏️ পুরনো Data Edit
                       </button>
                     )}
                     {!isEditAllowed && canRequest && !hasRequest && (

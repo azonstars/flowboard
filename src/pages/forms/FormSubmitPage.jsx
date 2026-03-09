@@ -1,33 +1,92 @@
-import { useState, useEffect } from 'react'
-import { getFormById, submitForm, getTodaySubmission } from '../../services/formService'
+import { useState, useEffect, useCallback } from 'react'
+import { getFormById, submitForm, getTodaySubmission, getSubmissionById } from '../../services/formService'
+import { checkEditPermission } from '../../services/editRequestService'
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
 
 export default function FormSubmitPage() {
   const { profile } = useAuth()
   const navigate = useNavigate()
   const { formId } = useParams()
+  const [searchParams] = useSearchParams()
+  const submissionId = searchParams.get('submissionId') // edit mode
+  const editDate = searchParams.get('date') // পুরনো তারিখ
+
   const [form, setForm] = useState(null)
   const [formData, setFormData] = useState({})
   const [loading, setLoading] = useState(false)
   const [existing, setExisting] = useState(null)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editSubmission, setEditSubmission] = useState(null)
+  const [dateRange, setDateRange] = useState({ from: '', to: '' })
+  const [rangeSummary, setRangeSummary] = useState(null)
+  const [loadingRange, setLoadingRange] = useState(false)
 
-  useEffect(() => { loadForm() }, [formId])
+  useEffect(() => { loadForm() }, [formId, submissionId])
 
   const loadForm = async () => {
     try {
-      const [f, existing] = await Promise.all([
-        getFormById(formId),
-        getTodaySubmission(formId, profile?.branch_code)
-      ])
-      setForm(f)
-      setExisting(existing)
-      if (existing) setFormData(existing.data || {})
+      if (submissionId) {
+        // Edit mode — পুরনো submission load করো
+        const [sub, hasPermission] = await Promise.all([
+          getSubmissionById(submissionId),
+          checkEditPermission(submissionId, profile?.branch_code)
+        ])
+
+        if (!hasPermission) {
+          toast.error('এই submission edit করার permission নেই!')
+          navigate('/dashboard')
+          return
+        }
+
+        setForm(sub.forms)
+        setEditSubmission(sub)
+        setExisting(sub)
+        setFormData(sub.data || {})
+        setIsEditMode(true)
+      } else {
+        // Normal mode — আজকের submission
+        const [f, todaySub] = await Promise.all([
+          getFormById(formId),
+          getTodaySubmission(formId, profile?.branch_code)
+        ])
+        setForm(f)
+        setExisting(todaySub)
+        // Draft আর দেখাবে না — শুধু আজকের approved submission থাকলে show করব
+        if (todaySub && todaySub.status !== 'draft') setFormData(todaySub.data || {})
+      }
     } catch (error) {
       toast.error(error.message)
     }
   }
+
+  const loadRangeSummary = useCallback(async () => {
+    if (!dateRange.from || !dateRange.to || !formId) return
+    setLoadingRange(true)
+    try {
+      const { data } = await supabase.from('form_submissions')
+        .select('data').eq('form_id', formId)
+        .eq('branch_code', profile?.branch_code)
+        .gte('submission_date', dateRange.from)
+        .lte('submission_date', dateRange.to)
+        .eq('status', 'approved')
+      
+      if (!data || data.length === 0) { setRangeSummary({}); setLoadingRange(false); return }
+      
+      // সব submission এর data যোগ করো
+      const totals = {}
+      data.forEach(sub => {
+        Object.entries(sub.data || {}).forEach(([key, val]) => {
+          const num = parseFloat(val) || 0
+          totals[key] = (totals[key] || 0) + num
+        })
+      })
+      setRangeSummary(totals)
+    } catch (err) { console.error(err) }
+    finally { setLoadingRange(false) }
+  }, [dateRange.from, dateRange.to, formId, profile?.branch_code])
 
   const handleChange = (fieldId, subFieldId, type, value) => {
     const key = subFieldId ? `${fieldId}_${subFieldId}_${type}` : `${fieldId}_${type}`
@@ -37,17 +96,40 @@ export default function FormSubmitPage() {
   const handleSubmit = async (status) => {
     setLoading(true)
     try {
-      const today = new Date().toISOString().split('T')[0]
-      await submitForm({
-        form_id: formId,
-        branch_code: profile?.branch_code,
-        submitted_by: profile?.id,
-        submission_date: today,
-        data: formData,
-        status: status,
-      })
-      toast.success(status === 'submitted' ? 'Form submitted!' : 'Draft saved!')
-      navigate('/forms')
+      if (isEditMode && editSubmission) {
+        // পুরনো submission update করো
+        const { error } = await supabase.from('form_submissions')
+          .update({
+            data: formData,
+            status: 'approved',
+            approved_at: new Date().toISOString(),
+            submitted_by: profile?.id,
+          })
+          .eq('id', editSubmission.id)
+        if (error) throw error
+
+        // Edit request টা used হিসেবে mark করো
+        await supabase.from('edit_requests')
+          .update({ status: 'used' })
+          .eq('submission_id', editSubmission.id)
+          .eq('status', 'approved')
+
+        toast.success('✅ Data আপডেট হয়েছে!')
+        navigate('/dashboard')
+      } else {
+        // নতুন submission
+        const today = new Date().toISOString().split('T')[0]
+        await submitForm({
+          form_id: formId,
+          branch_code: profile?.branch_code,
+          submitted_by: profile?.id,
+          submission_date: today,
+          data: formData,
+          status: status,
+        })
+        toast.success(status === 'submitted' ? '✅ Form submitted!' : 'Draft saved!')
+        navigate('/forms')
+      }
     } catch (error) {
       toast.error(error.message)
     } finally {
@@ -64,110 +146,156 @@ export default function FormSubmitPage() {
           <h1 className="text-2xl font-bold text-gray-800">{form.title}</h1>
           {form.description && <p className="text-gray-500 mt-1">{form.description}</p>}
         </div>
-        {existing && (
+        {isEditMode && (
+          <span className="px-3 py-1.5 rounded-full text-sm bg-orange-100 text-orange-700 font-medium">
+            ✏️ Edit Mode — {editSubmission?.submission_date}
+          </span>
+        )}
+        {!isEditMode && existing && (
           <span className={`px-3 py-1 rounded-full text-sm ${
-            existing.status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+            existing.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
           }`}>
-            {existing.status === 'submitted' ? 'Submitted' : 'Draft'}
+            {existing.status === 'approved' ? '✅ Approved' : 'Draft'}
           </span>
         )}
       </div>
+
+      {/* Edit mode warning */}
+      {isEditMode && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex gap-3">
+          <span className="text-2xl">⚠️</span>
+          <div>
+            <p className="font-semibold text-orange-800">পুরনো Data Edit করছেন</p>
+            <p className="text-sm text-orange-600">
+              তারিখ: <strong>{editSubmission?.submission_date}</strong> — 
+              Permission দিয়েছেন: এই data সাবধানে update করুন
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg p-6 shadow-sm">
         <div className="mb-4 p-3 bg-blue-50 rounded-lg">
           <p className="text-sm text-blue-700">
             Branch: <strong>{profile?.branch_code}</strong> |
-            Date: <strong>{new Date().toLocaleDateString('bn-BD')}</strong>
+            {isEditMode
+              ? <> তারিখ: <strong>{editSubmission?.submission_date}</strong></>
+              : <> Date: <strong>{new Date().toLocaleDateString('bn-BD')}</strong></>
+            }
           </p>
         </div>
 
+        {/* Date Range Summary */}
+        {!isEditMode && (
+          <div className="mb-4 border border-blue-100 rounded-xl overflow-hidden">
+            <div className="bg-blue-50 px-4 py-3 flex flex-wrap items-end gap-3">
+              <div>
+                <label className="block text-xs text-blue-700 font-medium mb-1">📅 From</label>
+                <input type="date" value={dateRange.from} onChange={e => setDateRange(p => ({ ...p, from: e.target.value }))}
+                  className="border border-blue-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+              </div>
+              <div>
+                <label className="block text-xs text-blue-700 font-medium mb-1">📅 To</label>
+                <input type="date" value={dateRange.to} onChange={e => setDateRange(p => ({ ...p, to: e.target.value }))}
+                  className="border border-blue-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+              </div>
+              <button onClick={loadRangeSummary} disabled={!dateRange.from || !dateRange.to || loadingRange}
+                className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition disabled:opacity-50">
+                {loadingRange ? '⏳' : '🔍 দেখুন'}
+              </button>
+              {rangeSummary && (
+                <button onClick={() => setRangeSummary(null)} className="text-xs text-gray-400 hover:text-gray-600">✕ Clear</button>
+              )}
+            </div>
+            {rangeSummary && Object.keys(rangeSummary).length === 0 && (
+              <p className="text-sm text-gray-500 px-4 py-2">এই range এ কোনো data নেই</p>
+            )}
+            {rangeSummary && Object.keys(rangeSummary).length > 0 && (
+              <div className="px-4 py-2 bg-white text-xs text-gray-600">
+                <p className="font-semibold text-gray-700 mb-1">📊 {dateRange.from} থেকে {dateRange.to} পর্যন্ত মোট:</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  {form.fields?.map(field => {
+                    const count = rangeSummary[`${field.id}_count`]
+                    const amount = rangeSummary[`${field.id}_amount`]
+                    if (!count && !amount) return null
+                    return (
+                      <span key={field.id} className="bg-blue-50 px-2 py-0.5 rounded">
+                        <strong>{field.label}:</strong>
+                        {count ? ` সংখ্যা ${count}` : ''}
+                        {amount ? ` পরিমাণ ${amount.toFixed(2)}` : ''}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="space-y-6">
           {form.fields?.map(field => (
-  <div key={field.id} className="border border-gray-200 rounded-lg p-4">
-    {/* Parent field — একই line এ label + inputs */}
-    <div className="flex items-center gap-3 mb-2">
-      <h3 className="font-medium text-gray-800 w-40 shrink-0">{field.label}</h3>
-      {(field.type === 'both' || field.type === 'count') && (
-        <div className="flex-1">
-          <label className="block text-xs text-gray-500 mb-1">সংখ্যা</label>
-          <input
-            type="number"
-            value={formData[`${field.id}_count`] || ''}
-            onChange={e => handleChange(field.id, null, 'count', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="0"
-          />
-        </div>
-      )}
-      {(field.type === 'both' || field.type === 'amount') && (
-        <div className="flex-1">
-          <label className="block text-xs text-gray-500 mb-1">পরিমাণ</label>
-          <input
-            type="number"
-            step="0.01"
-            value={formData[`${field.id}_amount`] || ''}
-            onChange={e => handleChange(field.id, null, 'amount', e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="0.00"
-          />
-        </div>
-      )}
-    </div>
+            <div key={field.id} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="font-medium text-gray-800 w-40 shrink-0">{field.label}</h3>
+                {(field.type === 'both' || field.type === 'count') && (
+                  <div className="flex-1">
+                    <label className="block text-xs text-gray-500 mb-1">সংখ্যা</label>
+                    <input type="number"
+                      value={formData[`${field.id}_count`] || ''}
+                      onChange={e => handleChange(field.id, null, 'count', e.target.value)}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0" />
+                  </div>
+                )}
+                {(field.type === 'both' || field.type === 'amount') && (
+                  <div className="flex-1">
+                    <label className="block text-xs text-gray-500 mb-1">পরিমাণ</label>
+                    <input type="number" step="0.01"
+                      value={formData[`${field.id}_amount`] || ''}
+                      onChange={e => handleChange(field.id, null, 'amount', e.target.value)}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00" />
+                  </div>
+                )}
+              </div>
 
-    {/* Child fields */}
-    {field.children?.map(child => (
-      <div key={child.id} className="flex items-center gap-3 ml-6 border-l-2 border-gray-200 pl-4 mb-2">
-        <h4 className="text-sm text-gray-700 w-36 shrink-0">{child.label}</h4>
-        {(child.type === 'both' || child.type === 'count') && (
-          <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-1">সংখ্যা</label>
-            <input
-              type="number"
-              value={formData[`${field.id}_${child.id}_count`] || ''}
-              onChange={e => handleChange(field.id, child.id, 'count', e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              placeholder="0"
-            />
-          </div>
-        )}
-        {(child.type === 'both' || child.type === 'amount') && (
-          <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-1">পরিমাণ</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData[`${field.id}_${child.id}_amount`] || ''}
-              onChange={e => handleChange(field.id, child.id, 'amount', e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              placeholder="0.00"
-            />
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-))}
+              {field.children?.map(child => (
+                <div key={child.id} className="flex items-center gap-3 ml-6 border-l-2 border-gray-200 pl-4 mb-2">
+                  <h4 className="text-sm text-gray-700 w-36 shrink-0">{child.label}</h4>
+                  {(child.type === 'both' || child.type === 'count') && (
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">সংখ্যা</label>
+                      <input type="number"
+                        value={formData[`${field.id}_${child.id}_count`] || ''}
+                        onChange={e => handleChange(field.id, child.id, 'count', e.target.value)}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        placeholder="0" />
+                    </div>
+                  )}
+                  {(child.type === 'both' || child.type === 'amount') && (
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">পরিমাণ</label>
+                      <input type="number" step="0.01"
+                        value={formData[`${field.id}_${child.id}_amount`] || ''}
+                        onChange={e => handleChange(field.id, child.id, 'amount', e.target.value)}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        placeholder="0.00" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button
-            onClick={() => handleSubmit('draft')}
-            disabled={loading}
-            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition disabled:opacity-50"
-          >
-            Save Draft
+
+          <button onClick={() => handleSubmit('submitted')} disabled={loading}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
+            {loading ? 'Saving...' : isEditMode ? '✅ Update করুন' : 'Submit'}
           </button>
-          <button
-            onClick={() => handleSubmit('submitted')}
-            disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-          >
-            {loading ? 'Submitting...' : 'Submit'}
-          </button>
-          <button
-            onClick={() => navigate('/forms')}
-            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
-          >
+          <button onClick={() => navigate(isEditMode ? '/dashboard' : '/forms')}
+            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
             Cancel
           </button>
         </div>
