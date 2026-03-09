@@ -240,8 +240,10 @@ export default function BranchSubmissionsPage() {
                 {submissions.map(sub => {
                   const checkerInfo = getRequiredChecker(sub.submission_date)
                   const reqStatus = getRequestStatus(sub.id)
-                  // সরাসরি Edit করা যাবে — draft বা edit_allowed
-                  const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed'
+                  // সরাসরি Edit করা যাবে — draft, edit_allowed, অথবা আজকের approved/submitted
+                  const todayStr = new Date().toISOString().split('T')[0]
+                  const isToday = sub.submission_date === todayStr
+                  const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed' || (isToday && ['approved', 'submitted'].includes(sub.status))
                   const canDirectRequest = checkerInfo.days <= 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
                   const needsRegional = checkerInfo.days > 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
 

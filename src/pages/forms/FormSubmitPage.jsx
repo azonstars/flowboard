@@ -32,12 +32,17 @@ export default function FormSubmitPage() {
         // Edit mode — পুরনো submission load করো
         const sub = await getSubmissionById(submissionId)
 
-        // Draft হলে permission check লাগবে না
-        if (sub.status !== 'draft') {
+        // Draft বা আজকের approved/submitted হলে permission check লাগবে না
+        const subDate = sub.submission_date
+        const today = new Date().toISOString().split('T')[0]
+        const isToday = subDate === today
+        const skipPermissionCheck = sub.status === 'draft' || sub.status === 'edit_allowed' || (isToday && ['approved', 'submitted'].includes(sub.status))
+
+        if (!skipPermissionCheck) {
           const hasPermission = await checkEditPermission(submissionId, profile?.branch_code)
           if (!hasPermission) {
             toast.error('এই submission edit করার permission নেই!')
-            navigate('/dashboard')
+            navigate('/my-submissions')
             return
           }
         }
@@ -98,7 +103,7 @@ export default function FormSubmitPage() {
     try {
       if (isEditMode && editSubmission) {
         // পুরনো submission update করো
-        // Draft হলে submitted করো, অন্যথায় approved রাখো
+        // Draft হলে submitted করো, বাকি সব ক্ষেত্রে approved রাখো
         const newStatus = editSubmission.status === 'draft' ? status : 'approved'
         const { error } = await supabase.from('form_submissions')
           .update({

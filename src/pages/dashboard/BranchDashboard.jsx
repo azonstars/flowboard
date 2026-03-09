@@ -250,7 +250,9 @@ export default function BranchDashboard() {
           <div className="divide-y divide-gray-100">
             {oldSubmissions.map(sub => {
               const checkerInfo = getRequiredChecker(sub.submission_date)
-              const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed'
+              const todayStr = new Date().toISOString().split('T')[0]
+              const isToday = sub.submission_date === todayStr
+              const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed' || (isToday && ['approved', 'submitted'].includes(sub.status))
               const canRequest = !canDirectEdit && checkerInfo.days <= 7 && ['submitted', 'approved', 'rejected'].includes(sub.status)
               const hasRequest = editRequests.find(r => r.submission_id === sub.id && r.status === 'pending')
               return (
@@ -315,7 +317,10 @@ export default function BranchDashboard() {
             ? <div className="p-6 text-center text-gray-500">কোনো submission নেই।</div>
             : recentSubmissions.map(sub => {
               const checkerInfo = getRequiredChecker(sub.submission_date)
-              const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed'
+              const todayStr = new Date().toISOString().split('T')[0]
+              const isToday = sub.submission_date === todayStr
+              // সরাসরি Edit: draft, edit_allowed, অথবা আজকের approved/submitted
+              const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed' || (isToday && ['approved', 'submitted'].includes(sub.status))
               const canRequest = !canDirectEdit && checkerInfo.days <= 7 && ['submitted', 'approved', 'rejected'].includes(sub.status)
               const hasRequest = editRequests.find(r => r.submission_id === sub.id && r.status === 'pending')
 
