@@ -163,6 +163,7 @@ export default function ChatPage() {
     setReplyTo(null)
     setShowSearch(false)
     setSearchMsg('')
+    setUnreadCounts(prev => ({ ...prev, [activeConvId]: 0 }))
     loadMessages(activeConvId)
     markAsRead(activeConvId, profile.id)
     supabase.from('chat_messages').select('*, profiles(full_name,role)').eq('conversation_id', activeConvId).eq('is_pinned', true).maybeSingle().then(({ data }) => setPinnedMsg(data))
@@ -194,6 +195,9 @@ export default function ChatPage() {
       setMessages(prev => [...prev.filter(m => m.id !== data.id), data])
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
       markAsRead(newMsg.conversation_id, profile.id)
+      if (newMsg.conversation_id === activeConvId) {
+        setUnreadCounts(prev => ({ ...prev, [newMsg.conversation_id]: 0 }))
+      }
       const seenBy = data.seen_by || []
       if (!seenBy.includes(profile.id)) supabase.from('chat_messages').update({ seen_by: [...seenBy, profile.id] }).eq('id', data.id)
     }
