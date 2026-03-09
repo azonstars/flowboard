@@ -3,7 +3,7 @@ import { supabase } from './supabase'
 export const getPermissions = async (grantedBy = null, branchCode = null) => {
   let query = supabase
     .from('branch_edit_permissions')
-    .select('*, profiles!branch_edit_permissions_manager_id_fkey(full_name), profiles!branch_edit_permissions_employee_id_fkey(full_name)')
+    .select('*, manager:profiles!branch_edit_permissions_manager_id_fkey(full_name), employee:profiles!branch_edit_permissions_employee_id_fkey(full_name)')
     .order('created_at', { ascending: false })
 
   if (grantedBy) query = query.eq('granted_by', grantedBy)
