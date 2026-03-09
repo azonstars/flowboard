@@ -21,6 +21,7 @@ import PermissionManagement from '../pages/permissions/PermissionManagement'
 import Settings from '../pages/settings/Settings'
 import SubmissionsPage from '../pages/submissions/SubmissionsPage'
 import SubmissionHistoryPage from '../pages/submissions/SubmissionHistoryPage'
+import BranchSubmissionsPage from '../pages/submissions/BranchSubmissionsPage'
 import ProfilePage from '../pages/profile/ProfilePage'
 import ChatPage from '../pages/chat/ChatPage'
 
@@ -174,6 +175,12 @@ export default function AppRoutes() {
         <Route path="/submissions/history" element={
           <PrivateRoute>
             <DashboardLayout><SubmissionHistoryPage /></DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/my-submissions" element={
+          <PrivateRoute>
+            <DashboardLayout><BranchSubmissionsPage /></DashboardLayout>
           </PrivateRoute>
         } />
 

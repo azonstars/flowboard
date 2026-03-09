@@ -278,10 +278,14 @@ export default function BranchDashboard() {
       <div id="recent-submissions" className="bg-white rounded-lg shadow-sm">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="font-bold text-gray-800">সাম্প্রতিক Submissions</h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {pendingEditRequests > 0 && (
               <span className="bg-yellow-100 text-yellow-700 text-xs px-3 py-1.5 rounded-full font-medium">⏳ {pendingEditRequests}টি request pending</span>
             )}
+            <button onClick={() => navigate('/my-submissions')}
+              className="text-xs px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition font-medium">
+              📋 All Submissions →
+            </button>
             {appSettings?.feature_branch_all_forms_btn !== false && (
               <button onClick={() => navigate('/forms')} className="text-sm text-blue-600 hover:underline">সব Forms →</button>
             )}
