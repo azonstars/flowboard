@@ -43,7 +43,24 @@ export default function BranchSubmissionsPage() {
   const [editReason, setEditReason] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => { loadForms(); loadEditRequests() }, [])
+  useEffect(() => {
+    loadForms(); loadEditRequests()
+
+    // Realtime: edit_requests পরিবর্তন হলে auto-reload
+    const channel = supabase.channel('branch-submissions-page')
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'edit_requests',
+        filter: `branch_code=eq.${profile?.branch_code}`
+      }, () => { loadEditRequests() })
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'form_submissions',
+        filter: `branch_code=eq.${profile?.branch_code}`
+      }, () => { loadSubmissions() })
+      .subscribe()
+
+    return () => channel.unsubscribe()
+  }, [profile?.branch_code])
+
   useEffect(() => { loadSubmissions() }, [selectedForm, dateFrom, dateTo, singleDate, filterMode])
 
   const loadForms = async () => {
@@ -224,8 +241,8 @@ export default function BranchSubmissionsPage() {
                   const checkerInfo = getRequiredChecker(sub.submission_date)
                   const reqStatus = getRequestStatus(sub.id)
                   const isEditAllowed = sub.status === 'edit_allowed'
-                  const canDirectRequest = checkerInfo.days <= 7 && sub.status === 'approved' && !reqStatus
-                  const needsRegional = checkerInfo.days > 7 && sub.status === 'approved' && !reqStatus
+                  const canDirectRequest = checkerInfo.days <= 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
+                  const needsRegional = checkerInfo.days > 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
 
                   return (
                     <tr key={sub.id} className="hover:bg-gray-50 transition">

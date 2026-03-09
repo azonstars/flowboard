@@ -32,7 +32,18 @@ export default function RegionalCheckerDashboard() {
   const [escalateTarget, setEscalateTarget] = useState(null)
   const [escalateReason, setEscalateReason] = useState('')
 
-  useEffect(() => { loadStats(); loadEditRequests() }, [])
+  useEffect(() => {
+    loadStats(); loadEditRequests()
+
+    // Realtime: নতুন edit_request এলে auto-reload
+    const channel = supabase.channel('regional-edit-requests')
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'edit_requests'
+      }, () => { loadEditRequests() })
+      .subscribe()
+
+    return () => channel.unsubscribe()
+  }, [profile?.id])
 
   const loadStats = async () => {
     try {
@@ -68,7 +79,6 @@ export default function RegionalCheckerDashboard() {
       const data = await getMyPendingRequests(profile.id, 'regional_checker')
       setEditRequests(data)
       setStats(prev => ({ ...prev, pendingRequests: data.filter(r => r.status === 'pending').length }))
-      console.log('Edit requests loaded:', data.length, data)
     } catch (err) { console.error(err) }
   }
 

@@ -36,10 +36,23 @@ export default function BranchDashboard() {
   const [submitting, setSubmitting] = useState(false)
   const prevStatusMap = useRef({})
 
-  useEffect(() => { loadStats(); loadEditRequests() }, [])
   useEffect(() => {
+    loadStats(); loadEditRequests()
+
+    // Realtime: edit_requests পরিবর্তন হলে auto-reload
+    const channel = supabase.channel('branch-edit-requests')
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'edit_requests',
+        filter: `branch_code=eq.${profile?.branch_code}`
+      }, () => { loadEditRequests(); loadStats() })
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'form_submissions',
+        filter: `branch_code=eq.${profile?.branch_code}`
+      }, () => { loadStats() })
+      .subscribe()
+
     const interval = setInterval(() => { loadStats() }, 30000)
-    return () => clearInterval(interval)
+    return () => { channel.unsubscribe(); clearInterval(interval) }
   }, [profile])
 
   const loadStats = async () => {
