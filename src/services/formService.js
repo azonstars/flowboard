@@ -97,9 +97,14 @@ export const getFormSubmissions = async (formId, branchCode = null, date = null)
 }
 
 export const submitForm = async (submission) => {
+  // submit হলে সরাসরি approved
+  const finalSubmission = submission.status === 'submitted'
+    ? { ...submission, status: 'approved', approved_at: new Date().toISOString() }
+    : submission
+
   const { data, error } = await supabase
     .from('form_submissions')
-    .upsert(submission, {
+    .upsert(finalSubmission, {
       onConflict: 'form_id,branch_code,submission_date'
     })
     .select()
