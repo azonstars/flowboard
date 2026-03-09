@@ -164,3 +164,12 @@ export const getTodaySubmission = async (formId, branchCode) => {
   if (error && error.code !== 'PGRST116') throw error
   return data
 }
+export const getSubmissionById = async (submissionId) => {
+  const { data, error } = await supabase
+    .from('form_submissions')
+    .select('*, forms(title, fields, description)')
+    .eq('id', submissionId)
+    .single()
+  if (error) throw error
+  return data
+}
