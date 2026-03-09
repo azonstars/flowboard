@@ -56,6 +56,7 @@ export default function Topbar({ onMenuClick }) {
 
   useEffect(() => { loadNotifications() }, [loadNotifications])
 
+  // Realtime (Supabase replication চালু থাকলে কাজ করবে)
   useEffect(() => {
     if (!profile?.id) return
     subscriptionRef.current = subscribeToNotifications(profile.id, (payload) => {
@@ -64,6 +65,35 @@ export default function Topbar({ onMenuClick }) {
       toast(`${TYPE_ICON[n.type] || '🔔'} ${n.title}`, { duration: 5000 })
     })
     return () => subscriptionRef.current?.unsubscribe()
+  }, [profile?.id])
+
+  // Polling — প্রতি ৫ সেকেন্ডে নতুন notification আছে কিনা check
+  const latestNotifIdRef = useRef(null)
+  useEffect(() => {
+    if (!profile?.id) return
+    const userId = profile.id
+
+    const interval = setInterval(async () => {
+      try {
+        const data = await getMyNotifications(userId, 5)
+        if (!data || data.length === 0) return
+
+        const latest = data[0]
+        if (latestNotifIdRef.current === null) {
+          latestNotifIdRef.current = latest.id
+          return
+        }
+        if (latest.id !== latestNotifIdRef.current) {
+          latestNotifIdRef.current = latest.id
+          setNotifications(data)
+          if (!latest.is_read) {
+            toast(`${TYPE_ICON[latest.type] || '🔔'} ${latest.title}`, { duration: 5000, id: `notif-${latest.id}` })
+          }
+        }
+      } catch (e) { /* silent */ }
+    }, 5000)
+
+    return () => clearInterval(interval)
   }, [profile?.id])
 
   const handleOpenNotif = async () => {
