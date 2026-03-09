@@ -29,6 +29,7 @@ export default function BranchDashboard() {
   const [pendingForms, setPendingForms] = useState([])
   const [completedForms, setCompletedForms] = useState([])
   const [editRequests, setEditRequests] = useState([])
+  const [oldSubmissions, setOldSubmissions] = useState([])
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedSub, setSelectedSub] = useState(null)
   const [editReason, setEditReason] = useState('')
@@ -44,12 +45,19 @@ export default function BranchDashboard() {
   const loadStats = async () => {
     try {
       const today = new Date().toISOString().split('T')[0]
-      const [todaySub, totalSub, allForms, recent, todaySubDetails] = await Promise.all([
+      const [todaySub, totalSub, allForms, recent, todaySubDetails, editAllowed] = await Promise.all([
         supabase.from('form_submissions').select('id', { count: 'exact' }).eq('branch_code', profile?.branch_code).eq('submission_date', today),
         supabase.from('form_submissions').select('id', { count: 'exact' }).eq('branch_code', profile?.branch_code),
         supabase.from('forms').select('id, title, menu_icon').eq('is_active', true),
-        supabase.from('form_submissions').select('*, forms(title)').eq('branch_code', profile?.branch_code).order('created_at', { ascending: false }).limit(10),
+        supabase.from('form_submissions').select('*, forms(title)').eq('branch_code', profile?.branch_code).order('created_at', { ascending: false }).limit(20),
         supabase.from('form_submissions').select('form_id, status').eq('branch_code', profile?.branch_code).eq('submission_date', today),
+        // edit_allowed এবং approved (৭ দিনের মধ্যে) সব submission
+        supabase.from('form_submissions').select('*, forms(title)')
+          .eq('branch_code', profile?.branch_code)
+          .in('status', ['edit_allowed', 'approved'])
+          .neq('submission_date', today)
+          .gte('submission_date', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+          .order('submission_date', { ascending: false }),
       ])
 
       const newSubs = recent.data || []
@@ -71,6 +79,12 @@ export default function BranchDashboard() {
       setCompletedForms(completed)
       setStats({ todaySubmissions: todaySub.count || 0, totalSubmissions: totalSub.count || 0, totalForms: allFormsList.length, pendingForms: pending.length })
       setRecentSubmissions(newSubs)
+
+      // পুরনো submissions মার্জ করো (edit_allowed + approved পুরনোগুলো)
+      const oldSubs = (editAllowed.data || []).filter(s =>
+        !newSubs.find(n => n.id === s.id) // duplicate avoid
+      )
+      setOldSubmissions(oldSubs)
     } catch (error) { console.error(error) }
   }
 
@@ -119,7 +133,7 @@ export default function BranchDashboard() {
   }
 
   const pendingEditRequests = editRequests.filter(r => r.status === 'pending').length
-  const approvedEditRequests = editRequests.filter(r => r.status === 'approved')
+  const approvedEditRequests = oldSubmissions.filter(s => s.status === 'edit_allowed')
 
   return (
     <div className="space-y-6">
@@ -137,8 +151,9 @@ export default function BranchDashboard() {
             <p className="font-semibold text-blue-800">Edit Permission পেয়েছেন!</p>
             <p className="text-sm text-blue-600">{approvedEditRequests.length}টি submission edit করার permission আছে</p>
           </div>
-          <button onClick={() => navigate('/submission-history')} className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition">
-            দেখুন →
+          <button onClick={() => document.getElementById('recent-submissions')?.scrollIntoView({ behavior: 'smooth' })}
+            className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition">
+            দেখুন ↓
           </button>
         </div>
       )}
@@ -210,8 +225,57 @@ export default function BranchDashboard() {
         </div>
       </div>
 
+      {/* পুরনো Submissions — Edit Request / Edit Allowed */}
+      {oldSubmissions.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="p-4 border-b border-gray-200">
+            <h2 className="font-bold text-gray-800">📂 পুরনো Submissions
+              <span className="ml-2 bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full font-semibold">{oldSubmissions.length}টি</span>
+            </h2>
+            <p className="text-xs text-gray-400 mt-0.5">৭ দিনের মধ্যে — Edit Request পাঠাতে পারবেন</p>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {oldSubmissions.map(sub => {
+              const checkerInfo = getRequiredChecker(sub.submission_date)
+              const canRequest = checkerInfo.days <= 7 && ['submitted', 'approved', 'rejected'].includes(sub.status)
+              const hasRequest = editRequests.find(r => r.submission_id === sub.id && r.status === 'pending')
+              const isEditAllowed = sub.status === 'edit_allowed'
+              return (
+                <div key={sub.id} className="p-4 flex justify-between items-center gap-4">
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-800">{sub.forms?.title}</p>
+                    <p className="text-sm text-gray-500">{sub.submission_date} · {checkerInfo.days} দিন আগে</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isEditAllowed && (
+                      <button onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
+                        className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                        ✏️ Edit Old Data
+                      </button>
+                    )}
+                    {!isEditAllowed && canRequest && !hasRequest && (
+                      <button onClick={() => openEditRequest(sub)}
+                        className="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
+                        Edit Request
+                      </button>
+                    )}
+                    {hasRequest && <span className="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full">⏳ Pending</span>}
+                    {!canRequest && !isEditAllowed && !hasRequest && sub.status !== 'draft' && (
+                      <span className="text-xs text-gray-400">Regional Manager কে বলুন</span>
+                    )}
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-600'}`}>
+                      {STATUS_LABELS[sub.status] || sub.status}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Recent Submissions with Edit Request */}
-      <div className="bg-white rounded-lg shadow-sm">
+      <div id="recent-submissions" className="bg-white rounded-lg shadow-sm">
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="font-bold text-gray-800">সাম্প্রতিক Submissions</h2>
           <div className="flex gap-2">
@@ -228,7 +292,7 @@ export default function BranchDashboard() {
             ? <div className="p-6 text-center text-gray-500">কোনো submission নেই।</div>
             : recentSubmissions.map(sub => {
               const checkerInfo = getRequiredChecker(sub.submission_date)
-              const canRequest = checkerInfo.days <= 7 && (sub.status === 'approved' || sub.status === 'edit_allowed')
+              const canRequest = checkerInfo.days <= 7 && ['submitted', 'approved', 'rejected'].includes(sub.status)
               const hasRequest = editRequests.find(r => r.submission_id === sub.id && r.status === 'pending')
               const isEditAllowed = sub.status === 'edit_allowed'
 
@@ -252,7 +316,7 @@ export default function BranchDashboard() {
                       </button>
                     )}
                     {hasRequest && <span className="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full">⏳ Pending</span>}
-                    {!canRequest && !isEditAllowed && !hasRequest && sub.status === 'approved' && (
+                    {!canRequest && !isEditAllowed && !hasRequest && sub.status !== 'draft' && (
                       <span className="text-xs text-gray-400">Regional Manager কে বলুন</span>
                     )}
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-600'}`}>
