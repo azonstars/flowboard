@@ -36,6 +36,7 @@ export default function DivisionalCheckerDashboard() {
   const prevRequestCountRef = useRef(null)
 
   useEffect(() => {
+    if (!profile?.id) return
     loadStats(); loadEditRequests()
 
     const interval = setInterval(async () => {
@@ -67,7 +68,9 @@ export default function DivisionalCheckerDashboard() {
   const loadStats = async () => {
     try {
       const today = new Date().toISOString().split('T')[0]
-      const { data: branches } = await supabase.from('branches').select('branch_code').eq('division_id', profile?.division_id)
+      let branchQuery = supabase.from('branches').select('branch_code')
+      if (profile?.division_id) branchQuery = branchQuery.eq('division_id', profile.division_id)
+      const { data: branches } = await branchQuery
       const branchCodes = branches?.map(b => b.branch_code) || []
       if (branchCodes.length === 0) return
 

@@ -40,6 +40,7 @@ export default function BranchDashboard() {
   const prevEditRequestsRef = useRef({})
 
   useEffect(() => {
+    if (!profile?.branch_code) return
     loadStats(); loadEditRequests()
 
     // Polling: প্রতি ৫ সেকেন্ডে check করো

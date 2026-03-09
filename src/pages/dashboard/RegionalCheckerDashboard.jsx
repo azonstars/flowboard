@@ -35,6 +35,7 @@ export default function RegionalCheckerDashboard() {
   const prevRequestCountRef = useRef(null)
 
   useEffect(() => {
+    if (!profile?.id) return  // profile load না হওয়া পর্যন্ত অপেক্ষা করো
     loadStats(); loadEditRequests()
 
     // Polling: প্রতি ৫ সেকেন্ডে নতুন request আছে কিনা check
@@ -68,7 +69,11 @@ export default function RegionalCheckerDashboard() {
   const loadStats = async () => {
     try {
       const today = new Date().toISOString().split('T')[0]
-      const { data: branches } = await supabase.from('branches').select('branch_code, name').eq('region_id', profile?.region_id)
+
+      // region_id না থাকলে সব branches দেখাও
+      let branchQuery = supabase.from('branches').select('branch_code, name')
+      if (profile?.region_id) branchQuery = branchQuery.eq('region_id', profile.region_id)
+      const { data: branches } = await branchQuery
       const branchCodes = branches?.map(b => b.branch_code) || []
       if (branchCodes.length === 0) return
 

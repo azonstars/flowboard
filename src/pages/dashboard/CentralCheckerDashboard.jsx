@@ -36,6 +36,7 @@ export default function CentralCheckerDashboard() {
   const prevRequestCountRef = useRef(null)
 
   useEffect(() => {
+    if (!profile?.id) return
     loadStats(); loadEditRequests()
 
     const interval = setInterval(async () => {
