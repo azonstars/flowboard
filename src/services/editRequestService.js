@@ -76,14 +76,15 @@ export const escalateEditRequest = async ({ submissionId, branchCode, requestedB
 export const getMyPendingRequests = async (checkerId, checkerRole) => {
   let query = supabase.from('edit_requests')
     .select('*, form_submissions(submission_date, data, forms(title)), requester:profiles!edit_requests_requested_by_fkey(full_name, role)')
-    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
 
   if (checkerRole === 'central_checker') {
     // Central Checker সব দেখে
     query = query.in('required_checker', ['regional_checker', 'divisional_checker', 'central_checker'])
   } else {
+    // Regional/Divisional checker - assigned_to OR required_checker দিয়ে দেখো
+    // assigned_to না থাকলেও required_checker role এর সবাই দেখতে পাবে
     query = query.eq('required_checker', checkerRole)
-    if (checkerId) query = query.eq('assigned_to', checkerId)
   }
 
   const { data, error } = await query.order('created_at', { ascending: false })

@@ -68,6 +68,7 @@ export default function RegionalCheckerDashboard() {
       const data = await getMyPendingRequests(profile.id, 'regional_checker')
       setEditRequests(data)
       setStats(prev => ({ ...prev, pendingRequests: data.filter(r => r.status === 'pending').length }))
+      console.log('Edit requests loaded:', data.length, data)
     } catch (err) { console.error(err) }
   }
 

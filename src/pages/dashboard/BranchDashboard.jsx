@@ -82,11 +82,6 @@ export default function BranchDashboard() {
   }
 
   const openEditRequest = (sub) => {
-    const checkerInfo = getRequiredChecker(sub.submission_date)
-    if (checkerInfo.days > 7) {
-      toast.error(`এই submission ${checkerInfo.days} দিন পুরনো। শুধু Regional Manager অনুরোধ করতে পারবেন।`)
-      return
-    }
     setSelectedSub(sub)
     setEditReason('')
     setShowEditModal(true)
@@ -233,7 +228,7 @@ export default function BranchDashboard() {
             ? <div className="p-6 text-center text-gray-500">কোনো submission নেই।</div>
             : recentSubmissions.map(sub => {
               const checkerInfo = getRequiredChecker(sub.submission_date)
-              const canRequest = checkerInfo.days <= 7 && sub.status === 'approved'
+              const canRequest = checkerInfo.days <= 7 && (sub.status === 'approved' || sub.status === 'edit_allowed')
               const hasRequest = editRequests.find(r => r.submission_id === sub.id && r.status === 'pending')
               const isEditAllowed = sub.status === 'edit_allowed'
 
