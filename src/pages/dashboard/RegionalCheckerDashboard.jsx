@@ -32,7 +32,6 @@ export default function RegionalCheckerDashboard() {
   const [escalateTarget, setEscalateTarget] = useState(null)
   const [escalateReason, setEscalateReason] = useState('')
 
-  useEffect(() => {
   const prevRequestCountRef = useRef(null)
 
   useEffect(() => {
