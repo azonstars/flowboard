@@ -250,9 +250,9 @@ export default function BranchDashboard() {
           <div className="divide-y divide-gray-100">
             {oldSubmissions.map(sub => {
               const checkerInfo = getRequiredChecker(sub.submission_date)
-              const canRequest = checkerInfo.days <= 7 && ['submitted', 'approved', 'rejected'].includes(sub.status)
+              const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed'
+              const canRequest = !canDirectEdit && checkerInfo.days <= 7 && ['submitted', 'approved', 'rejected'].includes(sub.status)
               const hasRequest = editRequests.find(r => r.submission_id === sub.id && r.status === 'pending')
-              const isEditAllowed = sub.status === 'edit_allowed'
               return (
                 <div key={sub.id} className="p-4 flex justify-between items-center gap-4">
                   <div className="flex-1">
@@ -260,20 +260,26 @@ export default function BranchDashboard() {
                     <p className="text-sm text-gray-500">{sub.submission_date} · {checkerInfo.days} দিন আগে</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {isEditAllowed && (
+                    {/* ✏️ সরাসরি Edit — Draft বা Edit Allowed */}
+                    {canDirectEdit && (
                       <button onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
-                        className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-                        ✏️ Edit Old Data
+                        className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${
+                          sub.status === 'draft'
+                            ? 'bg-gray-600 text-white hover:bg-gray-700'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}>
+                        ✏️ Edit
                       </button>
                     )}
-                    {!isEditAllowed && canRequest && !hasRequest && (
+                    {/* 📝 Edit Request — অনুমোদন লাগবে */}
+                    {canRequest && !hasRequest && (
                       <button onClick={() => openEditRequest(sub)}
                         className="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
-                        Edit Request
+                        📝 Edit Request
                       </button>
                     )}
                     {hasRequest && <span className="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full">⏳ Pending</span>}
-                    {!canRequest && !isEditAllowed && !hasRequest && sub.status !== 'draft' && (
+                    {!canDirectEdit && !canRequest && !hasRequest && (
                       <span className="text-xs text-gray-400">Regional Manager কে বলুন</span>
                     )}
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-600'}`}>
@@ -309,9 +315,9 @@ export default function BranchDashboard() {
             ? <div className="p-6 text-center text-gray-500">কোনো submission নেই।</div>
             : recentSubmissions.map(sub => {
               const checkerInfo = getRequiredChecker(sub.submission_date)
-              const canRequest = checkerInfo.days <= 7 && ['submitted', 'approved', 'rejected'].includes(sub.status)
+              const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed'
+              const canRequest = !canDirectEdit && checkerInfo.days <= 7 && ['submitted', 'approved', 'rejected'].includes(sub.status)
               const hasRequest = editRequests.find(r => r.submission_id === sub.id && r.status === 'pending')
-              const isEditAllowed = sub.status === 'edit_allowed'
 
               return (
                 <div key={sub.id} className="p-4 flex justify-between items-center gap-4">
@@ -320,20 +326,26 @@ export default function BranchDashboard() {
                     <p className="text-sm text-gray-500">{sub.submission_date} · {checkerInfo.days} দিন আগে</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {isEditAllowed && (
+                    {/* ✏️ সরাসরি Edit — Draft বা Edit Allowed */}
+                    {canDirectEdit && (
                       <button onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
-                        className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-1">
-                        ✏️ পুরনো Data Edit
+                        className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${
+                          sub.status === 'draft'
+                            ? 'bg-gray-600 text-white hover:bg-gray-700'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}>
+                        ✏️ Edit
                       </button>
                     )}
-                    {!isEditAllowed && canRequest && !hasRequest && (
+                    {/* 📝 Edit Request — অনুমোদন লাগবে */}
+                    {canRequest && !hasRequest && (
                       <button onClick={() => openEditRequest(sub)}
                         className="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
-                        Edit Request
+                        📝 Edit Request
                       </button>
                     )}
                     {hasRequest && <span className="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full">⏳ Pending</span>}
-                    {!canRequest && !isEditAllowed && !hasRequest && sub.status !== 'draft' && (
+                    {!canDirectEdit && !canRequest && !hasRequest && (
                       <span className="text-xs text-gray-400">Regional Manager কে বলুন</span>
                     )}
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-600'}`}>
