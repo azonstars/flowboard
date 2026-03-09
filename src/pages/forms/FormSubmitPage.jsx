@@ -30,15 +30,16 @@ export default function FormSubmitPage() {
     try {
       if (submissionId) {
         // Edit mode — পুরনো submission load করো
-        const [sub, hasPermission] = await Promise.all([
-          getSubmissionById(submissionId),
-          checkEditPermission(submissionId, profile?.branch_code)
-        ])
+        const sub = await getSubmissionById(submissionId)
 
-        if (!hasPermission) {
-          toast.error('এই submission edit করার permission নেই!')
-          navigate('/dashboard')
-          return
+        // Draft হলে permission check লাগবে না
+        if (sub.status !== 'draft') {
+          const hasPermission = await checkEditPermission(submissionId, profile?.branch_code)
+          if (!hasPermission) {
+            toast.error('এই submission edit করার permission নেই!')
+            navigate('/dashboard')
+            return
+          }
         }
 
         setForm(sub.forms)
@@ -97,24 +98,28 @@ export default function FormSubmitPage() {
     try {
       if (isEditMode && editSubmission) {
         // পুরনো submission update করো
+        // Draft হলে submitted করো, অন্যথায় approved রাখো
+        const newStatus = editSubmission.status === 'draft' ? status : 'approved'
         const { error } = await supabase.from('form_submissions')
           .update({
             data: formData,
-            status: 'approved',
-            approved_at: new Date().toISOString(),
+            status: newStatus,
+            approved_at: newStatus === 'approved' ? new Date().toISOString() : null,
             submitted_by: profile?.id,
           })
           .eq('id', editSubmission.id)
         if (error) throw error
 
-        // Edit request টা used হিসেবে mark করো
-        await supabase.from('edit_requests')
-          .update({ status: 'used' })
-          .eq('submission_id', editSubmission.id)
-          .eq('status', 'approved')
+        // Draft না হলে edit request mark করো
+        if (editSubmission.status !== 'draft') {
+          await supabase.from('edit_requests')
+            .update({ status: 'used' })
+            .eq('submission_id', editSubmission.id)
+            .eq('status', 'approved')
+        }
 
-        toast.success('✅ Data আপডেট হয়েছে!')
-        navigate('/dashboard')
+        toast.success(editSubmission.status === 'draft' && status === 'draft' ? '📝 Draft সংরক্ষিত!' : '✅ Data আপডেট হয়েছে!')
+        navigate('/my-submissions')
       } else {
         // নতুন submission
         const today = new Date().toISOString().split('T')[0]
@@ -288,12 +293,18 @@ export default function FormSubmitPage() {
         </div>
 
         <div className="flex gap-3 mt-6">
-
           <button onClick={() => handleSubmit('submitted')} disabled={loading}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
             {loading ? 'Saving...' : isEditMode ? '✅ Update করুন' : 'Submit'}
           </button>
-          <button onClick={() => navigate(isEditMode ? '/dashboard' : '/forms')}
+          {/* Draft edit mode তে Draft Save বাটন */}
+          {isEditMode && editSubmission?.status === 'draft' && (
+            <button onClick={() => handleSubmit('draft')} disabled={loading}
+              className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition disabled:opacity-50">
+              📝 Draft রাখুন
+            </button>
+          )}
+          <button onClick={() => navigate(isEditMode ? '/my-submissions' : '/forms')}
             className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
             Cancel
           </button>

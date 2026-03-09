@@ -240,7 +240,8 @@ export default function BranchSubmissionsPage() {
                 {submissions.map(sub => {
                   const checkerInfo = getRequiredChecker(sub.submission_date)
                   const reqStatus = getRequestStatus(sub.id)
-                  const isEditAllowed = sub.status === 'edit_allowed'
+                  // সরাসরি Edit করা যাবে — draft বা edit_allowed
+                  const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed'
                   const canDirectRequest = checkerInfo.days <= 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
                   const needsRegional = checkerInfo.days > 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
 
@@ -259,17 +260,22 @@ export default function BranchSubmissionsPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-2">
-                          {/* Edit Old Data — approved হলে */}
-                          {isEditAllowed && (
+                        <div className="flex items-center justify-end gap-2 flex-wrap">
+
+                          {/* ✏️ সরাসরি Edit — Draft বা Edit Allowed */}
+                          {canDirectEdit && (
                             <button
                               onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
-                              className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                              className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${
+                                sub.status === 'draft'
+                                  ? 'bg-gray-600 text-white hover:bg-gray-700'
+                                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                              }`}>
                               ✏️ Edit
                             </button>
                           )}
 
-                          {/* Direct Edit Request — ৭ দিনের মধ্যে */}
+                          {/* 📝 Edit Request — Submitted বা Approved (৭ দিনের মধ্যে) */}
                           {canDirectRequest && (
                             <button onClick={() => openEditRequest(sub)}
                               className="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
@@ -277,7 +283,7 @@ export default function BranchSubmissionsPage() {
                             </button>
                           )}
 
-                          {/* Regional chat — ৭ দিনের বেশি */}
+                          {/* 💬 Regional কে জানান — ৭ দিনের বেশি */}
                           {needsRegional && (
                             <button onClick={goToChat}
                               title="Regional Manager কে chat এ জানান"
@@ -286,15 +292,19 @@ export default function BranchSubmissionsPage() {
                             </button>
                           )}
 
-                          {/* Pending badge */}
+                          {/* ⏳ Pending badge */}
                           {reqStatus === 'pending' && (
                             <span className="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full">⏳ Pending</span>
                           )}
 
-                          {/* View submitted data */}
-                          <span className={`text-xs px-2 py-1 rounded font-mono ${sub.status === 'approved' || sub.status === 'edit_allowed' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'}`}>
-                            {sub.status === 'approved' || sub.status === 'edit_allowed' ? '📊 Submitted' : '—'}
-                          </span>
+                          {/* ✅ Approved indicator */}
+                          {!canDirectEdit && !canDirectRequest && !needsRegional && reqStatus !== 'pending' && (
+                            <span className={`text-xs px-2 py-1 rounded font-mono ${
+                              sub.status === 'approved' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'
+                            }`}>
+                              {sub.status === 'approved' ? '📊 Approved' : '—'}
+                            </span>
+                          )}
                         </div>
                       </td>
                     </tr>
