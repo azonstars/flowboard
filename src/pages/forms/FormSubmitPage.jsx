@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getFormById, submitForm, getTodaySubmission, getSubmissionById } from '../../services/formService'
-import { checkEditPermission } from '../../services/editRequestService'
+import { checkEditPermission, findCheckerForBranch } from '../../services/editRequestService'
+import { notifyCheckersOnSubmit } from '../../services/notificationService'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../services/supabase'
@@ -136,7 +137,23 @@ export default function FormSubmitPage() {
           data: formData,
           status: status,
         })
-        toast.success(status === 'submitted' ? '✅ Form submitted!' : 'Draft saved!')
+
+        // Draft না হলে checker-দের notify করো
+        if (status !== 'draft') {
+          try {
+            // Regional checker খুঁজো
+            const checkers = await findCheckerForBranch(profile?.branch_code, 'regional_checker')
+            if (checkers?.length > 0) {
+              await notifyCheckersOnSubmit(
+                profile?.branch_code,
+                form?.title,
+                checkers.map(c => c.id)
+              )
+            }
+          } catch (e) { /* notification fail হলেও submission যাবে */ }
+        }
+
+        toast.success(status === 'submitted' ? '✅ Form submitted!' : '📝 Draft saved!')
         navigate('/forms')
       }
     } catch (error) {
