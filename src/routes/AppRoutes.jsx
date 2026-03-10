@@ -25,6 +25,8 @@ import BranchSubmissionsPage from '../pages/submissions/BranchSubmissionsPage'
 import ProfilePage from '../pages/profile/ProfilePage'
 import ChatPage from '../pages/chat/ChatPage'
 import AuditLogPage from '../pages/audit/AuditLogPage'
+import AdvancedReportViewer from '../pages/reports/AdvancedReportViewer'
+import AdvancedReportBuilder from '../pages/reports/AdvancedReportBuilder'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -204,6 +206,17 @@ export default function AppRoutes() {
         <Route path="/audit-log" element={
           <PrivateRoute>
             <DashboardLayout><AuditLogPage /></DashboardLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/advanced-reports" element={
+          <PrivateRoute>
+            <DashboardLayout><AdvancedReportViewer /></DashboardLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/advanced-reports/builder" element={
+          <PrivateRoute>
+            <DashboardLayout><AdvancedReportBuilder /></DashboardLayout>
           </PrivateRoute>
         } />
 
