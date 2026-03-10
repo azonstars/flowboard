@@ -60,6 +60,15 @@ export default function FormSubmitPage() {
           getFormById(formId),
           getTodaySubmission(formId, profile?.branch_code)
         ])
+        // Deadline check
+        if (f.expires_at) {
+          const today = new Date().toISOString().split('T')[0]
+          if (f.expires_at < today) {
+            toast.error(`⏰ এই form এর deadline শেষ হয়ে গেছে (${f.expires_at})`)
+            navigate('/forms')
+            return
+          }
+        }
         setForm(f)
         setExisting(todaySub)
         // Normal mode এ সবসময় blank — data load করব না

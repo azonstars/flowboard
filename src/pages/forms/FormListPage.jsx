@@ -83,7 +83,19 @@ export default function FormListPage() {
             <tbody className="divide-y divide-gray-200">
               {forms.map(form => (
                 <tr key={form.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-800">{form.title}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                    {form.title}
+                    {form.expires_at && (() => {
+                      const today = new Date().toISOString().split('T')[0]
+                      const expired = form.expires_at < today
+                      const soon = !expired && form.expires_at <= new Date(Date.now() + 3*86400000).toISOString().split('T')[0]
+                      return (
+                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${expired ? 'bg-red-100 text-red-600' : soon ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+                          {expired ? `⏰ Expired` : `⏳ ${form.expires_at}`}
+                        </span>
+                      )
+                    })()}
+                  </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{form.description || '—'}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{form.fields?.length || 0} fields</td>
                   <td className="px-6 py-4">
