@@ -25,8 +25,6 @@ import BranchSubmissionsPage from '../pages/submissions/BranchSubmissionsPage'
 import ProfilePage from '../pages/profile/ProfilePage'
 import ChatPage from '../pages/chat/ChatPage'
 import AuditLogPage from '../pages/audit/AuditLogPage'
-import AdvancedReportViewer from '../pages/reports/AdvancedReportViewer'
-import AdvancedReportBuilder from '../pages/reports/AdvancedReportBuilder'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
