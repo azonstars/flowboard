@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { ROLES } from '../../constants/roles'
 import { getAdvancedReportTemplates } from '../../services/advancedReportService'
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
-import { getProfiles } from '../../services/profileService'
 import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
 import * as XLSX from 'xlsx'
@@ -26,7 +25,6 @@ export default function AdvancedReportViewer() {
   const [allBranches, setAllBranches] = useState([])
   const [allUsers, setAllUsers] = useState([])
   const [submissions, setSubmissions] = useState([])
-  const [loading, setLoading] = useState(false)
 
   // Filters
   const today = new Date().toISOString().split('T')[0]
