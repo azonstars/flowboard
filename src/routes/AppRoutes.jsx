@@ -15,9 +15,8 @@ import UserManagement from '../pages/users/UserManagement'
 import FormListPage from '../pages/forms/FormListPage'
 import FormBuilderPage from '../pages/forms/FormBuilderPage'
 import FormSubmitPage from '../pages/forms/FormSubmitPage'
-import ReportViewPage from '../pages/reports/ReportViewPage'
-import ReportBuilderPage from '../pages/reports/ReportBuilderPage'
-import PermissionManagement from '../pages/permissions/PermissionManagement'
+import AdvancedReportViewer from '../pages/reports/AdvancedReportViewer'
+import AdvancedReportBuilder from '../pages/reports/AdvancedReportBuilder'import PermissionManagement from '../pages/permissions/PermissionManagement'
 import Settings from '../pages/settings/Settings'
 import SubmissionsPage from '../pages/submissions/SubmissionsPage'
 import SubmissionHistoryPage from '../pages/submissions/SubmissionHistoryPage'
@@ -139,21 +138,8 @@ export default function AppRoutes() {
           </PrivateRoute>
         } />
 
-        <Route path="/reports" element={
-          <PrivateRoute>
-            <RoleRoute roles={ALL_ROLES}>
-              <DashboardLayout><ReportViewPage /></DashboardLayout>
-            </RoleRoute>
-          </PrivateRoute>
-        } />
-
-        <Route path="/reports/builder" element={
-          <PrivateRoute>
-            <RoleRoute roles={ADMIN_ONLY}>
-              <DashboardLayout><ReportBuilderPage /></DashboardLayout>
-            </RoleRoute>
-          </PrivateRoute>
-        } />
+        <Route path="/reports" element={<Navigate to="/advanced-reports" replace />} />
+        <Route path="/reports/builder" element={<Navigate to="/advanced-reports/builder" replace />} />
 
         <Route path="/permissions" element={
           <PrivateRoute>
