@@ -235,8 +235,7 @@ export default function AdvancedReportViewer() {
     return isNaN(n) ? '—' : n.toLocaleString('en-IN', { maximumFractionDigits: 2 })
   }
 
-
-    // সপ্তাহ নম্বর বের করো (অর্থবছর শুরু জুলাই ১)
+  // সপ্তাহ নম্বর বের করো (অর্থবছর শুরু জুলাই ১)
   const getWeekNumber = (dateStr) => {
     const d = new Date(dateStr)
     const fyStart = new Date(d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1, 6, 1)
