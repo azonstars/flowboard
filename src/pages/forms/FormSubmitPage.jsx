@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { getFormById, submitForm, getTodaySubmission, getSubmissionById } from '../../services/formService'
 import { checkEditPermission, findCheckerForBranch } from '../../services/editRequestService'
 import { notifyCheckersOnSubmit } from '../../services/notificationService'
+import { logActivity, AUDIT_ACTIONS } from '../../services/auditService'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../services/supabase'
@@ -154,6 +155,8 @@ export default function FormSubmitPage() {
         }
 
         toast.success(status === 'submitted' ? '✅ Form submitted!' : '📝 Draft saved!')
+        // Audit log
+        await logActivity({ userId: profile.id, userName: profile.full_name, role: profile.role, action: status === 'submitted' ? AUDIT_ACTIONS.FORM_SUBMIT : AUDIT_ACTIONS.FORM_DRAFT, targetType: 'form', targetLabel: form?.title, meta: { branch: profile.branch_code } })
         navigate('/forms')
       }
     } catch (error) {

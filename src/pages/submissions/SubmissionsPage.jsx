@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { getSubmissionsForApproval, approveSubmission, rejectSubmission } from '../../services/formService'
 import { getBranches } from '../../services/branchService'
 import { notifyBranchOnCheckerAction } from '../../services/notificationService'
+import { logActivity, AUDIT_ACTIONS } from '../../services/auditService'
 import { ROLES } from '../../constants/roles'
 import toast from 'react-hot-toast'
 
@@ -96,6 +97,7 @@ export default function SubmissionsPage() {
     try {
       await approveSubmission(sub.id, profile.id)
       if (sub.submitted_by) await notifyBranchOnCheckerAction(sub.submitted_by, 'approved', sub.forms?.title || 'Submission').catch(() => {})
+      await logActivity({ userId: profile.id, userName: profile.full_name, role: profile.role, action: AUDIT_ACTIONS.SUBMISSION_APPROVE, targetType: 'submission', targetId: sub.id, targetLabel: sub.forms?.title, meta: { branch: sub.branch_code } })
       toast.success(`✅ Approved! Branch ${sub.branch_code} কে জানানো হয়েছে।`)
       loadSubmissions()
     } catch (error) {
@@ -117,6 +119,7 @@ export default function SubmissionsPage() {
     try {
       await rejectSubmission(rejectTarget.id, profile.id, rejectReason)
       if (rejectTarget.submitted_by) await notifyBranchOnCheckerAction(rejectTarget.submitted_by, 'rejected', rejectTarget.forms?.title || 'Submission').catch(() => {})
+      await logActivity({ userId: profile.id, userName: profile.full_name, role: profile.role, action: AUDIT_ACTIONS.SUBMISSION_REJECT, targetType: 'submission', targetId: rejectTarget.id, targetLabel: rejectTarget.forms?.title, meta: { branch: rejectTarget.branch_code, reason: rejectReason } })
       toast.success(`❌ Rejected! Branch ${rejectTarget.branch_code} কে জানানো হয়েছে।`)
       setShowRejectModal(false)
       setRejectTarget(null)

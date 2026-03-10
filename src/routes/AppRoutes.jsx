@@ -24,6 +24,7 @@ import SubmissionHistoryPage from '../pages/submissions/SubmissionHistoryPage'
 import BranchSubmissionsPage from '../pages/submissions/BranchSubmissionsPage'
 import ProfilePage from '../pages/profile/ProfilePage'
 import ChatPage from '../pages/chat/ChatPage'
+import AuditLogPage from '../pages/audit/AuditLogPage'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -197,6 +198,12 @@ export default function AppRoutes() {
             <RoleRoute roles={ADMIN_ONLY}>
               <DashboardLayout><Settings /></DashboardLayout>
             </RoleRoute>
+          </PrivateRoute>
+        } />
+
+        <Route path="/audit-log" element={
+          <PrivateRoute>
+            <DashboardLayout><AuditLogPage /></DashboardLayout>
           </PrivateRoute>
         } />
 

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { loginUser } from '../../services/authService'
+import { logActivity, AUDIT_ACTIONS } from '../../services/auditService'
+import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
 
 export default function Login() {
@@ -14,6 +16,12 @@ export default function Login() {
     setLoading(true)
     try {
       await loginUser(email, password)
+      // Login log
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: prof } = await supabase.from('profiles').select('full_name,role').eq('id', user.id).single()
+        await logActivity({ userId: user.id, userName: prof?.full_name || email, role: prof?.role || 'unknown', action: AUDIT_ACTIONS.LOGIN, targetType: 'auth', targetLabel: email })
+      }
       toast.success('Login successful!')
       navigate('/dashboard')
     } catch (error) {
