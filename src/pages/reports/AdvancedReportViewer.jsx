@@ -235,7 +235,14 @@ export default function AdvancedReportViewer() {
     return isNaN(n) ? '—' : n.toLocaleString('en-IN', { maximumFractionDigits: 2 })
   }
 
-  // ── EXCEL EXPORT ──────────────────────────────────────────────────────────
+
+    // সপ্তাহ নম্বর বের করো (অর্থবছর শুরু জুলাই ১)
+  const getWeekNumber = (dateStr) => {
+    const d = new Date(dateStr)
+    const fyStart = new Date(d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1, 6, 1)
+    return Math.ceil((d - fyStart) / (7 * 86400000))
+  }
+
   const exportExcel = () => {
     if (!selected || !tableRows.length) return
     const wb = XLSX.utils.book_new()
@@ -243,41 +250,84 @@ export default function AdvancedReportViewer() {
     const merges = []
     let r = 0
 
-    const bd = { style: 'thin', color: { rgb: 'AAAAAA' } }
-    const border = { top: bd, bottom: bd, left: bd, right: bd }
+    const bd  = { style: 'thin',   color: { rgb: '999999' } }
+    const bdM = { style: 'medium', color: { rgb: '555555' } }
+    const border    = { top: bd,  bottom: bd,  left: bd,  right: bd  }
+    const borderMed = { top: bdM, bottom: bdM, left: bdM, right: bdM }
 
     const styles = {
-      title:    { font: { bold: true, sz: 13 }, alignment: { horizontal: 'center', vertical: 'center' } },
-      sub:      { font: { sz: 10 }, alignment: { horizontal: 'center' } },
-      grpHdr:   { font: { bold: true, sz: 9, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1D4ED8' } }, alignment: { horizontal: 'center', wrapText: true, vertical: 'center' }, border },
+      orgName:  { font: { bold: true, sz: 14 }, alignment: { horizontal: 'center', vertical: 'center' } },
+      office:   { font: { bold: true, sz: 11 }, alignment: { horizontal: 'center', vertical: 'center' } },
+      weekRight:{ font: { bold: true, sz: 10 }, alignment: { horizontal: 'right',  vertical: 'center' } },
+      appNum:   { font: { bold: true, sz: 10 }, alignment: { horizontal: 'right',  vertical: 'center' } },
+      subTitle: { font: { sz: 9, italic: true }, alignment: { horizontal: 'center', wrapText: true } },
+      dateRight:{ font: { sz: 9 }, alignment: { horizontal: 'right' } },
+      unit:     { font: { sz: 9, italic: true }, alignment: { horizontal: 'right' } },
+      grpHdr:   { font: { bold: true, sz: 9, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1D4ED8' } }, alignment: { horizontal: 'center', wrapText: true, vertical: 'center' }, border: borderMed },
       colHdr:   { font: { bold: true, sz: 9, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '2563EB' } }, alignment: { horizontal: 'center', wrapText: true, vertical: 'center' }, border },
       left:     { font: { sz: 9 }, alignment: { horizontal: 'left', wrapText: true }, border },
       num:      { font: { sz: 9 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border },
-      totLeft:  { font: { bold: true, sz: 9 }, fill: { fgColor: { rgb: 'DBEAFE' } }, alignment: { horizontal: 'left' }, border },
-      totNum:   { font: { bold: true, sz: 9 }, fill: { fgColor: { rgb: 'DBEAFE' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border },
+      totLeft:  { font: { bold: true, sz: 9 }, fill: { fgColor: { rgb: 'DBEAFE' } }, alignment: { horizontal: 'left' }, border: borderMed },
+      totNum:   { font: { bold: true, sz: 9 }, fill: { fgColor: { rgb: 'DBEAFE' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: borderMed },
       pct:      { font: { sz: 9 }, alignment: { horizontal: 'right' }, numFmt: '0.00"%"', border },
-      totPct:   { font: { bold: true, sz: 9 }, fill: { fgColor: { rgb: 'DBEAFE' } }, alignment: { horizontal: 'right' }, numFmt: '0.00"%"', border },
+      totPct:   { font: { bold: true, sz: 9 }, fill: { fgColor: { rgb: 'DBEAFE' } }, alignment: { horizontal: 'right' }, numFmt: '0.00"%"', border: borderMed },
+      serial:   { font: { sz: 9 }, alignment: { horizontal: 'center' }, border },
+      serialH:  { font: { bold: true, sz: 9, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1D4ED8' } }, alignment: { horizontal: 'center' }, border },
     }
 
     const set = (c, row, v, s) => {
       ws[XLSX.utils.encode_cell({ c, r: row })] = { v, t: typeof v === 'number' ? 'n' : 's', s }
     }
-    const totalC = 1 + allCols.length
+    const totalC = 2 + allCols.length
+    const half   = Math.floor(totalC / 2)
+    const hc     = selected.header_config || {}
+    const orgName   = hc.orgName   || 'বাংলাদেশ কৃষি ব্যাংক'
+    const appNumber = hc.appNumber || 'ছক-"ক"'
+    const unitLabel = hc.unitLabel || '(কোটি টাকা)'
 
-    // Title
-    set(0, r, selected.title, styles.title)
-    merges.push({ s: { r, c: 0 }, e: { r, c: totalC - 1 } })
+    // ── Row 0: সংগঠনের নাম ──
+    set(0, r, orgName, styles.orgName)
+    merges.push({ s: { r, c: 0 }, e: { r, c: half - 1 } })
+    if (hc.showWeekNumber) {
+      const wk = getWeekNumber(dateTo)
+      set(half, r, `${wk} তম সপ্তাহ`, styles.weekRight)
+      merges.push({ s: { r, c: half }, e: { r, c: totalC - 3 } })
+    }
+    set(totalC - 2, r, appNumber, styles.appNum)
+    merges.push({ s: { r, c: totalC - 2 }, e: { r, c: totalC - 1 } })
     r++
 
-    // Date
-    set(0, r, `তারিখ: ${dateFrom} থেকে ${dateTo}  |  মোট: ${subs.length} submissions`, styles.sub)
-    merges.push({ s: { r, c: 0 }, e: { r, c: totalC - 1 } })
-    r++
-    r++ // blank row
+    // ── Row 1: কার্যালয়ের নাম ──
+    if (hc.officeName) {
+      set(0, r, hc.officeName, styles.office)
+      merges.push({ s: { r, c: 0 }, e: { r, c: totalC - 1 } })
+      r++
+    }
 
-    // Group headers
-    set(0, r, rowHeader(), styles.grpHdr)
-    let c = 1
+    // ── Row 2: রিপোর্ট শিরোনাম + subtitle ──
+    if (hc.subTitle) {
+      set(0, r, hc.subTitle, styles.subTitle)
+      merges.push({ s: { r, c: 0 }, e: { r, c: totalC - 3 } })
+      set(totalC - 2, r, `${dateTo} তারিখ পর্যন্ত`, styles.dateRight)
+      merges.push({ s: { r, c: totalC - 2 }, e: { r, c: totalC - 1 } })
+      r++
+    }
+    set(0, r, selected.title, styles.subTitle)
+    merges.push({ s: { r, c: 0 }, e: { r, c: totalC - 3 } })
+    if (!hc.subTitle) {
+      set(totalC - 2, r, `${dateTo} তারিখ পর্যন্ত`, styles.dateRight)
+      merges.push({ s: { r, c: totalC - 2 }, e: { r, c: totalC - 1 } })
+    }
+    r++
+
+    // ── Row 3: একক ──
+    set(totalC - 1, r, unitLabel, styles.unit)
+    r++
+
+    // ── Row 4: Group headers ──
+    set(0, r, 'ক্রমিক', styles.serialH)
+    set(1, r, rowHeader(), styles.grpHdr)
+    let c = 2
     for (const g of selected.column_groups) {
       set(c, r, g.label, styles.grpHdr)
       if (g.columns.length > 1) merges.push({ s: { r, c }, e: { r, c: c + g.columns.length - 1 } })
@@ -285,21 +335,26 @@ export default function AdvancedReportViewer() {
     }
     r++
 
-    // Col headers
-    set(0, r, '', styles.colHdr)
-    c = 1
-    for (const col of allCols) { set(c, r, col.label, styles.colHdr); c++ }
+    // ── Row 5: Col headers ──
+    set(0, r, '০', styles.serialH)
+    set(1, r, '১', styles.colHdr)
+    c = 2
+    let ci = 2
+    for (const col of allCols) { set(c, r, col.label, styles.colHdr); set(c, r, `${ci}`, styles.colHdr); ci++; c++ }
     r++
 
-    // Data
+    // ── Data rows ──
+    let serial = 1
     for (const row of tableRows) {
-      set(0, r, row.label, row.isTotal ? styles.totLeft : styles.left)
-      c = 1
+      const tot = row.isTotal
+      set(0, r, tot ? '' : serial++, tot ? styles.totLeft : styles.serial)
+      set(1, r, row.label, tot ? styles.totLeft : styles.left)
+      c = 2
       for (const col of allCols) {
         const val = row[col.id]
-        const num = (val === null || val === undefined) ? '' : parseFloat(val)
+        const num = (val === null || val === undefined) ? 0 : parseFloat(val)
         const isP = col.calcType === 'percent'
-        const st = row.isTotal ? (isP ? styles.totPct : styles.totNum) : (isP ? styles.pct : styles.num)
+        const st  = tot ? (isP ? styles.totPct : styles.totNum) : (isP ? styles.pct : styles.num)
         set(c, r, isNaN(num) ? 0 : num, st)
         c++
       }
@@ -307,13 +362,104 @@ export default function AdvancedReportViewer() {
     }
 
     ws['!merges'] = merges
-    ws['!cols'] = [{ wch: 24 }, ...allCols.map(() => ({ wch: 11 }))]
-    ws['!rows'] = [{ hpt: 22 }, { hpt: 16 }, { hpt: 8 }, { hpt: 28 }, { hpt: 24 }]
-    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: r - 1, c: totalC - 1 } })
+    ws['!cols']   = [{ wch: 6 }, { wch: 24 }, ...allCols.map(() => ({ wch: 10 }))]
+    ws['!rows']   = [{ hpt: 24 }, { hpt: 20 }, { hpt: 36 }, { hpt: 14 }, { hpt: 28 }, { hpt: 22 }]
+    ws['!ref']    = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: r - 1, c: totalC - 1 } })
 
     XLSX.utils.book_append_sheet(wb, ws, 'Report')
     XLSX.writeFile(wb, `${selected.title}_${dateFrom}.xlsx`)
     toast.success('✅ Excel export হয়েছে!')
+  }
+
+  // ── PRINT VIEW ──────────────────────────────────────────────────────────────
+  const handlePrint = () => {
+    if (!tableRows.length) { toast.error('আগে Report লোড করুন'); return }
+    const hc      = selected.header_config || {}
+    const orgName   = hc.orgName   || 'বাংলাদেশ কৃষি ব্যাংক'
+    const appNumber = hc.appNumber || 'ছক-"ক"'
+    const unitLabel = hc.unitLabel || '(কোটি টাকা)'
+    const pageSize  = hc.pageSize  || 'legal'
+    const pageCss   = pageSize === 'a3' ? 'size: A3 landscape' : pageSize === 'a4' ? 'size: A4 landscape' : 'size: 14in 8.5in landscape'
+    const wk = hc.showWeekNumber ? getWeekNumber(dateTo) : null
+
+    const colsHtml = selected.column_groups.map(g =>
+      `<th colspan="${g.columns.length}" style="background:#1d4ed8;color:#fff;padding:5px 3px;border:1px solid #93c5fd;text-align:center;font-size:8pt">${g.label}</th>`
+    ).join('')
+    const subColsHtml = allCols.map(c =>
+      `<th style="background:#2563eb;color:#fff;padding:3px 2px;border:1px solid #93c5fd;text-align:center;font-size:7.5pt;white-space:nowrap">${c.label}</th>`
+    ).join('')
+    const dataHtml = tableRows.map((row, ri) => {
+      const bg = row.isTotal ? '#dbeafe' : ri % 2 === 0 ? '#fff' : '#f8fafc'
+      const fw = row.isTotal ? 'bold' : 'normal'
+      const cells = allCols.map(col => {
+        const val = row[col.id]
+        const n = parseFloat(val)
+        const disp = isNaN(n) ? '—' : col.calcType === 'percent' ? `${n.toFixed(2)}%` : n.toLocaleString('en-IN', { maximumFractionDigits: 2 })
+        const color = col.calcType === 'percent' ? (n >= 100 ? '#16a34a' : n >= 75 ? '#ca8a04' : '#dc2626') : 'inherit'
+        return `<td style="text-align:right;padding:2px 3px;border:1px solid #e2e8f0;font-size:7.5pt;font-weight:${fw};color:${color}">${disp}</td>`
+      }).join('')
+      const serial = row.isTotal ? '' : ri + 1
+      return `<tr style="background:${bg}">
+        <td style="text-align:center;padding:2px;border:1px solid #e2e8f0;font-size:7.5pt;color:#9ca3af">${serial}</td>
+        <td style="padding:2px 4px;border:1px solid #e2e8f0;font-size:8pt;font-weight:${fw};padding-left:${(row.level||0)*10+4}px">${row.label}</td>
+        ${cells}
+      </tr>`
+    }).join('')
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${selected.title}</title>
+    <style>
+      @page { ${pageCss}; margin: 8mm 10mm; }
+      body { font-family: 'SolaimanLipi', 'Kalpurush', Arial, sans-serif; font-size: 9pt; margin: 0; }
+      table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+      th, td { word-break: break-word; }
+      .header-wrap { margin-bottom: 5px; }
+      @media print { button { display: none !important; } }
+    </style></head><body>
+    <div class="header-wrap">
+      <table style="width:100%;border:none;margin-bottom:3px">
+        <tr>
+          <td style="width:15%;border:none;font-size:9pt;font-weight:bold;vertical-align:top">
+            ${wk ? `${wk} তম সপ্তাহ` : ''}
+          </td>
+          <td style="text-align:center;border:none;vertical-align:top">
+            <div style="font-size:13pt;font-weight:bold">${orgName}</div>
+            ${hc.officeName ? `<div style="font-size:11pt;font-weight:bold">${hc.officeName}</div>` : ''}
+          </td>
+          <td style="width:15%;text-align:right;border:none;font-size:10pt;font-weight:bold;vertical-align:top">
+            ${appNumber}
+          </td>
+        </tr>
+      </table>
+      <table style="width:100%;border:none;margin-bottom:2px">
+        <tr>
+          <td style="border:none;font-size:8.5pt;font-style:italic">
+            ${hc.subTitle || selected.title}
+          </td>
+          <td style="text-align:right;border:none;font-size:8.5pt;white-space:nowrap">
+            ${dateTo} তারিখ পর্যন্ত
+          </td>
+        </tr>
+      </table>
+      <div style="text-align:right;font-size:7.5pt;font-style:italic;margin-bottom:3px">${unitLabel}</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" style="background:#1d4ed8;color:#fff;padding:5px 3px;border:1px solid #93c5fd;text-align:center;font-size:8pt;width:3%">ক্রমিক</th>
+          <th rowspan="2" style="background:#1d4ed8;color:#fff;padding:5px 6px;border:1px solid #93c5fd;text-align:center;font-size:9pt;width:15%">${rowHeader()}</th>
+          ${colsHtml}
+        </tr>
+        <tr>${subColsHtml}</tr>
+      </thead>
+      <tbody>${dataHtml}</tbody>
+    </table>
+    <script>setTimeout(()=>window.print(),500)</script>
+    </body></html>`
+
+    const w = window.open('', '_blank', 'width=1400,height=900')
+    w.document.write(html)
+    w.document.close()
   }
 
   const handleDelete = async (id) => {
@@ -440,10 +586,16 @@ export default function AdvancedReportViewer() {
                     <p className="text-xs text-gray-400">{dateFrom} — {dateTo} · {subs.length} submissions</p>
                   </div>
                   {tableRows.length > 0 && (
-                    <button onClick={exportExcel}
-                      className="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 font-medium">
-                      📊 Excel Export
-                    </button>
+                    <div className="flex gap-2">
+                      <button onClick={exportExcel}
+                        className="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 font-medium">
+                        📊 Excel
+                      </button>
+                      <button onClick={handlePrint}
+                        className="px-4 py-1.5 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 font-medium">
+                        🖨️ Print
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -460,7 +612,11 @@ export default function AdvancedReportViewer() {
                       <thead>
                         <tr>
                           <th rowSpan={2}
-                            className="px-3 py-2 text-left bg-blue-700 text-white border border-blue-600 sticky left-0 z-20 min-w-36 whitespace-nowrap">
+                            className="px-2 py-2 text-center bg-blue-700 text-white border border-blue-600 sticky left-0 z-20 w-8">
+                            #
+                          </th>
+                          <th rowSpan={2}
+                            className="px-3 py-2 text-left bg-blue-700 text-white border border-blue-600 sticky left-8 z-20 min-w-36 whitespace-nowrap">
                             {rowHeader()}
                           </th>
                           {selected.column_groups.map(g => (
@@ -482,7 +638,10 @@ export default function AdvancedReportViewer() {
                       <tbody>
                         {tableRows.map((row, ri) => (
                           <tr key={ri} className={row.isTotal ? 'bg-blue-50 border-t-2 border-blue-200' : ri%2===0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-blue-50'}>
-                            <td className={`px-3 py-2 border border-gray-200 sticky left-0 z-10 whitespace-nowrap ${row.isTotal ? 'bg-blue-50 font-bold text-blue-800' : ri%2===0 ? 'bg-white' : 'bg-gray-50'}`}
+                            <td className={`px-2 py-2 text-center border border-gray-200 sticky left-0 z-10 text-xs text-gray-400 ${row.isTotal ? 'bg-blue-50' : ri%2===0 ? 'bg-white' : 'bg-gray-50'}`}>
+                              {row.isTotal ? '' : ri + 1}
+                            </td>
+                            <td className={`px-3 py-2 border border-gray-200 sticky left-8 z-10 whitespace-nowrap ${row.isTotal ? 'bg-blue-50 font-bold text-blue-800' : ri%2===0 ? 'bg-white' : 'bg-gray-50'}`}
                               style={{ paddingLeft: `${(row.level||0)*12+12}px` }}>
                               {row.label}
                             </td>
