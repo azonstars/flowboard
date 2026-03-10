@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getForms, deleteForm, duplicateForm } from '../../services/formService'
+import { getForms, deleteForm, duplicateForm, updateForm } from '../../services/formService'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { ROLES } from '../../constants/roles'
@@ -10,6 +10,7 @@ export default function FormListPage() {
   const navigate = useNavigate()
   const [forms, setForms] = useState([])
   const [loading, setLoading] = useState(false)
+  const [togglingDeadline, setTogglingDeadline] = useState(null)
 
   useEffect(() => { loadForms() }, [])
 
@@ -47,6 +48,27 @@ export default function FormListPage() {
     }
   }
 
+  const handleDeadlineToggle = async (form) => {
+    if (!form.expires_at && !form.expires_at_backup) {
+      toast.error('এই form-এ কোনো deadline সেট করা নেই। Edit করে deadline দিন।')
+      return
+    }
+    setTogglingDeadline(form.id)
+    try {
+      if (form.expires_at) {
+        // Off — expires_at null করো, backup এ রাখো
+        await updateForm(form.id, { expires_at: null, expires_at_backup: form.expires_at })
+        toast.success('⏰ Deadline বন্ধ করা হয়েছে')
+      } else {
+        // On — backup থেকে ফিরিয়ে দাও
+        await updateForm(form.id, { expires_at: form.expires_at_backup })
+        toast.success(`⏰ Deadline চালু: ${form.expires_at_backup}`)
+      }
+      loadForms()
+    } catch (error) { toast.error(error.message) }
+    finally { setTogglingDeadline(null) }
+  }
+
   const isAdmin = profile?.role === ROLES.ADMIN
   const isBranchUser = [ROLES.BRANCH_MANAGER, ROLES.BRANCH_EMPLOYEE, ROLES.ADMIN].includes(profile?.role)
 
@@ -77,6 +99,7 @@ export default function FormListPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fields</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                {isAdmin && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deadline</th>}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
@@ -103,6 +126,28 @@ export default function FormListPage() {
                       {form.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
+                  {isAdmin && (
+                    <td className="px-6 py-4">
+                      {(form.expires_at || form.expires_at_backup) ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleDeadlineToggle(form)}
+                            disabled={togglingDeadline === form.id}
+                            title={form.expires_at ? 'Deadline বন্ধ করুন' : 'Deadline চালু করুন'}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${form.expires_at ? 'bg-blue-600' : 'bg-gray-300'} disabled:opacity-50`}>
+                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${form.expires_at ? 'translate-x-4' : 'translate-x-1'}`}/>
+                          </button>
+                          <span className="text-xs">
+                            {form.expires_at
+                              ? <span className={new Date(form.expires_at) < new Date() ? 'text-red-500 font-medium' : 'text-blue-600'}>{form.expires_at}</span>
+                              : <span className="text-gray-400">বন্ধ ({form.expires_at_backup})</span>}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-300">—</span>
+                      )}
+                    </td>
+                  )}
                   <td className="px-6 py-4 flex gap-3">
                     {isBranchUser && (
                       <button
