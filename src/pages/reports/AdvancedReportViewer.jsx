@@ -6,7 +6,6 @@ import {
   getAdvancedReportTemplates,
   deleteAdvancedReportTemplate,
   fetchSubmissions,
-  getCurrentWeekRange,
   buildRowData,
   buildTotalRow,
 } from '../../services/advancedReportService'
@@ -78,7 +77,17 @@ export default function AdvancedReportViewer() {
     setLoading(true)
     try {
       const codes = getAllowedCodes(fDiv, fReg, fBranch)
-      const weekRange  = getCurrentWeekRange()
+      const now = new Date()
+      const day = now.getDay()
+      const diffToLastThu = (day + 3) % 7
+      const lastThu = new Date(now)
+      lastThu.setDate(now.getDate() - diffToLastThu)
+      const nextThu = new Date(lastThu)
+      nextThu.setDate(lastThu.getDate() + 7)
+      const weekRange = {
+        from: lastThu.toISOString().split('T')[0],
+        to: nextThu.toISOString().split('T')[0],
+      }
       const hasWeekly   = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'weekly')
       const hasPrevYear = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'prev_year')
       const [main, prev, week] = await Promise.all([
