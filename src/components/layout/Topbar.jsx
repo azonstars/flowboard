@@ -7,6 +7,7 @@ import {
   subscribeToNotifications
 } from '../../services/notificationService'
 import toast from 'react-hot-toast'
+import { supabase } from '../../services/supabase'
 
 const TYPE_ICON = {
   form: '📬', success: '✅', warning: '❌', info: 'ℹ️', chat: '💬', checker: '🔍',
@@ -34,6 +35,7 @@ export default function Topbar({ onMenuClick }) {
   const subscriptionRef = useRef(null)
 
   const unreadCount = notifications.filter(n => !n.is_read).length
+  const [chatUnread, setChatUnread] = useState(0)
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -43,6 +45,38 @@ export default function Topbar({ onMenuClick }) {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
+
+  // Chat unread count
+  useEffect(() => {
+    if (!profile?.id) return
+    const loadChatUnread = async () => {
+      try {
+        const { data: parts } = await supabase
+          .from('chat_participants')
+          .select('conversation_id, last_read_at')
+          .eq('user_id', profile.id)
+        if (!parts?.length) return
+        let total = 0
+        for (const p of parts) {
+          let q = supabase.from('chat_messages')
+            .select('id', { count: 'exact' })
+            .eq('conversation_id', p.conversation_id)
+            .neq('sender_id', profile.id)
+            .eq('is_deleted', false)
+          if (p.last_read_at) q = q.gt('created_at', p.last_read_at)
+          const { count } = await q
+          total += count || 0
+        }
+        setChatUnread(total)
+      } catch(e) {}
+    }
+    loadChatUnread()
+    const sub = supabase.channel('topbar_chat_unread')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+        () => loadChatUnread()
+      ).subscribe()
+    return () => sub.unsubscribe()
+  }, [profile?.id])
 
   const loadNotifications = useCallback(async () => {
     if (!profile?.id) return
@@ -143,6 +177,18 @@ export default function Topbar({ onMenuClick }) {
       <div className="hidden lg:block" />
 
       <div className="flex items-center gap-2">
+        {/* Chat Button */}
+        <button onClick={() => navigate('/chat')} className="relative p-2 rounded-lg hover:bg-gray-100 transition text-gray-600" title="Chat">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          {chatUnread > 0 && (
+            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-bold px-1 animate-pulse">
+              {chatUnread > 99 ? '99+' : chatUnread}
+            </span>
+          )}
+        </button>
         {/* Notification Bell */}
         <div className="relative" ref={notifRef}>
           <button onClick={handleOpenNotif} className="relative p-2 rounded-lg hover:bg-gray-100 transition text-gray-600">

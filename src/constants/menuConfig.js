@@ -56,6 +56,19 @@ export const MENU_ITEMS = [
     roles: [ROLES.ADMIN, ROLES.REGIONAL_CHECKER],
   },
   {
+    label: 'Chat',
+    path: '/chat',
+    icon: 'MessageCircle',
+    roles: [
+      ROLES.ADMIN,
+      ROLES.CENTRAL_CHECKER,
+      ROLES.DIVISIONAL_CHECKER,
+      ROLES.REGIONAL_CHECKER,
+      ROLES.BRANCH_MANAGER,
+      ROLES.BRANCH_EMPLOYEE,
+    ],
+  },
+  {
     label: 'Settings',
     path: '/settings',
     icon: 'Settings',

@@ -130,7 +130,7 @@ export const getMessages = async (conversationId, limit = 50, before = null) => 
   return data.reverse()
 }
 
-export const sendMessage = async ({ conversationId, senderId, type = 'text', content, fileUrl, fileName, fileSize }) => {
+export const sendMessage = async ({ conversationId, senderId, type = 'text', content, fileUrl, fileName, fileSize, replyToId = null, forwardedFrom = null }) => {
   const { data, error } = await supabase
     .from('chat_messages')
     .insert({
@@ -141,6 +141,10 @@ export const sendMessage = async ({ conversationId, senderId, type = 'text', con
       file_url: fileUrl || null,
       file_name: fileName || null,
       file_size: fileSize || null,
+      reply_to: replyToId || null,
+      forwarded_from: forwardedFrom || null,
+      seen_by: [senderId],
+      starred_by: [],
     })
     .select(`
       id, conversation_id, sender_id, message_type, content,
