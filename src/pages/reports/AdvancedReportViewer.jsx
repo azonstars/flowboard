@@ -554,7 +554,7 @@ export default function AdvancedReportViewer() {
     <div className="space-y-4">
       <div className="bg-white rounded-xl p-4 shadow-sm flex justify-between items-center flex-wrap gap-3">
         <h1 className="text-xl font-bold text-gray-800">📊 Advanced Reports</h1>
-        {(isAdmin || isCentral) {isAdmin && ({isAdmin && ( (
+        {(isAdmin || isCentral) && (
           <button onClick={() => navigate('/advanced-reports/builder')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
             + New Template
@@ -576,7 +576,7 @@ export default function AdvancedReportViewer() {
                 <p className="text-xs text-gray-400 mt-0.5">
                   {t.type === 'branch_wise' ? '🏢 Branch-wise' : t.type === 'summary' ? '📌 Summary' : '📋 Category-wise'}
                 </p>
-                {(isAdmin || isCentral) {isAdmin && ({isAdmin && ( (
+                {(isAdmin || isCentral) && (
                   <div className="flex gap-2 mt-1">
                     <button onClick={e => { e.stopPropagation(); navigate(`/advanced-reports/builder?edit=${t.id}`) }}
                       className="text-xs text-blue-500 hover:underline">Edit</button>
@@ -669,7 +669,7 @@ export default function AdvancedReportViewer() {
                     <p className="text-xs text-gray-400">{dateFrom} — {dateTo} · {subs.length} submissions</p>
                   </div>
                   <div className="flex gap-2">
-                    {(isAdmin || isCentral) {isAdmin && ({isAdmin && ( (
+                    {(isAdmin || isCentral) && (
                       <button onClick={openEdit}
                         className="px-3 py-1.5 bg-yellow-50 text-yellow-700 border border-yellow-200 text-sm rounded-lg hover:bg-yellow-100 font-medium">
                         ✏️ Quick Edit
