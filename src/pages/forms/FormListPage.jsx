@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { SkeletonTable } from '../../components/ui/Skeleton'
 import { getForms, deleteForm, duplicateForm, updateForm } from '../../services/formService'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -88,7 +89,7 @@ export default function FormListPage() {
 
       <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
         {loading ? (
-          <div className="text-center py-8 text-gray-500">Loading...</div>
+          <SkeletonTable rows={5} cols={5} />
         ) : forms.length === 0 ? (
           <div className="text-center py-8 text-gray-500">No forms found.</div>
         ) : (

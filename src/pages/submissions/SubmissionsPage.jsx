@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { SkeletonTable } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
 import { getSubmissionsForApproval, approveSubmission, rejectSubmission } from '../../services/formService'
 import { getBranches } from '../../services/branchService'
@@ -222,7 +223,7 @@ export default function SubmissionsPage() {
       {/* Submissions Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Loading...</div>
+          <SkeletonTable rows={6} cols={5} />
         ) : submissions.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             <p className="text-4xl mb-3">📭</p>

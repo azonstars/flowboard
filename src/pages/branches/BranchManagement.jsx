@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { SkeletonTable } from '../../components/ui/Skeleton'
 import {
   getDivisions, createDivision, updateDivision, deleteDivision,
   getRegions, createRegion, updateRegion, deleteRegion,
@@ -112,7 +113,7 @@ export default function BranchManagement() {
 
         <div className="p-6">
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Loading...</div>
+            <SkeletonTable rows={5} cols={5} />
           ) : (
             <table className="w-full">
               <thead>

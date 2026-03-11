@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { SkeletonTable } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ROLES } from '../../constants/roles'
@@ -6,6 +7,7 @@ import {
   getAdvancedReportTemplates,
   deleteAdvancedReportTemplate,
   fetchSubmissions,
+  getCurrentWeekRange,
   buildRowData,
   buildTotalRow,
 } from '../../services/advancedReportService'
@@ -109,10 +111,7 @@ export default function AdvancedReportViewer() {
     setLoading(true)
     try {
       const codes = getAllowedCodes(fDiv, fReg, fBranch)
-      const _now = new Date(); const _day = _now.getDay()
-      const _lastThu = new Date(_now); _lastThu.setDate(_now.getDate() - (_day + 3) % 7)
-      const _nextThu = new Date(_lastThu); _nextThu.setDate(_lastThu.getDate() + 7)
-      const weekRange = { from: _lastThu.toISOString().split('T')[0], to: _nextThu.toISOString().split('T')[0] }
+      const weekRange  = getCurrentWeekRange()
       const hasWeekly   = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'weekly')
       const hasPrevYear = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'prev_year')
       const [main, prev, week] = await Promise.all([
@@ -693,7 +692,7 @@ export default function AdvancedReportViewer() {
                 </div>
 
                 {loading ? (
-                  <div className="text-center py-16 text-gray-400">⏳ Loading...</div>
+                  <SkeletonTable rows={8} cols={6} />
                 ) : tableRows.length === 0 ? (
                   <div className="text-center py-16 text-gray-400">
                     <p className="text-4xl mb-2">📭</p>

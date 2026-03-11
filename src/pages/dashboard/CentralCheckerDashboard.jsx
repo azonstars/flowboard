@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { SkeletonDashboard } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
 import { useNavigate } from 'react-router-dom'
@@ -21,6 +22,7 @@ const STATUS_COLORS = {
 export default function CentralCheckerDashboard() {
   const { profile, appSettings } = useAuth()
   const navigate = useNavigate()
+  const [pageLoading, setPageLoading] = useState(true)
   const [stats, setStats] = useState({ totalBranches: 0, todaySubmissions: 0, totalSubmissions: 0, pendingSubmissions: 0 })
   const [recentSubmissions, setRecentSubmissions] = useState([])
   const [weeklyData, setWeeklyData] = useState([])
@@ -37,7 +39,8 @@ export default function CentralCheckerDashboard() {
 
   useEffect(() => {
     if (!profile?.id) return
-    loadStats(); loadEditRequests()
+    setPageLoading(true)
+    Promise.all([loadStats(), loadEditRequests()]).finally(() => setPageLoading(false))
   }, [profile?.id])
 
   useEffect(() => {
@@ -139,6 +142,8 @@ export default function CentralCheckerDashboard() {
   }
 
   const pendingCount = editRequests.filter(r => r.status === 'pending').length
+
+  if (pageLoading) return <SkeletonDashboard />
 
   return (
     <div className="space-y-6">

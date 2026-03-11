@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { SkeletonTable } from '../../components/ui/Skeleton'
 import { getUsers, updateUser, toggleUserStatus, createUser, deleteUser } from '../../services/userService'
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import { ROLE_LABELS } from '../../constants/roles'
@@ -216,7 +217,7 @@ export default function UserManagement() {
 
       <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
         {loading ? (
-          <div className="text-center py-8 text-gray-500">Loading...</div>
+          <SkeletonTable rows={5} cols={5} />
         ) : (
           <table className="w-full">
             <thead className="bg-gray-50">

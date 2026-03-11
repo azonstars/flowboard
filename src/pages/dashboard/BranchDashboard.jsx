@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { SkeletonBranchDashboard } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
 import { useNavigate } from 'react-router-dom'
@@ -37,6 +38,7 @@ export default function BranchDashboard() {
   const prevStatusMap = useRef({})
 
   const prevEditRequestsRef = useRef({})
+  const [loading, setLoading] = useState(true)
   const branchCodeRef = useRef(null)
 
   // profile load হলে branchCodeRef আপডেট করো
@@ -47,7 +49,8 @@ export default function BranchDashboard() {
   // Initial load
   useEffect(() => {
     if (!profile?.branch_code) return
-    loadStats(); loadEditRequests()
+    setLoading(true)
+    Promise.all([loadStats(), loadEditRequests()]).finally(() => setLoading(false))
   }, [profile?.branch_code])
 
   // Polling — আলাদা, stable useEffect (একবারই mount হয়)
@@ -178,6 +181,8 @@ export default function BranchDashboard() {
 
   const pendingEditRequests = editRequests.filter(r => r.status === 'pending').length
   const approvedEditRequests = oldSubmissions.filter(s => s.status === 'edit_allowed')
+
+  if (loading) return <SkeletonBranchDashboard />
 
   return (
     <div className="space-y-6">
