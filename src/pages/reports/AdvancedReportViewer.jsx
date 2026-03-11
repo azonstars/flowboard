@@ -2,13 +2,9 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { ROLES } from '../../constants/roles'
-import {
-  getAdvancedReportTemplates,
-  deleteAdvancedReportTemplate,
-  fetchSubmissions,
-  buildRowData,
-  buildTotalRow,
-} from '../../services/advancedReportService'
+import * as AdvRptSvc from '../../services/advancedReportService'
+const { getAdvancedReportTemplates, deleteAdvancedReportTemplate,
+        fetchSubmissions, buildRowData, buildTotalRow } = AdvRptSvc
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
