@@ -1,10 +1,15 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ROLES } from '../../constants/roles'
-import * as AdvRptSvc from '../../services/advancedReportService'
-const { getAdvancedReportTemplates, deleteAdvancedReportTemplate,
-        fetchSubmissions, buildRowData, buildTotalRow } = AdvRptSvc
+import {
+  getAdvancedReportTemplates,
+  deleteAdvancedReportTemplate,
+  fetchSubmissions,
+  getCurrentWeekRange,
+  buildRowData,
+  buildTotalRow,
+} from '../../services/advancedReportService'
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
@@ -13,6 +18,7 @@ import * as XLSX from 'xlsx'
 export default function AdvancedReportViewer() {
   const { profile } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const tableRef = useRef(null)
 
   const isAdmin      = profile?.role === ROLES.ADMIN
@@ -31,6 +37,11 @@ export default function AdvancedReportViewer() {
   const [prevSubs, setPrevSubs]   = useState([])
   const [weekSubs, setWeekSubs]   = useState([])
   const [loading, setLoading]     = useState(false)
+
+  // Quick edit panel
+  const [showEdit, setShowEdit]   = useState(false)
+  const [editDraft, setEditDraft] = useState(null) // local draft of selected template
+  const [saving, setSaving]       = useState(false)
 
   const today        = new Date().toISOString().split('T')[0]
   const firstOfMonth = today.slice(0, 8) + '01'
@@ -54,8 +65,34 @@ export default function AdvancedReportViewer() {
         .from('profiles').select('id,full_name,branch_code,role')
         .in('role', ['branch_manager','branch_employee'])
       setUsers(u || [])
+
+      // URL ?t=id অথবা localStorage এর last used template auto select
+      const urlId   = new URLSearchParams(window.location.search).get('t')
+      const lastId  = localStorage.getItem('arv_last_template')
+      const targetId = urlId || lastId
+      if (targetId && tmpl.length) {
+        const t = tmpl.find(x => x.id === targetId) || tmpl[0]
+        if (t) setSelected(t)
+      } else if (tmpl.length === 1) {
+        setSelected(tmpl[0])
+      }
     } catch (e) { console.error(e) }
   }
+
+  // Template select হলে URL update + localStorage save + auto load
+  const handleSelectTemplate = useCallback((t) => {
+    setSelected(t)
+    setSubs([]); setFDiv(''); setFReg(''); setFBranch(''); setFUsers([])
+    setSearchParams({ t: t.id }, { replace: true })
+    localStorage.setItem('arv_last_template', t.id)
+  }, [setSearchParams])
+
+  // Template select হলে auto load (current month)
+  useEffect(() => {
+    if (selected && profile) {
+      loadReport()
+    }
+  }, [selected])
 
   const getAllowedCodes = (extraDiv, extraReg, extraBr) => {
     let pool = branches
@@ -68,22 +105,12 @@ export default function AdvancedReportViewer() {
     return pool.map(b => b.branch_code)
   }
 
-  const loadReport = async () => {
+  const loadReport = useCallback(async () => {
     if (!selected) return
     setLoading(true)
     try {
       const codes = getAllowedCodes(fDiv, fReg, fBranch)
-      const now = new Date()
-      const day = now.getDay()
-      const diffToLastThu = (day + 3) % 7
-      const lastThu = new Date(now)
-      lastThu.setDate(now.getDate() - diffToLastThu)
-      const nextThu = new Date(lastThu)
-      nextThu.setDate(lastThu.getDate() + 7)
-      const weekRange = {
-        from: lastThu.toISOString().split('T')[0],
-        to: nextThu.toISOString().split('T')[0],
-      }
+      const weekRange  = getCurrentWeekRange()
       const hasWeekly   = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'weekly')
       const hasPrevYear = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'prev_year')
       const [main, prev, week] = await Promise.all([
@@ -98,7 +125,7 @@ export default function AdvancedReportViewer() {
       setSubs(main); setPrevSubs(prev); setWeekSubs(week)
     } catch (e) { toast.error(e.message) }
     finally { setLoading(false) }
-  }
+  }, [selected, dateFrom, dateTo, fDiv, fReg, fBranch, branches, isDivisional, isRegional, isBranch, profile])
 
   const allCols = useMemo(() =>
     (selected?.column_groups || []).flatMap(g => g.columns), [selected])
@@ -466,6 +493,53 @@ export default function AdvancedReportViewer() {
     w.document.close()
   }
 
+  // ── QUICK EDIT ───────────────────────────────────────────────────────────────
+  const openEdit = () => {
+    setEditDraft({
+      title:         selected.title,
+      header_config: { ...(selected.header_config || {}) },
+      column_groups: selected.column_groups.map(g => ({
+        ...g,
+        columns: g.columns.map(c => ({ ...c }))
+      })),
+    })
+    setShowEdit(true)
+  }
+
+  const updDraft = (k, v) => setEditDraft(d => ({ ...d, [k]: v }))
+  const updDraftHdr = (k, v) => setEditDraft(d => ({ ...d, header_config: { ...d.header_config, [k]: v } }))
+  const updDraftCol = (gId, cId, k, v) => setEditDraft(d => ({
+    ...d,
+    column_groups: d.column_groups.map(g => g.id === gId
+      ? { ...g, columns: g.columns.map(c => c.id === cId ? { ...c, [k]: v } : c) }
+      : g)
+  }))
+  const updDraftGrp = (gId, k, v) => setEditDraft(d => ({
+    ...d,
+    column_groups: d.column_groups.map(g => g.id === gId ? { ...g, [k]: v } : g)
+  }))
+
+  const saveEdit = async () => {
+    if (!editDraft.title.trim()) return toast.error('Title দিন')
+    setSaving(true)
+    try {
+      const { updateAdvancedReportTemplate } = await import('../../services/advancedReportService')
+      const updated = await updateAdvancedReportTemplate(selected.id, {
+        title:         editDraft.title,
+        header_config: editDraft.header_config,
+        office_name:   editDraft.header_config.officeName || null,
+        show_week_number: editDraft.header_config.showWeekNumber || false,
+        column_groups: editDraft.column_groups,
+      })
+      const merged = { ...selected, ...updated }
+      setSelected(merged)
+      setTemplates(ts => ts.map(t => t.id === merged.id ? merged : t))
+      setShowEdit(false)
+      toast.success('✅ সংরক্ষিত হয়েছে!')
+    } catch (e) { toast.error(e.message) }
+    finally { setSaving(false) }
+  }
+
   const handleDelete = async (id) => {
     if (!confirm('Delete করবেন?')) return
     try {
@@ -480,7 +554,7 @@ export default function AdvancedReportViewer() {
     <div className="space-y-4">
       <div className="bg-white rounded-xl p-4 shadow-sm flex justify-between items-center flex-wrap gap-3">
         <h1 className="text-xl font-bold text-gray-800">📊 Advanced Reports</h1>
-        {isAdmin && (
+        {(isAdmin || isCentral) {isAdmin && ({isAdmin && ( (
           <button onClick={() => navigate('/advanced-reports/builder')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
             + New Template
@@ -496,18 +570,23 @@ export default function AdvancedReportViewer() {
             ? <p className="text-sm text-gray-400">কোনো template নেই</p>
             : templates.map(t => (
               <div key={t.id}
-                onClick={() => { setSelected(t); setSubs([]); setFDiv(''); setFReg(''); setFBranch(''); setFUsers([]) }}
+                onClick={() => handleSelectTemplate(t)}
                 className={`p-3 rounded-lg cursor-pointer border transition text-sm ${selected?.id === t.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
                 <p className="font-medium text-gray-800">{t.title}</p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {t.type === 'branch_wise' ? '🏢 Branch-wise' : t.type === 'summary' ? '📌 Summary' : '📋 Category-wise'}
                 </p>
-                {isAdmin && (
+                {(isAdmin || isCentral) {isAdmin && ({isAdmin && ( (
                   <div className="flex gap-2 mt-1">
                     <button onClick={e => { e.stopPropagation(); navigate(`/advanced-reports/builder?edit=${t.id}`) }}
                       className="text-xs text-blue-500 hover:underline">Edit</button>
                     <button onClick={e => { e.stopPropagation(); handleDelete(t.id) }}
                       className="text-xs text-red-400 hover:underline">Delete</button>
+                    <button onClick={e => {
+                      e.stopPropagation()
+                      navigator.clipboard.writeText(`${window.location.origin}/advanced-reports?t=${t.id}`)
+                      toast.success('Link copied!')
+                    }} className="text-xs text-gray-400 hover:underline">🔗 Link</button>
                   </div>
                 )}
               </div>
@@ -577,7 +656,7 @@ export default function AdvancedReportViewer() {
                   )}
                   <button onClick={loadReport} disabled={loading}
                     className="px-5 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
-                    {loading ? '⏳' : '🔍 দেখুন'}
+                    {loading ? '⏳' : '🔄 Refresh'}
                   </button>
                 </div>
               </div>
@@ -589,18 +668,26 @@ export default function AdvancedReportViewer() {
                     <h2 className="font-bold text-gray-800">{selected.title}</h2>
                     <p className="text-xs text-gray-400">{dateFrom} — {dateTo} · {subs.length} submissions</p>
                   </div>
-                  {tableRows.length > 0 && (
-                    <div className="flex gap-2">
-                      <button onClick={exportExcel}
-                        className="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 font-medium">
-                        📊 Excel
+                  <div className="flex gap-2">
+                    {(isAdmin || isCentral) {isAdmin && ({isAdmin && ( (
+                      <button onClick={openEdit}
+                        className="px-3 py-1.5 bg-yellow-50 text-yellow-700 border border-yellow-200 text-sm rounded-lg hover:bg-yellow-100 font-medium">
+                        ✏️ Quick Edit
                       </button>
-                      <button onClick={handlePrint}
-                        className="px-4 py-1.5 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 font-medium">
-                        🖨️ Print
-                      </button>
-                    </div>
-                  )}
+                    )}
+                    {tableRows.length > 0 && (
+                      <>
+                        <button onClick={exportExcel}
+                          className="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 font-medium">
+                          📊 Excel
+                        </button>
+                        <button onClick={handlePrint}
+                          className="px-4 py-1.5 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 font-medium">
+                          🖨️ Print
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {loading ? (
@@ -677,6 +764,107 @@ export default function AdvancedReportViewer() {
           )}
         </div>
       </div>
+
+      {/* ── Quick Edit Slide-over ── */}
+      {showEdit && editDraft && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div className="flex-1 bg-black/30" onClick={() => setShowEdit(false)}/>
+          {/* Panel */}
+          <div className="w-full max-w-md bg-white shadow-2xl flex flex-col overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-yellow-50">
+              <h2 className="font-bold text-gray-800">✏️ Quick Edit</h2>
+              <button onClick={() => setShowEdit(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+
+              {/* Title */}
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Report Title</label>
+                <input value={editDraft.title} onChange={e => updDraft('title', e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-400 focus:outline-none"/>
+              </div>
+
+              {/* Header config */}
+              <div className="space-y-3">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block">🖨️ Header / Print</label>
+                {[
+                  { key: 'orgName',    label: 'সংগঠনের নাম',      placeholder: 'বাংলাদেশ কৃষি ব্যাংক' },
+                  { key: 'officeName', label: 'কার্যালয়ের নাম',   placeholder: 'আঞ্চলিক কার্যালয়...' },
+                  { key: 'appNumber',  label: 'ছক/পরিশিষ্ট নম্বর', placeholder: 'ছক-"ক"' },
+                  { key: 'unitLabel',  label: 'একক',               placeholder: '(কোটি টাকা)' },
+                ].map(({ key, label, placeholder }) => (
+                  <div key={key}>
+                    <label className="text-xs text-gray-500 block mb-0.5">{label}</label>
+                    <input value={editDraft.header_config[key] || ''} onChange={e => updDraftHdr(key, e.target.value)}
+                      placeholder={placeholder}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-yellow-400 focus:outline-none"/>
+                  </div>
+                ))}
+                <div>
+                  <label className="text-xs text-gray-500 block mb-0.5">বিবরণ / Subtitle</label>
+                  <textarea value={editDraft.header_config.subTitle || ''} onChange={e => updDraftHdr('subTitle', e.target.value)}
+                    rows={2} placeholder="রিপোর্টের বিস্তারিত বিবরণ..."
+                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-yellow-400 focus:outline-none"/>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <label className="text-xs text-gray-500 block mb-0.5">Page Size</label>
+                    <select value={editDraft.header_config.pageSize || 'legal'} onChange={e => updDraftHdr('pageSize', e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+                      <option value="legal">Legal</option>
+                      <option value="a3">A3</option>
+                      <option value="a4">A4</option>
+                    </select>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 mt-4">
+                    <input type="checkbox" checked={editDraft.header_config.showWeekNumber || false}
+                      onChange={e => updDraftHdr('showWeekNumber', e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300"/>
+                    সপ্তাহ নম্বর
+                  </label>
+                </div>
+              </div>
+
+              {/* Column labels */}
+              <div className="space-y-3">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block">📊 Column Labels</label>
+                {editDraft.column_groups.map(g => (
+                  <div key={g.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-3 py-2">
+                      <input value={g.label} onChange={e => updDraftGrp(g.id, 'label', e.target.value)}
+                        className="w-full bg-transparent font-semibold text-sm focus:outline-none border-b border-gray-300 pb-0.5"/>
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                      {g.columns.map((col, ci) => (
+                        <div key={col.id} className="px-3 py-2 flex items-center gap-2">
+                          <span className="text-xs text-gray-400 w-4">{ci+1}.</span>
+                          <input value={col.label} onChange={e => updDraftCol(g.id, col.id, 'label', e.target.value)}
+                            className="flex-1 border border-gray-200 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-yellow-400 focus:outline-none"/>
+                          <span className="text-xs text-gray-400 whitespace-nowrap">{col.calcType}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Save button */}
+            <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
+              <button onClick={() => setShowEdit(false)}
+                className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
+                বাতিল
+              </button>
+              <button onClick={saveEdit} disabled={saving}
+                className="flex-1 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 disabled:opacity-50">
+                {saving ? 'Saving...' : '💾 সংরক্ষণ করুন'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

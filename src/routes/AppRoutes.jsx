@@ -196,12 +196,16 @@ export default function AppRoutes() {
 
         <Route path="/advanced-reports" element={
           <PrivateRoute>
-            <DashboardLayout><AdvancedReportViewer /></DashboardLayout>
+            <RoleRoute roles={ALL_ROLES}>
+              <DashboardLayout><AdvancedReportViewer /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
         <Route path="/advanced-reports/builder" element={
           <PrivateRoute>
-            <DashboardLayout><AdvancedReportBuilder /></DashboardLayout>
+            <RoleRoute roles={[ROLES.ADMIN, ROLES.CENTRAL_CHECKER]}>
+              <DashboardLayout><AdvancedReportBuilder /></DashboardLayout>
+            </RoleRoute>
           </PrivateRoute>
         } />
 
