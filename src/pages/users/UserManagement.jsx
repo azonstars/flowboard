@@ -242,8 +242,8 @@ export default function UserManagement() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{user.branch_code || '—'}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs ${user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {user.is_active ? 'Active' : 'Inactive'}
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${user.is_active ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                        {user.is_active ? '● Active' : '● Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 flex gap-3">
@@ -268,8 +268,8 @@ export default function UserManagement() {
                     <p className="font-semibold text-gray-800 text-sm">{user.full_name}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{user.email}</p>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs shrink-0 ${user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {user.is_active ? 'Active' : 'Inactive'}
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${user.is_active ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                    {user.is_active ? '● Active' : '● Inactive'}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-500">
