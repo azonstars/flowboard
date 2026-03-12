@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonBranchDashboard } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
@@ -258,7 +259,7 @@ export default function BranchDashboard() {
           </div>
           <div className="divide-y divide-gray-100">
             {completedForms.length === 0
-              ? <div className="p-6 text-center text-gray-400"><p className="text-2xl mb-2">📭</p><p className="text-sm">এখনো কোনো ফর্ম submit হয়নি</p></div>
+              ? <EmptyState type="submission" title="এখনো কোনো submission নেই" />
               : completedForms.map(form => (
                 <div key={form.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
                   <div className="flex items-center gap-3">

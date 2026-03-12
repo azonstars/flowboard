@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { createForm, updateForm, getFormById, getForms } from '../../services/formService'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -457,10 +458,7 @@ export default function FormBuilderPage() {
             </div>
             <div className="p-6">
               {templates.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
-                  <p className="text-3xl mb-2">📭</p>
-                  <p>কোনো template নেই। Form তৈরি করে "Template Save" করুন।</p>
-                </div>
+                <EmptyState type="form" title="কোনো template নেই" description='Form তৈরি করে "Template Save" করুন' />
               ) : (
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {templates.map(t => (

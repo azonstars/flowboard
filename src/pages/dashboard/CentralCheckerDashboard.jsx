@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonDashboard } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
@@ -247,7 +248,7 @@ export default function CentralCheckerDashboard() {
           </div>
           <div className="divide-y divide-gray-200">
             {editRequests.length === 0
-              ? <div className="p-8 text-center text-gray-400"><p className="text-3xl mb-2">📭</p><p>কোনো request নেই</p></div>
+              ? <EmptyState type="request" title="কোনো request নেই" description="এই মুহূর্তে কোনো pending request নেই" />
               : editRequests.map(req => (
                 <div key={req.id} className="p-4">
                   <div className="flex justify-between items-start gap-4">

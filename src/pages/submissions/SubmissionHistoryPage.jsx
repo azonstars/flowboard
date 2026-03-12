@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { useAuth } from '../../context/AuthContext'
 import { getSubmissionsForApproval } from '../../services/formService'
 import { getForms } from '../../services/formService'
@@ -220,8 +221,7 @@ export default function SubmissionHistoryPage() {
           <div className="text-center py-12 text-gray-500">Loading...</div>
         ) : submissions.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
-            <p className="text-4xl mb-3">📭</p>
-            <p>কোনো submission পাওয়া যায়নি</p>
+            <EmptyState type="submission" title="কোনো submission পাওয়া যায়নি" description="তারিখ বা ফিল্টার পরিবর্তন করুন" />
           </div>
         ) : (
           <table className="w-full">

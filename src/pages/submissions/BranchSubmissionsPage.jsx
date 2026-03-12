@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
 import { useNavigate } from 'react-router-dom'
@@ -247,10 +248,7 @@ export default function BranchSubmissionsPage() {
             <p className="text-2xl mb-2">⏳</p><p>Loading...</p>
           </div>
         ) : submissions.length === 0 ? (
-          <div className="p-8 text-center text-gray-400">
-            <p className="text-3xl mb-2">📭</p>
-            <p>কোনো submission পাওয়া যায়নি</p>
-          </div>
+          <EmptyState type="submission" title="কোনো submission পাওয়া যায়নি" description="এখনো কোনো ফর্ম জমা দেওয়া হয়নি" />
         ) : (
           <>
             {/* Desktop Table */}

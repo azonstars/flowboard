@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { useAuth } from '../../context/AuthContext'
 import { getActivityLogs, getMyActivity, ACTION_LABELS } from '../../services/auditService'
 import { getUsers } from '../../services/userService'
@@ -174,8 +175,7 @@ export default function AuditLogPage() {
           </div>
         ) : logs.length === 0 ? (
           <div className="p-10 text-center text-gray-400">
-            <p className="text-3xl mb-2">📭</p>
-            <p className="text-sm">কোনো activity পাওয়া যায়নি</p>
+            <EmptyState type="activity" title="কোনো activity পাওয়া যায়নি" description="নির্বাচিত সময়ে কোনো লগ নেই" />
           </div>
         ) : (
           <div className="overflow-x-auto">

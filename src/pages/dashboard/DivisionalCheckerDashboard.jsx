@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonDashboard } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
@@ -240,7 +241,7 @@ export default function DivisionalCheckerDashboard() {
           <div className="p-6 border-b border-gray-200"><h2 className="font-bold text-gray-800">✏️ Edit Requests ({editRequests.length}টি)</h2></div>
           <div className="divide-y divide-gray-200">
             {editRequests.length === 0
-              ? <div className="p-8 text-center text-gray-400"><p className="text-3xl mb-2">📭</p><p>কোনো pending request নেই</p></div>
+              ? <EmptyState type="request" title="কোনো pending request নেই" description="সব request সম্পন্ন হয়েছে" />
               : editRequests.map(req => (
                 <div key={req.id} className="p-4">
                   <div className="flex justify-between items-start gap-4">

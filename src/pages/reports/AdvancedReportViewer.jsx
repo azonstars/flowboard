@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -694,10 +695,7 @@ export default function AdvancedReportViewer() {
                 {loading ? (
                   <SkeletonTable rows={8} cols={6} />
                 ) : tableRows.length === 0 ? (
-                  <div className="text-center py-16 text-gray-400">
-                    <p className="text-4xl mb-2">📭</p>
-                    <p className="text-sm">ফিল্টার দিয়ে "দেখুন" চাপুন</p>
-                  </div>
+                  <EmptyState type="search" title='ফিল্টার দিয়ে "দেখুন" চাপুন' description="তারিখ ও শাখা নির্বাচন করুন" />
                 ) : (
                   <div className="overflow-x-auto" ref={tableRef}>
                     <table className="w-full text-xs border-collapse min-w-max">

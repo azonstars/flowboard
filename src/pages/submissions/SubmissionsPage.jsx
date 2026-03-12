@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
 import { getSubmissionsForApproval, approveSubmission, rejectSubmission } from '../../services/formService'
@@ -224,9 +225,8 @@ export default function SubmissionsPage() {
       {loading ? (
         <SkeletonTable rows={6} cols={5} />
       ) : submissions.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm text-center py-12 text-gray-400">
-          <p className="text-4xl mb-3">📭</p>
-          <p>কোনো submission পাওয়া যায়নি</p>
+        <div className="bg-white rounded-lg shadow-sm">
+          <EmptyState type="submission" title="কোনো submission পাওয়া যায়নি" description="ফিল্টার পরিবর্তন করে আবার চেষ্টা করুন" />
         </div>
       ) : (
         <>

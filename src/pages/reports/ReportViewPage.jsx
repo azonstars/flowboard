@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import EmptyState from '../../components/ui/EmptyState'
 import { useSearchParams } from 'react-router-dom'
 import { getReportLayouts, deleteReportLayout, getSubmissionsForReport } from '../../services/reportService'
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
@@ -610,10 +611,7 @@ export default function ReportViewPage() {
                 {loading ? (
                   <div className="text-center py-8 text-gray-500">Loading...</div>
                 ) : submissions.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <p className="text-3xl mb-2">📭</p>
-                    <p>এই ফিল্টারে কোনো data পাওয়া যায়নি</p>
-                  </div>
+                  <EmptyState type="search" title="কোনো data পাওয়া যায়নি" description="ফিল্টার পরিবর্তন করে আবার চেষ্টা করুন" />
                 ) : (
                   <table className="w-full">
                     <thead className="bg-gray-50">
