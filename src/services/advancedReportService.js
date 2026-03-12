@@ -112,3 +112,17 @@ export const buildTotalRow = ({ label = 'সর্বমোট', rows, allCols }
   }
   return total
 }
+
+export const getCurrentWeekRange = () => {
+  const now = new Date()
+  const day = now.getDay()
+  const diffToThursday = (day >= 4) ? day - 4 : day + 3
+  const thursday = new Date(now)
+  thursday.setDate(now.getDate() - diffToThursday)
+  const nextThursday = new Date(thursday)
+  nextThursday.setDate(thursday.getDate() + 7)
+  return {
+    from: thursday.toISOString().split('T')[0],
+    to: nextThursday.toISOString().split('T')[0],
+  }
+}
