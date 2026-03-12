@@ -1,11 +1,7 @@
-// ── Skeleton UI Components ──────────────────────────────────
-
-// Base pulse block
 export const SkeletonBlock = ({ className = '' }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
 )
 
-// Stat card skeleton (dashboard numbers)
 export const SkeletonStatCard = () => (
   <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-gray-200">
     <SkeletonBlock className="h-3 w-20 mb-3" />
@@ -13,7 +9,6 @@ export const SkeletonStatCard = () => (
   </div>
 )
 
-// Table row skeleton
 export const SkeletonTableRow = ({ cols = 5 }) => (
   <tr>
     {Array.from({ length: cols }).map((_, i) => (
@@ -24,7 +19,6 @@ export const SkeletonTableRow = ({ cols = 5 }) => (
   </tr>
 )
 
-// Card skeleton (list items)
 export const SkeletonCard = () => (
   <div className="bg-white rounded-xl p-4 shadow-sm space-y-3 animate-pulse">
     <div className="flex items-center gap-3">
@@ -39,7 +33,6 @@ export const SkeletonCard = () => (
   </div>
 )
 
-// Chart area skeleton
 export const SkeletonChart = ({ height = 'h-48' }) => (
   <div className="bg-white rounded-xl shadow-sm p-5 animate-pulse">
     <SkeletonBlock className="h-4 w-32 mb-4" />
@@ -51,7 +44,6 @@ export const SkeletonChart = ({ height = 'h-48' }) => (
   </div>
 )
 
-// Form field skeleton
 export const SkeletonFormField = () => (
   <div className="space-y-2 animate-pulse">
     <SkeletonBlock className="h-3 w-28" />
@@ -59,7 +51,6 @@ export const SkeletonFormField = () => (
   </div>
 )
 
-// Dashboard full skeleton (6 stat cards + 2 charts)
 export const SkeletonDashboard = () => (
   <div className="space-y-5">
     <div className="bg-white rounded-xl p-5 shadow-sm animate-pulse">
@@ -81,7 +72,6 @@ export const SkeletonDashboard = () => (
   </div>
 )
 
-// Branch dashboard skeleton
 export const SkeletonBranchDashboard = () => (
   <div className="space-y-5">
     <div className="bg-white rounded-xl p-5 shadow-sm animate-pulse">
@@ -97,7 +87,6 @@ export const SkeletonBranchDashboard = () => (
   </div>
 )
 
-// Table skeleton wrapper
 export const SkeletonTable = ({ rows = 5, cols = 5 }) => (
   <div className="bg-white rounded-xl shadow-sm overflow-hidden animate-pulse">
     <div className="p-4 border-b border-gray-100">
