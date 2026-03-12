@@ -215,52 +215,86 @@ export default function UserManagement() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-        {loading ? (
-          <SkeletonTable rows={5} cols={5} />
-        ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredUsers.map(user => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-800">{user.full_name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                      {ROLE_LABELS[user.role]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{user.branch_code || '—'}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {user.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 flex gap-3">
-                    <button onClick={() => openEditModal(user)} className="text-blue-600 hover:underline text-sm">Edit</button>
-                    <button onClick={() => handleToggleStatus(user)} className={`text-sm hover:underline ${user.is_active ? 'text-red-600' : 'text-green-600'}`}>
-                      {user.is_active ? 'Deactivate' : 'Activate'}
-                    </button>
-                    <button onClick={() => handleDeleteUser(user)} className="text-sm text-red-700 hover:underline">
-                      🗑️ Delete
-                    </button>
-                  </td>
+      {loading ? (
+        <SkeletonTable rows={5} cols={6} />
+      ) : (
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredUsers.map(user => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-800">{user.full_name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">{ROLE_LABELS[user.role]}</span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{user.branch_code || '—'}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs ${user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {user.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 flex gap-3">
+                      <button onClick={() => openEditModal(user)} className="text-blue-600 hover:underline text-sm">Edit</button>
+                      <button onClick={() => handleToggleStatus(user)} className={`text-sm hover:underline ${user.is_active ? 'text-red-600' : 'text-green-600'}`}>
+                        {user.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button onClick={() => handleDeleteUser(user)} className="text-sm text-red-700 hover:underline">🗑️ Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {filteredUsers.map(user => (
+              <div key={user.id} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">{user.full_name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{user.email}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs shrink-0 ${user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    {user.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-gray-500">
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">{ROLE_LABELS[user.role]}</span>
+                  {user.branch_code && <span>🏢 {user.branch_code}</span>}
+                </div>
+                <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
+                  <button onClick={() => openEditModal(user)}
+                    className="flex-1 text-xs px-3 py-2 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 transition text-center">
+                    ✏️ Edit
+                  </button>
+                  <button onClick={() => handleToggleStatus(user)}
+                    className={`flex-1 text-xs px-3 py-2 rounded-lg border transition text-center ${user.is_active ? 'border-red-300 text-red-600 hover:bg-red-50' : 'border-green-300 text-green-600 hover:bg-green-50'}`}>
+                    {user.is_active ? '🔴 Deactivate' : '🟢 Activate'}
+                  </button>
+                  <button onClick={() => handleDeleteUser(user)}
+                    className="text-xs px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Create Modal */}
       {createModalOpen && (

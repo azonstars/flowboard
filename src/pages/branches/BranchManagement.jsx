@@ -113,41 +113,81 @@ export default function BranchManagement() {
 
         <div className="p-6">
           {loading ? (
-            <SkeletonTable rows={5} cols={5} />
+            <SkeletonTable rows={5} cols={4} />
           ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="text-left border-b">
-                  <th className="pb-3 text-sm font-medium text-gray-500">Name</th>
-                  <th className="pb-3 text-sm font-medium text-gray-500">Code</th>
-                  {activeTab === 'regions' && <th className="pb-3 text-sm font-medium text-gray-500">Division</th>}
-                  {activeTab === 'branches' && <th className="pb-3 text-sm font-medium text-gray-500">Region</th>}
-                  {activeTab === 'branches' && <th className="pb-3 text-sm font-medium text-gray-500">Status</th>}
-                  <th className="pb-3 text-sm font-medium text-gray-500">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left border-b">
+                      <th className="pb-3 text-sm font-medium text-gray-500">Name</th>
+                      <th className="pb-3 text-sm font-medium text-gray-500">Code</th>
+                      {activeTab === 'regions' && <th className="pb-3 text-sm font-medium text-gray-500">Division</th>}
+                      {activeTab === 'branches' && <th className="pb-3 text-sm font-medium text-gray-500">Region</th>}
+                      {activeTab === 'branches' && <th className="pb-3 text-sm font-medium text-gray-500">Status</th>}
+                      <th className="pb-3 text-sm font-medium text-gray-500">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {(activeTab === 'divisions' ? divisions : activeTab === 'regions' ? regions : branches).map(item => (
+                      <tr key={item.id}>
+                        <td className="py-3 text-sm text-gray-800">{item.name}</td>
+                        <td className="py-3 text-sm text-gray-600">{item.code || item.branch_code}</td>
+                        {activeTab === 'regions' && <td className="py-3 text-sm text-gray-600">{item.divisions?.name}</td>}
+                        {activeTab === 'branches' && <td className="py-3 text-sm text-gray-600">{item.regions?.name}</td>}
+                        {activeTab === 'branches' && (
+                          <td className="py-3">
+                            <span className={`px-2 py-1 rounded-full text-xs ${item.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                              {item.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                        )}
+                        <td className="py-3">
+                          <button onClick={() => openModal(item)} className="text-blue-600 hover:underline text-sm mr-3">Edit</button>
+                          <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:underline text-sm">Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-3">
                 {(activeTab === 'divisions' ? divisions : activeTab === 'regions' ? regions : branches).map(item => (
-                  <tr key={item.id}>
-                    <td className="py-3 text-sm text-gray-800">{item.name}</td>
-                    <td className="py-3 text-sm text-gray-600">{item.code || item.branch_code}</td>
-                    {activeTab === 'regions' && <td className="py-3 text-sm text-gray-600">{item.divisions?.name}</td>}
-                    {activeTab === 'branches' && <td className="py-3 text-sm text-gray-600">{item.regions?.name}</td>}
-                    {activeTab === 'branches' && (
-                      <td className="py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs ${item.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  <div key={item.id} className="border border-gray-100 rounded-xl p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm">{item.name}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{item.code || item.branch_code}</p>
+                      </div>
+                      {activeTab === 'branches' && (
+                        <span className={`px-2 py-1 rounded-full text-xs shrink-0 ${item.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                           {item.is_active ? 'Active' : 'Inactive'}
                         </span>
-                      </td>
+                      )}
+                    </div>
+                    {activeTab === 'regions' && item.divisions?.name && (
+                      <p className="text-xs text-gray-500">Division: {item.divisions.name}</p>
                     )}
-                    <td className="py-3">
-                      <button onClick={() => openModal(item)} className="text-blue-600 hover:underline text-sm mr-3">Edit</button>
-                      <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:underline text-sm">Delete</button>
-                    </td>
-                  </tr>
+                    {activeTab === 'branches' && item.regions?.name && (
+                      <p className="text-xs text-gray-500">Region: {item.regions.name}</p>
+                    )}
+                    <div className="flex gap-2 pt-1 border-t border-gray-100">
+                      <button onClick={() => openModal(item)}
+                        className="flex-1 text-xs px-3 py-2 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 transition text-center">
+                        ✏️ Edit
+                      </button>
+                      <button onClick={() => handleDelete(item.id)}
+                        className="flex-1 text-xs px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition text-center">
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>

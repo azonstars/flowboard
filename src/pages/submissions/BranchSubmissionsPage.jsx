@@ -252,96 +252,131 @@ export default function BranchSubmissionsPage() {
             <p>কোনো submission পাওয়া যায়নি</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left px-4 py-3 text-gray-600 font-medium">তারিখ</th>
-                  <th className="text-left px-4 py-3 text-gray-600 font-medium">Form</th>
-                  <th className="text-left px-4 py-3 text-gray-600 font-medium">Status</th>
-                  <th className="text-left px-4 py-3 text-gray-600 font-medium">বয়স</th>
-                  <th className="text-right px-4 py-3 text-gray-600 font-medium">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {submissions.map(sub => {
-                  const checkerInfo = getRequiredChecker(sub.submission_date)
-                  const reqStatus = getRequestStatus(sub.id)
-                  // সরাসরি Edit করা যাবে — draft, edit_allowed, অথবা আজকের approved/submitted
-                  const todayStr = new Date().toISOString().split('T')[0]
-                  const isToday = sub.submission_date === todayStr
-                  const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed' || (isToday && ['approved', 'submitted'].includes(sub.status))
-                  const canDirectRequest = checkerInfo.days <= 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
-                  const needsRegional = checkerInfo.days > 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
+          <>
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-gray-600 font-medium">তারিখ</th>
+                    <th className="text-left px-4 py-3 text-gray-600 font-medium">Form</th>
+                    <th className="text-left px-4 py-3 text-gray-600 font-medium">Status</th>
+                    <th className="text-left px-4 py-3 text-gray-600 font-medium">বয়স</th>
+                    <th className="text-right px-4 py-3 text-gray-600 font-medium">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {submissions.map(sub => {
+                    const checkerInfo = getRequiredChecker(sub.submission_date)
+                    const reqStatus = getRequestStatus(sub.id)
+                    const todayStr = new Date().toISOString().split('T')[0]
+                    const isToday = sub.submission_date === todayStr
+                    const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed' || (isToday && ['approved', 'submitted'].includes(sub.status))
+                    const canDirectRequest = checkerInfo.days <= 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
+                    const needsRegional = checkerInfo.days > 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
+                    return (
+                      <tr key={sub.id} className="hover:bg-gray-50 transition">
+                        <td className="px-4 py-3 font-medium text-gray-800">{sub.submission_date}</td>
+                        <td className="px-4 py-3 text-gray-700">{sub.forms?.title}</td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-600'}`}>
+                            {STATUS_LABELS[sub.status] || sub.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs font-medium ${checkerInfo.days <= 7 ? 'text-green-600' : checkerInfo.days <= 365 ? 'text-orange-500' : 'text-red-500'}`}>
+                            {checkerInfo.days} দিন
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-2 flex-wrap">
+                            {canDirectEdit && (
+                              <button onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
+                                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${sub.status === 'draft' ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                                ✏️ Edit
+                              </button>
+                            )}
+                            {canDirectRequest && (
+                              <button onClick={() => openEditRequest(sub)}
+                                className="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
+                                📝 Edit Request
+                              </button>
+                            )}
+                            {needsRegional && (
+                              <button onClick={goToChat}
+                                className="text-xs px-3 py-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition">
+                                💬 Regional কে জানান
+                              </button>
+                            )}
+                            {reqStatus === 'pending' && (
+                              <span className="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full">⏳ Pending</span>
+                            )}
+                            {!canDirectEdit && !canDirectRequest && !needsRegional && reqStatus !== 'pending' && (
+                              <span className={`text-xs px-2 py-1 rounded font-mono ${sub.status === 'approved' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'}`}>
+                                {sub.status === 'approved' ? '📊 Approved' : '—'}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-                  return (
-                    <tr key={sub.id} className="hover:bg-gray-50 transition">
-                      <td className="px-4 py-3 font-medium text-gray-800">{sub.submission_date}</td>
-                      <td className="px-4 py-3 text-gray-700">{sub.forms?.title}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-600'}`}>
-                          {STATUS_LABELS[sub.status] || sub.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs font-medium ${checkerInfo.days <= 7 ? 'text-green-600' : checkerInfo.days <= 365 ? 'text-orange-500' : 'text-red-500'}`}>
-                          {checkerInfo.days} দিন
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-2 flex-wrap">
-
-                          {/* ✏️ সরাসরি Edit — Draft বা Edit Allowed */}
-                          {canDirectEdit && (
-                            <button
-                              onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
-                              className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${
-                                sub.status === 'draft'
-                                  ? 'bg-gray-600 text-white hover:bg-gray-700'
-                                  : 'bg-blue-600 text-white hover:bg-blue-700'
-                              }`}>
-                              ✏️ Edit
-                            </button>
-                          )}
-
-                          {/* 📝 Edit Request — Submitted বা Approved (৭ দিনের মধ্যে) */}
-                          {canDirectRequest && (
-                            <button onClick={() => openEditRequest(sub)}
-                              className="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
-                              📝 Edit Request
-                            </button>
-                          )}
-
-                          {/* 💬 Regional কে জানান — ৭ দিনের বেশি */}
-                          {needsRegional && (
-                            <button onClick={goToChat}
-                              title="Regional Manager কে chat এ জানান"
-                              className="text-xs px-3 py-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition">
-                              💬 Regional কে জানান
-                            </button>
-                          )}
-
-                          {/* ⏳ Pending badge */}
-                          {reqStatus === 'pending' && (
-                            <span className="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full">⏳ Pending</span>
-                          )}
-
-                          {/* ✅ Approved indicator */}
-                          {!canDirectEdit && !canDirectRequest && !needsRegional && reqStatus !== 'pending' && (
-                            <span className={`text-xs px-2 py-1 rounded font-mono ${
-                              sub.status === 'approved' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'
-                            }`}>
-                              {sub.status === 'approved' ? '📊 Approved' : '—'}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {submissions.map(sub => {
+                const checkerInfo = getRequiredChecker(sub.submission_date)
+                const reqStatus = getRequestStatus(sub.id)
+                const todayStr = new Date().toISOString().split('T')[0]
+                const isToday = sub.submission_date === todayStr
+                const canDirectEdit = sub.status === 'draft' || sub.status === 'edit_allowed' || (isToday && ['approved', 'submitted'].includes(sub.status))
+                const canDirectRequest = checkerInfo.days <= 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
+                const needsRegional = checkerInfo.days > 7 && (sub.status === 'approved' || sub.status === 'submitted') && !reqStatus
+                return (
+                  <div key={sub.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm">{sub.forms?.title}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">📅 {sub.submission_date}</p>
+                      </div>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${STATUS_COLORS[sub.status] || 'bg-gray-100 text-gray-600'}`}>
+                        {STATUS_LABELS[sub.status] || sub.status}
+                      </span>
+                    </div>
+                    <p className={`text-xs font-medium ${checkerInfo.days <= 7 ? 'text-green-600' : checkerInfo.days <= 365 ? 'text-orange-500' : 'text-red-500'}`}>
+                      ⏱ {checkerInfo.days} দিন আগে
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {canDirectEdit && (
+                        <button onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
+                          className={`text-xs px-3 py-2 rounded-lg font-medium transition ${sub.status === 'draft' ? 'bg-gray-600 text-white' : 'bg-blue-600 text-white'}`}>
+                          ✏️ Edit
+                        </button>
+                      )}
+                      {canDirectRequest && (
+                        <button onClick={() => openEditRequest(sub)}
+                          className="text-xs px-3 py-2 bg-orange-500 text-white rounded-lg">
+                          📝 Edit Request
+                        </button>
+                      )}
+                      {needsRegional && (
+                        <button onClick={goToChat}
+                          className="text-xs px-3 py-2 bg-purple-500 text-white rounded-lg">
+                          💬 Regional কে জানান
+                        </button>
+                      )}
+                      {reqStatus === 'pending' && (
+                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-2 rounded-full">⏳ Pending</span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
         )}
       </div>
 

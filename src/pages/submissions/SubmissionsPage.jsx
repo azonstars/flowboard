@@ -220,79 +220,116 @@ export default function SubmissionsPage() {
         </div>
       </div>
 
-      {/* Submissions Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-        {loading ? (
-          <SkeletonTable rows={6} cols={5} />
-        ) : submissions.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <p className="text-4xl mb-3">📭</p>
-            <p>কোনো submission পাওয়া যায়নি</p>
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ফর্ম</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Branch</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">তারিখ</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {submissions.map(sub => (
-                <tr key={sub.id} className="hover:bg-gray-50 transition">
-                  <td className="px-5 py-4">
-                    <p className="font-medium text-gray-800 text-sm">{sub.forms?.title || '—'}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{sub.profiles?.full_name}</p>
-                  </td>
-                  <td className="px-5 py-4 text-sm text-gray-700">{getBranchName(sub.branch_code)}</td>
-                  <td className="px-5 py-4 text-sm text-gray-600">{sub.submission_date}</td>
-                  <td className="px-5 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[sub.status]}`}>
-                      {STATUS_LABELS[sub.status]}
-                    </span>
-                    {sub.status === 'rejected' && sub.rejection_reason && (
-                      <p className="text-xs text-red-400 mt-1 max-w-xs truncate" title={sub.rejection_reason}>
-                        কারণ: {sub.rejection_reason}
-                      </p>
-                    )}
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <button
-                        onClick={() => openDetail(sub)}
-                        className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
-                      >
-                        👁 দেখুন
-                      </button>
-                      {isChecker && sub.status === 'submitted' && (
-                        <>
-                          <button
-                            onClick={() => handleApprove(sub)}
-                            disabled={processing}
-                            className="text-xs px-3 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition disabled:opacity-50"
-                          >
-                            ✅ Approve
-                          </button>
-                          <button
-                            onClick={() => openRejectModal(sub)}
-                            disabled={processing}
-                            className="text-xs px-3 py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition disabled:opacity-50"
-                          >
-                            ❌ Reject
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
+      {/* Submissions Table/Cards */}
+      {loading ? (
+        <SkeletonTable rows={6} cols={5} />
+      ) : submissions.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-sm text-center py-12 text-gray-400">
+          <p className="text-4xl mb-3">📭</p>
+          <p>কোনো submission পাওয়া যায়নি</p>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ফর্ম</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Branch</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">তারিখ</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {submissions.map(sub => (
+                  <tr key={sub.id} className="hover:bg-gray-50 transition">
+                    <td className="px-5 py-4">
+                      <p className="font-medium text-gray-800 text-sm">{sub.forms?.title || '—'}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{sub.profiles?.full_name}</p>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-700">{getBranchName(sub.branch_code)}</td>
+                    <td className="px-5 py-4 text-sm text-gray-600">{sub.submission_date}</td>
+                    <td className="px-5 py-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[sub.status]}`}>
+                        {STATUS_LABELS[sub.status]}
+                      </span>
+                      {sub.status === 'rejected' && sub.rejection_reason && (
+                        <p className="text-xs text-red-400 mt-1 max-w-xs truncate" title={sub.rejection_reason}>
+                          কারণ: {sub.rejection_reason}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button onClick={() => openDetail(sub)}
+                          className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                          👁 দেখুন
+                        </button>
+                        {isChecker && sub.status === 'submitted' && (
+                          <>
+                            <button onClick={() => handleApprove(sub)} disabled={processing}
+                              className="text-xs px-3 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition disabled:opacity-50">
+                              ✅ Approve
+                            </button>
+                            <button onClick={() => openRejectModal(sub)} disabled={processing}
+                              className="text-xs px-3 py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition disabled:opacity-50">
+                              ❌ Reject
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {submissions.map(sub => (
+              <div key={sub.id} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">{sub.forms?.title || '—'}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{sub.profiles?.full_name}</p>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${STATUS_COLORS[sub.status]}`}>
+                    {STATUS_LABELS[sub.status]}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <span>🏢 {getBranchName(sub.branch_code)}</span>
+                  <span>📅 {sub.submission_date}</span>
+                </div>
+                {sub.status === 'rejected' && sub.rejection_reason && (
+                  <p className="text-xs text-red-400 bg-red-50 rounded-lg px-3 py-2">কারণ: {sub.rejection_reason}</p>
+                )}
+                <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
+                  <button onClick={() => openDetail(sub)}
+                    className="flex-1 text-xs px-3 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition text-center">
+                    👁 দেখুন
+                  </button>
+                  {isChecker && sub.status === 'submitted' && (
+                    <>
+                      <button onClick={() => handleApprove(sub)} disabled={processing}
+                        className="flex-1 text-xs px-3 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition disabled:opacity-50 text-center">
+                        ✅ Approve
+                      </button>
+                      <button onClick={() => openRejectModal(sub)} disabled={processing}
+                        className="flex-1 text-xs px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition disabled:opacity-50 text-center">
+                        ❌ Reject
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Detail Modal */}
       {showDetailModal && selectedSubmission && (
