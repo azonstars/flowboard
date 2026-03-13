@@ -1,7 +1,24 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { ROLES } from '../../constants/roles'
 import { supabase } from '../../services/supabase'
+
+
+// Admin-এর জন্য Control Panel static group
+const CONTROL_PANEL = {
+  id: '__control_panel__',
+  label: 'Control Panel',
+  icon: '⚙️',
+  path: '#',
+  roles: [ROLES.ADMIN],
+  children: [
+    { id: '__cp_settings__',     label: 'App Settings',   icon: '🔧', path: '/settings',     roles: [ROLES.ADMIN] },
+    { id: '__cp_users__',        label: 'Users',          icon: '👥', path: '/users',         roles: [ROLES.ADMIN] },
+    { id: '__cp_branches__',     label: 'Branches',       icon: '🏢', path: '/branches',      roles: [ROLES.ADMIN] },
+    { id: '__cp_permissions__',  label: 'Permissions',    icon: '🔒', path: '/permissions',   roles: [ROLES.ADMIN, ROLES.REGIONAL_CHECKER] },
+  ],
+}
 
 export default function Sidebar({ isOpen, onClose }) {
   const { profile, allMenuItems } = useAuth()
@@ -9,10 +26,19 @@ export default function Sidebar({ isOpen, onClose }) {
   const [expandedItems, setExpandedItems] = useState({})
   const [chatUnread, setChatUnread] = useState(0)
 
+  // DB-based menu items (Users/Branches/Permissions/Settings Control Panel-এ গেছে তাই বাদ)
+  const CONTROL_PANEL_PATHS = ['/users', '/branches', '/permissions', '/settings']
   const filteredItems = allMenuItems.filter(item => {
+    if (CONTROL_PANEL_PATHS.includes(item.path)) return false
     if (!item.roles || item.roles.length === 0) return true
     return item.roles.includes(profile?.role)
   })
+
+  // Control Panel: admin বা regional_checker হলে দেখাবে
+  const showControlPanel = [ROLES.ADMIN, ROLES.REGIONAL_CHECKER].includes(profile?.role)
+  const controlPanelChildren = CONTROL_PANEL.children.filter(c =>
+    c.roles.includes(profile?.role)
+  )
 
   const isActive = (path) => path && path !== '#' && location.pathname.startsWith(path)
   const toggleExpand = (id) => setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }))
@@ -147,6 +173,41 @@ export default function Sidebar({ isOpen, onClose }) {
               </div>
             )
           })}
+          {/* Control Panel — static admin group */}
+          {showControlPanel && (
+            <div>
+              <div className={`flex items-center rounded-lg transition ${
+                controlPanelChildren.some(c => isActive(c.path))
+                  ? 'bg-white text-blue-900'
+                  : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+              }`}>
+                <button onClick={() => toggleExpand(CONTROL_PANEL.id)}
+                  className="flex items-center gap-3 px-3 py-2.5 flex-1 text-left w-full">
+                  <span className="text-lg shrink-0">{CONTROL_PANEL.icon}</span>
+                  <span className="font-medium flex-1 text-sm">Control Panel</span>
+                  <svg className={`w-4 h-4 transition-transform duration-200 shrink-0 ${expandedItems[CONTROL_PANEL.id] ? 'rotate-180' : ''}`}
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+              {expandedItems[CONTROL_PANEL.id] && (
+                <div className="ml-4 mt-1 space-y-1 border-l-2 border-blue-700 pl-3">
+                  {controlPanelChildren.map(child => (
+                    <Link key={child.id} to={child.path} onClick={onClose}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition text-sm ${
+                        isActive(child.path)
+                          ? 'bg-white text-blue-900 font-semibold'
+                          : 'text-blue-300 hover:bg-blue-800 hover:text-white'
+                      }`}>
+                      <span className="text-base shrink-0">{child.icon}</span>
+                      <span>{child.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </nav>
 
         {/* Bottom User Info */}
