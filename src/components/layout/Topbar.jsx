@@ -7,6 +7,7 @@ import {
   subscribeToNotifications
 } from '../../services/notificationService'
 import toast from 'react-hot-toast'
+import { requestNotificationPermission, canInstallPWA, installPWA, isInstalledPWA, initPWAInstallPrompt } from '../../services/pwaService'
 import { supabase } from '../../services/supabase'
 
 const TYPE_ICON = {
@@ -35,7 +36,30 @@ export default function Topbar({ onMenuClick }) {
   const subscriptionRef = useRef(null)
 
   const unreadCount = notifications.filter(n => !n.is_read).length
+
+  // PWA init
+  useEffect(() => {
+    initPWAInstallPrompt()
+    setIsPWA(isInstalledPWA())
+    const checkInstall = setInterval(() => setCanInstall(canInstallPWA()), 1000)
+    return () => clearInterval(checkInstall)
+  }, [])
+
+  const handleRequestNotif = async () => {
+    const result = await requestNotificationPermission()
+    setNotifPermission(result)
+    if (result === 'granted') toast.success('Notification চালু হয়েছে!')
+    else if (result === 'denied') toast.error('Notification block করা আছে। Browser settings থেকে allow করুন।')
+  }
+
+  const handleInstallPWA = async () => {
+    const accepted = await installPWA()
+    if (accepted) toast.success('FlowBoard install হচ্ছে!')
+  }
   const [chatUnread, setChatUnread] = useState(0)
+  const [notifPermission, setNotifPermission] = useState(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
+  const [canInstall, setCanInstall] = useState(false)
+  const [isPWA, setIsPWA] = useState(false)
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -97,6 +121,12 @@ export default function Topbar({ onMenuClick }) {
       const n = payload.new
       setNotifications(prev => [n, ...prev])
       toast(`${TYPE_ICON[n.type] || '🔔'} ${n.title}`, { duration: 5000 })
+      // Browser notification (PWA)
+      if (Notification.permission === 'granted') {
+        import('../../services/pwaService').then(({ showNotification }) => {
+          showNotification(n.title || '🔔 নতুন notification', { body: n.message || '' })
+        })
+      }
     })
     return () => subscriptionRef.current?.unsubscribe()
   }, [profile?.id])
@@ -177,6 +207,27 @@ export default function Topbar({ onMenuClick }) {
       <div className="hidden lg:block" />
 
       <div className="flex items-center gap-2">
+        {/* PWA Install Button */}
+        {canInstall && !isPWA && (
+          <button onClick={handleInstallPWA}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition"
+            title="App হিসেবে install করুন">
+            📲 Install App
+          </button>
+        )}
+
+        {/* Notification Permission Button */}
+        {notifPermission === 'default' && (
+          <button onClick={handleRequestNotif}
+            className="p-2 rounded-lg hover:bg-gray-100 transition text-yellow-500"
+            title="Notification চালু করুন">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </button>
+        )}
+
         {/* Chat Button */}
         <button onClick={() => navigate('/chat')} className="relative p-2 rounded-lg hover:bg-gray-100 transition text-gray-600" title="Chat">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
