@@ -25,6 +25,7 @@ import BranchSubmissionsPage from '../pages/submissions/BranchSubmissionsPage'
 import ProfilePage from '../pages/profile/ProfilePage'
 import ChatPage from '../pages/chat/ChatPage'
 import AuditLogPage from '../pages/audit/AuditLogPage'
+import ExcelImportPage from '../pages/submissions/ExcelImportPage'
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -188,6 +189,11 @@ export default function AppRoutes() {
           </PrivateRoute>
         } />
 
+        <Route path="/excel-import" element={
+          <PrivateRoute roles={[ROLES.ADMIN, ROLES.CENTRAL_CHECKER, ROLES.DIVISIONAL_CHECKER, ROLES.REGIONAL_CHECKER]}>
+            <ExcelImportPage />
+          </PrivateRoute>
+        } />
         <Route path="/audit-log" element={
           <PrivateRoute>
             <DashboardLayout><AuditLogPage /></DashboardLayout>

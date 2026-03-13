@@ -17,6 +17,7 @@ const CONTROL_PANEL = {
     { id: '__cp_users__',        label: 'Users',          icon: '👥', path: '/users',         roles: [ROLES.ADMIN] },
     { id: '__cp_branches__',     label: 'Branches',       icon: '🏢', path: '/branches',      roles: [ROLES.ADMIN] },
     { id: '__cp_permissions__',  label: 'Permissions',    icon: '🔒', path: '/permissions',   roles: [ROLES.ADMIN, ROLES.REGIONAL_CHECKER] },
+    { id: '__cp_excel__',        label: 'Excel Import',   icon: '📥', path: '/excel-import',  roles: [ROLES.ADMIN, ROLES.CENTRAL_CHECKER, ROLES.DIVISIONAL_CHECKER, ROLES.REGIONAL_CHECKER] },
   ],
 }
 
