@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { SkeletonDashboard, SkeletonStatCard } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
+import MenuSummaryPanel from '../../components/dashboard/MenuSummaryPanel'
 import { supabase } from '../../services/supabase'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -44,6 +45,7 @@ const ActivityHeatmap = ({ data }) => {
         {['bg-gray-100','bg-blue-100','bg-blue-300','bg-blue-500','bg-blue-700'].map((c,i) => <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />)}
         <span>বেশি</span>
       </div>
+      <MenuSummaryPanel />
     </div>
   )
 }
@@ -346,6 +348,7 @@ export default function AdminDashboard() {
                 </>}
           </div>
         )}
+      <MenuSummaryPanel />
     </div>
   )
 }

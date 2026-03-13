@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonDashboard } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
+import MenuSummaryPanel from '../../components/dashboard/MenuSummaryPanel'
 import { supabase } from '../../services/supabase'
 import { useNavigate } from 'react-router-dom'
 import { getMyPendingRequests, approveEditRequest, rejectEditRequest } from '../../services/editRequestService'
@@ -287,6 +288,7 @@ export default function CentralCheckerDashboard() {
           </div>
         </div>
       )}
+      <MenuSummaryPanel />
     </div>
   )
 }

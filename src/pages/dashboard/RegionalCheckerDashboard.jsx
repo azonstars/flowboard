@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonDashboard } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
+import MenuSummaryPanel from '../../components/dashboard/MenuSummaryPanel'
 import { supabase } from '../../services/supabase'
 import { useNavigate } from 'react-router-dom'
 import { getMyPendingRequests, approveEditRequest, rejectEditRequest, escalateEditRequest } from '../../services/editRequestService'
@@ -327,6 +328,7 @@ export default function RegionalCheckerDashboard() {
           </div>
         </div>
       )}
+      <MenuSummaryPanel regionId={profile?.region_id} />
     </div>
   )
 }
