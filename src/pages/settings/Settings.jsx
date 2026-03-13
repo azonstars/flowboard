@@ -264,6 +264,19 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                               onChange={e => onUpdate(item, 'updateChild', { ...child, path: e.target.value })}
                               className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                               placeholder="Path (e.g. /reports)" />
+                            {/* Child Icon Picker */}
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Icon</label>
+                              <div className="flex flex-wrap gap-1 p-2 bg-gray-50 rounded-lg max-h-28 overflow-y-auto">
+                                {AVAILABLE_ICONS.map(icon => (
+                                  <button key={icon}
+                                    onClick={() => onUpdate(item, 'updateChild', { ...child, icon })}
+                                    className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${child.icon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
+                                    {icon}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
                             {/* Child Roles */}
                             <div>
                               <label className="block text-xs font-medium text-gray-600 mb-1">Visible to Roles</label>
@@ -694,10 +707,15 @@ export default function Settings() {
               link_type: child.link_type || 'path',
             }
             if (child.report_id) childData.report_id = child.report_id
+            if (child.form_id) childData.form_id = child.form_id
             if (String(child.id).startsWith('new_')) {
               await createMenuItem(childData)
             } else {
               await updateMenuItem(child.id, childData)
+              // form-type child হলে forms table-এও menu_icon আপডেট করো
+              if (child.link_type === 'form' && child.form_id && child.icon) {
+                await updateForm(child.form_id, { menu_icon: child.icon })
+              }
             }
           }
 
