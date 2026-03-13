@@ -118,8 +118,23 @@ export default function AdvancedReportViewer() {
       const weekRange  = getCurrentWeekRange()
       const hasWeekly   = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'weekly')
       const hasPrevYear = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'prev_year')
-      const [main, prev, week] = await Promise.all([
-        fetchSubmissions({ formId: selected.form_id, dateFrom, dateTo, branchCodes: codes }),
+      const isLatest = selected.report_mode === 'latest'
+
+      let mainSubs = await fetchSubmissions({ formId: selected.form_id, dateFrom, dateTo, branchCodes: codes })
+
+      // Latest mode: প্রতি branch-এর জন্য সর্বশেষ submission রাখো
+      if (isLatest) {
+        const latestMap = {}
+        mainSubs.forEach(s => {
+          const key = s.branch_code
+          if (!latestMap[key] || s.submission_date > latestMap[key].submission_date) {
+            latestMap[key] = s
+          }
+        })
+        mainSubs = Object.values(latestMap)
+      }
+
+      const [prev, week] = await Promise.all([
         hasPrevYear && selected.prev_year_form_id
           ? fetchSubmissions({ formId: selected.prev_year_form_id, dateFrom, dateTo, branchCodes: codes })
           : Promise.resolve([]),
@@ -127,7 +142,7 @@ export default function AdvancedReportViewer() {
           ? fetchSubmissions({ formId: selected.form_id, dateFrom: weekRange.from, dateTo: weekRange.to, branchCodes: codes })
           : Promise.resolve([]),
       ])
-      setSubs(main); setPrevSubs(prev); setWeekSubs(week)
+      setSubs(mainSubs); setPrevSubs(prev); setWeekSubs(week)
     } catch (e) { toast.error(e.message) }
     finally { setLoading(false) }
   }, [selected, dateFrom, dateTo, fDiv, fReg, fBranch, branches, isDivisional, isRegional, isBranch, profile])
@@ -687,7 +702,12 @@ export default function AdvancedReportViewer() {
                 <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center flex-wrap gap-2">
                   <div>
                     <h2 className="font-bold text-gray-800">{selected.title}</h2>
-                    <p className="text-xs text-gray-400">{dateFrom} — {dateTo} · {subs.length} submissions</p>
+                    <p className="text-xs text-gray-400 flex items-center gap-2">
+                  <span>{dateFrom} — {dateTo} · {subs.length} submissions</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${selected?.report_mode === 'latest' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
+                    {selected?.report_mode === 'latest' ? '🟠 সর্বশেষ' : '🔵 সর্বমোট'}
+                  </span>
+                </p>
                   </div>
                   <div className="flex gap-2">
                     {(isAdmin || isCentral) && (

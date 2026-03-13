@@ -140,6 +140,7 @@ export default function FormBuilderPage() {
   const [templates, setTemplates] = useState([])
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false)
+  const [reportMode, setReportMode] = useState('cumulative')
   const [templateName, setTemplateName] = useState('')
 
   useEffect(() => {
@@ -154,6 +155,7 @@ export default function FormBuilderPage() {
       setFormDescription(form.description || '')
       setExpiresAt(form.expires_at || '')
       setFields(form.fields || [])
+      setReportMode(form.report_mode || 'cumulative')
     } catch (error) { toast.error(error.message) }
   }
 
@@ -225,6 +227,7 @@ export default function FormBuilderPage() {
         title: formTitle, description: formDescription, fields,
         is_active: true, created_by: profile.id,
         expires_at: expiresAt || null,
+        report_mode: reportMode,
       }
       if (editId) await updateForm(editId, formData)
       else await createForm(formData)
@@ -307,6 +310,32 @@ export default function FormBuilderPage() {
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Form এর বিবরণ (optional)" rows={2} />
         </div>
+        {/* Report Mode */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            📊 রিপোর্ট Mode
+            <span className="ml-2 text-xs text-gray-400 font-normal">এই form-এর data রিপোর্টে কীভাবে দেখাবে</span>
+          </label>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setReportMode('cumulative')}
+              className={`flex-1 px-4 py-3 rounded-xl border-2 text-left transition ${reportMode === 'cumulative' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+              <p className={`text-sm font-semibold ${reportMode === 'cumulative' ? 'text-blue-700' : 'text-gray-700'}`}>
+                {reportMode === 'cumulative' ? '🔵' : '⚪'} সর্বমোট যোগফল
+              </p>
+              <p className="text-xs text-gray-500 mt-1">অর্থবছর / ক্যালেন্ডার বছরে এ পর্যন্ত সব submission-এর যোগফল দেখাবে</p>
+            </button>
+            <button
+              onClick={() => setReportMode('latest')}
+              className={`flex-1 px-4 py-3 rounded-xl border-2 text-left transition ${reportMode === 'latest' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}>
+              <p className={`text-sm font-semibold ${reportMode === 'latest' ? 'text-orange-700' : 'text-gray-700'}`}>
+                {reportMode === 'latest' ? '🟠' : '⚪'} সর্বশেষ ইনপুট
+              </p>
+              <p className="text-xs text-gray-500 mt-1">অর্থবছর / ক্যালেন্ডার বছরের মধ্যে সর্বশেষ submission-এর data দেখাবে</p>
+            </button>
+          </div>
+        </div>
+
         {expiresAt && (
           <div className={`text-sm px-3 py-2 rounded-lg ${new Date(expiresAt) < new Date() ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
             {new Date(expiresAt) < new Date()

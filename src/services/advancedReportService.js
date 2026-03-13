@@ -4,10 +4,15 @@ import { supabase } from './supabase'
 export const getAdvancedReportTemplates = async () => {
   const { data, error } = await supabase
     .from('advanced_report_templates')
-    .select('*').eq('is_active', true)
+    .select('*, forms!form_id(report_mode)')
+    .eq('is_active', true)
     .order('created_at', { ascending: false })
   if (error) throw error
-  return data
+  // form-এর report_mode template-এ merge করো
+  return (data || []).map(t => ({
+    ...t,
+    report_mode: t.forms?.report_mode || 'cumulative',
+  }))
 }
 
 export const getAdvancedReportTemplateById = async (id) => {
@@ -42,7 +47,7 @@ export const deleteAdvancedReportTemplate = async (id) => {
 }
 
 // ─── Data Fetch ───────────────────────────────────────────────────────────────
-export const fetchSubmissions = async ({ formId, dateFrom, dateTo, branchCodes }) => {
+export const fetchSubmissions = async ({ formId, dateFrom, dateTo, branchCodes, latestOnly = false }) => {
   if (!formId) return []
   let q = supabase
     .from('form_submissions')
@@ -55,6 +60,21 @@ export const fetchSubmissions = async ({ formId, dateFrom, dateTo, branchCodes }
   const { data, error } = await q
   if (error) throw error
   return data || []
+}
+
+// সাপ্তাহিক range — বৃহস্পতিবার থেকে পরের বৃহস্পতিবার
+export const getCurrentWeekRange = () => {
+  const now = new Date()
+  const day = now.getDay()
+  const diffToLastThu = (day + 3) % 7
+  const lastThu = new Date(now)
+  lastThu.setDate(now.getDate() - diffToLastThu)
+  const nextThu = new Date(lastThu)
+  nextThu.setDate(lastThu.getDate() + 7)
+  return {
+    from: lastThu.toISOString().split('T')[0],
+    to: nextThu.toISOString().split('T')[0],
+  }
 }
 
 // ─── Calculation Helpers ──────────────────────────────────────────────────────
@@ -81,18 +101,22 @@ export const calcPercent = (rowData, col) => {
 
 export const buildRowData = ({ label, subs, prevSubs = [], weekSubs = [], allCols, isTotal = false }) => {
   const row = { label, isTotal }
+  // Step 1: normal columns
   for (const col of allCols) {
     if (['percent','weekly','prev_year'].includes(col.calcType)) continue
     row[col.id] = calcVal(subs, col) || 0
   }
+  // Step 2: prev_year
   for (const col of allCols) {
     if (col.calcType !== 'prev_year') continue
     row[col.id] = calcVal(prevSubs, { ...col, calcType: 'sum' }) || 0
   }
+  // Step 3: weekly
   for (const col of allCols) {
     if (col.calcType !== 'weekly') continue
     row[col.id] = calcVal(weekSubs, { ...col, calcType: 'sum' }) || 0
   }
+  // Step 4: percent (depends on above)
   for (const col of allCols) {
     if (col.calcType !== 'percent') continue
     row[col.id] = calcPercent(row, col)
@@ -100,29 +124,17 @@ export const buildRowData = ({ label, subs, prevSubs = [], weekSubs = [], allCol
   return row
 }
 
+// Total row — data rows এর sum
 export const buildTotalRow = ({ label = 'সর্বমোট', rows, allCols }) => {
   const total = { label, isTotal: true }
   for (const col of allCols) {
     if (col.calcType === 'percent') continue
     total[col.id] = rows.reduce((sum, r) => sum + (parseFloat(r[col.id]) || 0), 0)
   }
+  // percent recalculate from totals
   for (const col of allCols) {
     if (col.calcType !== 'percent') continue
     total[col.id] = calcPercent(total, col)
   }
   return total
-}
-
-export const getCurrentWeekRange = () => {
-  const now = new Date()
-  const day = now.getDay()
-  const diffToThursday = (day >= 4) ? day - 4 : day + 3
-  const thursday = new Date(now)
-  thursday.setDate(now.getDate() - diffToThursday)
-  const nextThursday = new Date(thursday)
-  nextThursday.setDate(thursday.getDate() + 7)
-  return {
-    from: thursday.toISOString().split('T')[0],
-    to: nextThursday.toISOString().split('T')[0],
-  }
 }
