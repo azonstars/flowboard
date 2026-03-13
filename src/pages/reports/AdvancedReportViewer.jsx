@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import EmptyState from '../../components/ui/EmptyState'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import { useAuth } from '../../context/AuthContext'
+import { getYearRangeToToday } from '../../services/appSettingsService'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ROLES } from '../../constants/roles'
 import {
@@ -18,7 +19,7 @@ import toast from 'react-hot-toast'
 import * as XLSX from 'xlsx'
 
 export default function AdvancedReportViewer() {
-  const { profile } = useAuth()
+  const { profile, appSettings } = useAuth()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const tableRef = useRef(null)
@@ -47,8 +48,10 @@ export default function AdvancedReportViewer() {
 
   const today        = new Date().toISOString().split('T')[0]
   const firstOfMonth = today.slice(0, 8) + '01'
-  const [dateFrom, setDateFrom] = useState(firstOfMonth)
-  const [dateTo, setDateTo]     = useState(today)
+  const [fiscalMode, setFiscalMode] = useState(appSettings?.fiscal_year_mode !== false)
+  const initRange    = getYearRangeToToday(appSettings?.fiscal_year_mode !== false)
+  const [dateFrom, setDateFrom] = useState(initRange.from)
+  const [dateTo, setDateTo]     = useState(initRange.to)
   const [fDiv, setFDiv]         = useState('')
   const [fReg, setFReg]         = useState('')
   const [fBranch, setFBranch]   = useState('')
@@ -603,6 +606,22 @@ export default function AdvancedReportViewer() {
               <div className="bg-white rounded-xl p-4 shadow-sm">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">ফিল্টার</p>
                 <div className="flex flex-wrap gap-3 items-end">
+                  {/* Fiscal Year Toggle */}
+                  <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                    <span className="text-xs text-gray-500">ক্যালেন্ডার</span>
+                    <button
+                      onClick={() => {
+                        const next = !fiscalMode
+                        setFiscalMode(next)
+                        const range = getYearRangeToToday(next)
+                        setDateFrom(range.from)
+                        setDateTo(range.to)
+                      }}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${fiscalMode ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${fiscalMode ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    </button>
+                    <span className="text-xs text-gray-500">অর্থবছর</span>
+                  </div>
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">শুরু</label>
                     <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}

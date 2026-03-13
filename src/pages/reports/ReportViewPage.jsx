@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { getReportLayouts, deleteReportLayout, getSubmissionsForReport } from '../../services/reportService'
 import { getDivisions, getRegions, getBranches } from '../../services/branchService'
 import { useAuth } from '../../context/AuthContext'
+import { getYearRangeToToday } from '../../services/appSettingsService'
 import { useNavigate } from 'react-router-dom'
 import { ROLES } from '../../constants/roles'
 import toast from 'react-hot-toast'
@@ -13,7 +14,7 @@ import autoTable from 'jspdf-autotable'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 export default function ReportViewPage() {
-  const { profile } = useAuth()
+  const { profile, appSettings } = useAuth()
   const navigate = useNavigate()
   const [layouts, setLayouts] = useState([])
   const [selectedLayout, setSelectedLayout] = useState(null)
@@ -41,12 +42,16 @@ export default function ReportViewPage() {
   const [filteredRegions, setFilteredRegions] = useState([])
   const [filteredBranches, setFilteredBranches] = useState([])
 
-  const [filters, setFilters] = useState({
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
-    division_id: '',
-    region_id: '',
-    branch_code: '',
+  const [fiscalMode, setFiscalMode] = useState(appSettings?.fiscal_year_mode !== false)
+  const [filters, setFilters] = useState(() => {
+    const range = getYearRangeToToday(appSettings?.fiscal_year_mode !== false)
+    return {
+      startDate: range.from,
+      endDate: range.to,
+      division_id: '',
+      region_id: '',
+      branch_code: '',
+    }
   })
 
   const isAdmin = profile?.role === ROLES.ADMIN
@@ -495,7 +500,22 @@ export default function ReportViewPage() {
               {/* Filters */}
               <div className="bg-white rounded-lg p-4 shadow-sm space-y-3">
                 <h3 className="text-sm font-semibold text-gray-700">🔍 ফিল্টার করুন</h3>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-3 items-end">
+                  {/* Fiscal Year Toggle */}
+                  <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                    <span className="text-xs text-gray-500">ক্যালেন্ডার</span>
+                    <button
+                      onClick={() => {
+                        const next = !fiscalMode
+                        setFiscalMode(next)
+                        const range = getYearRangeToToday(next)
+                        setFilters(p => ({ ...p, startDate: range.from, endDate: range.to }))
+                      }}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${fiscalMode ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${fiscalMode ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    </button>
+                    <span className="text-xs text-gray-500">অর্থবছর</span>
+                  </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">শুরুর তারিখ</label>
                     <input type="date" value={filters.startDate} onChange={e => setFilters({ ...filters, startDate: e.target.value })}
