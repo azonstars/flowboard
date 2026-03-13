@@ -63,3 +63,46 @@ export const getYearRangeToToday = (isFiscal = true) => {
   const today = new Date().toISOString().split('T')[0]
   return { ...range, to: today }
 }
+// Favicon upload — Supabase Storage-এ save করো
+export const uploadFavicon = async (file) => {
+  const { supabase } = await import('./supabase')
+  const ext = file.name.split('.').pop().toLowerCase()
+  const path = `favicon/favicon.${ext}`
+
+  // আগের favicon delete করো
+  await supabase.storage.from('app-assets').remove([path])
+
+  const { error } = await supabase.storage
+    .from('app-assets')
+    .upload(path, file, { cacheControl: '3600', upsert: true })
+  if (error) throw error
+
+  const { data } = supabase.storage.from('app-assets').getPublicUrl(path)
+  const url = data.publicUrl + '?t=' + Date.now() // cache bust
+
+  // app_settings-এ URL save করো
+  const { error: settingErr } = await supabase
+    .from('app_settings')
+    .upsert({ key: 'favicon_url', value: url, label: 'Favicon URL' }, { onConflict: 'key' })
+  if (settingErr) throw settingErr
+
+  return url
+}
+
+// Favicon URL থেকে dynamically set করো
+export const applyFavicon = (url) => {
+  if (!url) return
+  // existing favicon links আপডেট করো
+  const links = document.querySelectorAll("link[rel*='icon']")
+  links.forEach(link => { link.href = url })
+  // নতুন link যোগ করো যদি না থাকে
+  if (!links.length) {
+    const link = document.createElement('link')
+    link.rel = 'icon'
+    link.href = url
+    document.head.appendChild(link)
+  }
+  // PWA manifest icon-ও update করার চেষ্টা
+  const appleIcon = document.querySelector("link[rel='apple-touch-icon']")
+  if (appleIcon) appleIcon.href = url
+}

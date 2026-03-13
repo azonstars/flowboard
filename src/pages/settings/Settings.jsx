@@ -11,7 +11,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { getForms, updateForm, deleteForm } from '../../services/formService'
 import { getMenuItems, updateMenuItem, createMenuItem, deleteMenuItem } from '../../services/menuService'
 import { getReportLayouts } from '../../services/reportService'
-import { getAllAppSettings, updateAppSetting } from '../../services/appSettingsService'
+import { getAllAppSettings, updateAppSetting, uploadFavicon, applyFavicon } from '../../services/appSettingsService'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 
@@ -463,6 +463,8 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState('menu_manager') // menu_manager | features
   const [features, setFeatures] = useState([])
   const [featuresLoading, setFeaturesLoading] = useState(false)
+  const [faviconUploading, setFaviconUploading] = useState(false)
+  const [faviconUrl, setFaviconUrl] = useState('')
   const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'path' })
   const [showIconPicker, setShowIconPicker] = useState(false)
 
@@ -479,10 +481,39 @@ export default function Settings() {
     try {
       const data = await getAllAppSettings()
       setFeatures(data)
+      // favicon url আলাদা রাখো
+      const favicon = data.find(f => f.key === 'favicon_url')
+      if (favicon?.value) setFaviconUrl(favicon.value)
     } catch (error) {
       toast.error(error.message)
     } finally {
       setFeaturesLoading(false)
+    }
+  }
+
+  const handleFaviconUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const allowed = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/x-icon', 'image/webp']
+    if (!allowed.includes(file.type)) {
+      toast.error('PNG, JPG, SVG বা ICO ফাইল ব্যবহার করুন')
+      return
+    }
+    if (file.size > 500 * 1024) {
+      toast.error('ফাইল সাইজ ৫০০KB-এর বেশি হওয়া যাবে না')
+      return
+    }
+    setFaviconUploading(true)
+    try {
+      const url = await uploadFavicon(file)
+      setFaviconUrl(url)
+      applyFavicon(url)
+      toast.success('Favicon আপডেট হয়েছে! Page refresh করলে দেখা যাবে।')
+    } catch (err) {
+      toast.error('Upload ব্যর্থ: ' + err.message)
+    } finally {
+      setFaviconUploading(false)
+      e.target.value = ''
     }
   }
 
@@ -781,11 +812,31 @@ export default function Settings() {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-bold text-gray-800 mb-1">Feature Toggles</h2>
           <p className="text-sm text-gray-500 mb-6">প্রতিটি feature on/off করুন — সাথে সাথে সব user এর জন্য apply হবে।</p>
+          {/* Favicon Upload */}
+          <div className="mb-6 p-4 border border-gray-200 rounded-xl bg-gray-50">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <p className="font-medium text-gray-800 text-sm">🖼️ App Icon (Favicon)</p>
+                <p className="text-xs text-gray-500 mt-0.5">Address bar, PWA ও bookmark-এ দেখাবে। PNG/JPG/SVG/ICO — সর্বোচ্চ ৫০০KB।</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {faviconUrl && (
+                  <img src={faviconUrl} alt="favicon" className="w-8 h-8 rounded object-contain border border-gray-200 bg-white p-0.5" />
+                )}
+                <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${faviconUploading ? 'bg-gray-300 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                  {faviconUploading ? '⏳ Uploading...' : '📤 Icon Upload'}
+                  <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/x-icon,image/webp"
+                    className="hidden" onChange={handleFaviconUpload} disabled={faviconUploading} />
+                </label>
+              </div>
+            </div>
+          </div>
+
           {featuresLoading ? (
             <div className="text-center py-8 text-gray-400">Loading...</div>
           ) : (
             <div className="space-y-3">
-              {features.map(feature => (
+              {features.filter(f => f.key !== 'favicon_url').map(feature => (
                 <div key={feature.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-blue-200 hover:bg-blue-50 transition">
                   <div className="flex-1 mr-4">
                     <p className="font-medium text-gray-800 text-sm">{feature.label || feature.key}</p>
