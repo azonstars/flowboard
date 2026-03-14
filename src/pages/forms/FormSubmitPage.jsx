@@ -8,6 +8,12 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
 
+// সংখ্যাকে বাংলায় রূপান্তর করো
+const toBn = (num) => {
+  if (num === null || num === undefined || num === '') return '০'
+  return Number(num).toLocaleString('bn-BD')
+}
+
 export default function FormSubmitPage() {
   const { profile } = useAuth()
   const navigate = useNavigate()
@@ -284,8 +290,8 @@ export default function FormSubmitPage() {
                     return (
                       <span key={field.id} className="bg-blue-50 px-2 py-0.5 rounded">
                         <strong>{field.label}:</strong>
-                        {count ? ` সংখ্যা ${count}` : ''}
-                        {amount ? ` পরিমাণ ${amount.toFixed(2)}` : ''}
+                        {count ? ` সংখ্যা ${toBn(count)}` : ''}
+                        {amount ? ` পরিমাণ ${toBn(amount)}` : ''}
                       </span>
                     )
                   })}
@@ -310,13 +316,13 @@ export default function FormSubmitPage() {
                     {hasCount && (
                       <div className="flex-1 text-center">
                         <p className="text-xs text-gray-500 mb-1">সংখ্যা</p>
-                        <p className="text-lg font-bold text-green-700">{count || 0}</p>
+                        <p className="text-lg font-bold text-green-700">{toBn(count)}</p>
                       </div>
                     )}
                     {hasAmount && (
                       <div className="flex-1 text-center">
                         <p className="text-xs text-gray-500 mb-1">পরিমাণ</p>
-                        <p className="text-lg font-bold text-green-700">{amount?.toLocaleString('bn-BD') || 0}</p>
+                        <p className="text-lg font-bold text-green-700">{toBn(amount)}</p>
                       </div>
                     )}
                   </div>
@@ -338,13 +344,13 @@ export default function FormSubmitPage() {
                     {hasCount && (
                       <div className="flex-1 text-center">
                         <p className="text-xs text-gray-500 mb-1">সংখ্যা</p>
-                        <p className="text-xl font-bold text-blue-700">{count || 0}</p>
+                        <p className="text-xl font-bold text-blue-700">{toBn(count)}</p>
                       </div>
                     )}
                     {hasAmount && (
                       <div className="flex-1 text-center">
                         <p className="text-xs text-gray-500 mb-1">পরিমাণ</p>
-                        <p className="text-xl font-bold text-blue-700">{amount?.toLocaleString('bn-BD') || 0}</p>
+                        <p className="text-xl font-bold text-blue-700">{toBn(amount)}</p>
                       </div>
                     )}
                   </div>

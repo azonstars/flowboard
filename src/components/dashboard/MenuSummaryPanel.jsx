@@ -3,10 +3,10 @@ import { getDashboardMenuSummary } from '../../services/dashboardSummaryService'
 import { useAuth } from '../../context/AuthContext'
 
 const formatNumber = (val) => {
-  if (val >= 10000000) return (val / 10000000).toFixed(2) + ' কোটি'
-  if (val >= 100000)   return (val / 100000).toFixed(2) + ' লক্ষ'
-  if (val >= 1000)     return val.toLocaleString('bn-BD')
-  return val.toString()
+  if (!val && val !== 0) return '০'
+  if (val >= 10000000) return Number((val / 10000000).toFixed(2)).toLocaleString('bn-BD') + ' কোটি'
+  if (val >= 100000)   return Number((val / 100000).toFixed(2)).toLocaleString('bn-BD') + ' লক্ষ'
+  return Number(val).toLocaleString('bn-BD')
 }
 
 export default function MenuSummaryPanel({ branchCode = null, regionId = null, divisionId = null }) {
