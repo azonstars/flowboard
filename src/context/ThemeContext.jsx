@@ -58,8 +58,9 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [colorMode])
 
-  // Global theme load from Supabase
+  // Global theme — একবারই load করো (mount-এ)
   useEffect(() => {
+    let cancelled = false
     const load = async () => {
       try {
         const { data } = await supabase
@@ -67,7 +68,7 @@ export const ThemeProvider = ({ children }) => {
           .select('key, value')
           .in('key', ['app_name', 'app_logo_url', 'primary_color', 'sidebar_color', 'favicon_url'])
 
-        if (data?.length) {
+        if (!cancelled && data?.length) {
           const settings = {}
           data.forEach(s => { settings[s.key] = s.value })
           setGlobalTheme(prev => ({ ...prev, ...settings }))
@@ -78,7 +79,8 @@ export const ThemeProvider = ({ children }) => {
       }
     }
     load()
-  }, [])
+    return () => { cancelled = true }
+  }, []) // [] — শুধু একবার
 
   const setMode = (mode) => {
     setColorMode(mode)

@@ -26,7 +26,8 @@ const formatNotifTime = (ts) => {
 }
 
 export default function Topbar({ onMenuClick }) {
-  const { profile, signOut } = useAuth()
+  const { profile, appSettings, signOut } = useAuth()
+  const { colorMode, setMode } = useTheme()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
