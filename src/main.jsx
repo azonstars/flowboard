@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import AppRoutes from './routes/AppRoutes'
 import './index.css'
 import { supabase } from './services/supabase'
@@ -19,9 +20,11 @@ supabase
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <ThemeProvider>
     <AuthProvider>
       <AppRoutes />
       <Toaster position="top-right" />
     </AuthProvider>
+    </ThemeProvider>
   </StrictMode>
 )

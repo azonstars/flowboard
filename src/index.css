@@ -1,3 +1,82 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── CSS Variables — Theme System ─────────────────────── */
+:root {
+  --primary:        #2563eb;
+  --primary-dark:   #1d4ed8;
+  --primary-light:  #dbeafe;
+  --sidebar-bg:     #1e3a5f;
+  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-text:   rgba(255,255,255,0.75);
+  --sidebar-hover:  rgba(255,255,255,0.1);
+  --sidebar-active: #ffffff;
+  --sidebar-active-text: var(--sidebar-bg);
+}
+
+/* ── Dark Mode Variables ───────────────────────────────── */
+:root {
+  --bg-primary:   #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-card:      #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border:       #e5e7eb;
+}
+
+.dark {
+  --bg-primary:   #111827;
+  --bg-secondary: #1f2937;
+  --bg-card:      #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --border:       #374151;
+}
+
+/* ── Utility classes ────────────────────────────────────── */
+.bg-theme-primary   { background-color: var(--bg-primary); }
+.bg-theme-secondary { background-color: var(--bg-secondary); }
+.bg-theme-card      { background-color: var(--bg-card); }
+.text-theme-primary { color: var(--text-primary); }
+.text-theme-secondary { color: var(--text-secondary); }
+.border-theme       { border-color: var(--border); }
+
+/* ── Sidebar dynamic color ─────────────────────────────── */
+.sidebar-dynamic {
+  background-color: var(--sidebar-bg) !important;
+}
+.sidebar-border-dynamic {
+  border-color: var(--sidebar-border) !important;
+}
+
+/* ── Dark mode — main content areas ───────────────────── */
+.dark .bg-white       { background-color: var(--bg-card) !important; }
+.dark .bg-gray-50     { background-color: var(--bg-secondary) !important; }
+.dark .bg-gray-100    { background-color: #374151 !important; }
+.dark .text-gray-800  { color: var(--text-primary) !important; }
+.dark .text-gray-700  { color: #e5e7eb !important; }
+.dark .text-gray-600  { color: #d1d5db !important; }
+.dark .text-gray-500  { color: #9ca3af !important; }
+.dark .border-gray-200 { border-color: var(--border) !important; }
+.dark .border-gray-100 { border-color: #374151 !important; }
+.dark .shadow-sm      { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+
+/* ── Dark mode — inputs ─────────────────────────────────── */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dark select,
+.dark textarea {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+  border-color: #4b5563 !important;
+}
+
+/* ── Dark mode — tables ─────────────────────────────────── */
+.dark thead { background-color: #1f2937 !important; }
+.dark tbody tr:hover { background-color: #374151 !important; }
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb { background: #4b5563; }

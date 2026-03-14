@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { ROLES } from '../../constants/roles'
+import { useTheme } from '../../context/ThemeContext'
 import { supabase } from '../../services/supabase'
 
 
@@ -23,6 +24,7 @@ const CONTROL_PANEL = {
 
 export default function Sidebar({ isOpen, onClose }) {
   const { profile, allMenuItems } = useAuth()
+  const { globalTheme } = useTheme()
   const location = useLocation()
   const [expandedItems, setExpandedItems] = useState({})
   const [chatUnread, setChatUnread] = useState(0)
@@ -97,15 +99,19 @@ export default function Sidebar({ isOpen, onClose }) {
       )}
 
       <div className={`
-        fixed top-0 left-0 h-full w-64 bg-blue-900 text-white z-30
+        fixed top-0 left-0 h-full w-64 text-white z-30 sidebar-dynamic
         transform transition-transform duration-300
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:z-auto lg:shrink-0
       `}>
         {/* Logo */}
-        <div className="p-5 border-b border-blue-700 flex items-center justify-between">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold">FlowBoard</h1>
+            {globalTheme.app_logo_url ? (
+              <img src={globalTheme.app_logo_url} alt="logo" className="h-8 object-contain" />
+            ) : (
+              <h1 className="text-xl font-bold">{globalTheme.app_name || 'FlowBoard'}</h1>
+            )}
             <p className="text-blue-300 text-xs mt-0.5">
               {profile?.role?.replace(/_/g, ' ').toUpperCase()}
             </p>
@@ -128,7 +134,7 @@ export default function Sidebar({ isOpen, onClose }) {
             return (
               <div key={item.id}>
                 <div className={`flex items-center rounded-lg transition ${
-                  isParentActive ? 'bg-white text-blue-900' : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                  isParentActive ? 'bg-white/20 text-white font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
                 }`}>
                   {hasChildren(item) || item.path === '#' ? (
                     <button onClick={() => toggleExpand(item.id)}
@@ -157,13 +163,13 @@ export default function Sidebar({ isOpen, onClose }) {
                 </div>
 
                 {hasChildren(item) && isExpanded && (
-                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-blue-700 pl-3">
+                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/10 pl-3">
                     {children.map(child => (
                       <Link key={child.id} to={child.path || '#'} onClick={onClose}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition text-sm ${
                           isActive(child.path)
-                            ? 'bg-white text-blue-900 font-semibold'
-                            : 'text-blue-300 hover:bg-blue-800 hover:text-white'
+                            ? 'bg-white/20 text-white font-semibold'
+                            : 'text-white/60 hover:bg-white/10 hover:text-white'
                         }`}>
                         <span className="text-base shrink-0">{child.icon || '📌'}</span>
                         <span>{child.label}</span>
@@ -179,8 +185,8 @@ export default function Sidebar({ isOpen, onClose }) {
             <div>
               <div className={`flex items-center rounded-lg transition ${
                 controlPanelChildren.some(c => isActive(c.path))
-                  ? 'bg-white text-blue-900'
-                  : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                  ? 'bg-white/20 text-white'
+                  : 'text-white/70 hover:bg-white/10 hover:text-white'
               }`}>
                 <button onClick={() => toggleExpand(CONTROL_PANEL.id)}
                   className="flex items-center gap-3 px-3 py-2.5 flex-1 text-left w-full">
@@ -193,13 +199,13 @@ export default function Sidebar({ isOpen, onClose }) {
                 </button>
               </div>
               {expandedItems[CONTROL_PANEL.id] && (
-                <div className="ml-4 mt-1 space-y-1 border-l-2 border-blue-700 pl-3">
+                <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/10 pl-3">
                   {controlPanelChildren.map(child => (
                     <Link key={child.id} to={child.path} onClick={onClose}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg transition text-sm ${
                         isActive(child.path)
-                          ? 'bg-white text-blue-900 font-semibold'
-                          : 'text-blue-300 hover:bg-blue-800 hover:text-white'
+                          ? 'bg-white/20 text-white font-semibold'
+                          : 'text-white/60 hover:bg-white/10 hover:text-white'
                       }`}>
                       <span className="text-base shrink-0">{child.icon}</span>
                       <span>{child.label}</span>
@@ -212,7 +218,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Bottom User Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-blue-700 bg-blue-900">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 sidebar-dynamic">
           <p className="text-blue-200 text-sm font-medium truncate">{profile?.full_name}</p>
           <p className="text-blue-400 text-xs truncate">{profile?.branch_code || profile?.email}</p>
         </div>

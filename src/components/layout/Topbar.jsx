@@ -8,6 +8,7 @@ import {
 } from '../../services/notificationService'
 import toast from 'react-hot-toast'
 import { requestNotificationPermission, canInstallPWA, installPWA, isInstalledPWA, initPWAInstallPrompt } from '../../services/pwaService'
+import { useTheme } from '../../context/ThemeContext'
 import { supabase } from '../../services/supabase'
 
 const TYPE_ICON = {
@@ -228,6 +229,19 @@ export default function Topbar({ onMenuClick }) {
             📲 Install App
           </button>
         )}
+
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={() => setMode(colorMode === 'dark' ? 'light' : colorMode === 'light' ? 'system' : 'dark')}
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition text-gray-600 dark:text-gray-300"
+          title={colorMode === 'dark' ? 'Dark Mode' : colorMode === 'light' ? 'Light Mode' : 'System Mode'}>
+          {colorMode === 'dark'
+            ? <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+            : colorMode === 'light'
+            ? <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            : <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path strokeLinecap="round" strokeWidth={2} d="M8 21h8M12 17v4"/></svg>
+          }
+        </button>
 
         {/* Chat Button */}
         <button onClick={() => navigate('/chat')} className="relative p-2 rounded-lg hover:bg-gray-100 transition text-gray-600" title="Chat">

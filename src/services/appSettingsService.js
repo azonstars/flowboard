@@ -5,9 +5,16 @@ export const getAppSettings = async () => {
     .from('app_settings')
     .select('*')
   if (error) throw error
-  // key-value object হিসেবে return করো
+  // key-value object — boolean keys আলাদা, string keys আলাদা
+  const BOOLEAN_KEYS = ['fiscal_year_mode', 'submission_enabled']
   const settings = {}
-  data.forEach(s => { settings[s.key] = s.value === 'true' })
+  data.forEach(s => {
+    if (BOOLEAN_KEYS.includes(s.key)) {
+      settings[s.key] = s.value === 'true'
+    } else {
+      settings[s.key] = s.value // string as-is
+    }
+  })
   return settings
 }
 

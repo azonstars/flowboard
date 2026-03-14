@@ -12,6 +12,7 @@ import { getForms, updateForm, deleteForm } from '../../services/formService'
 import { getMenuItems, updateMenuItem, createMenuItem, deleteMenuItem } from '../../services/menuService'
 import { getReportLayouts } from '../../services/reportService'
 import { getAllAppSettings, updateAppSetting, uploadFavicon, applyFavicon } from '../../services/appSettingsService'
+import { useTheme } from '../../context/ThemeContext'
 import { getNotificationPrefs, saveNotificationPrefs } from '../../services/notificationPrefsService'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
@@ -468,6 +469,9 @@ export default function Settings() {
   const [faviconUrl, setFaviconUrl] = useState('')
   const [notifPrefs, setNotifPrefs] = useState(null)
   const [notifSaving, setNotifSaving] = useState(false)
+  const [themeDraft, setThemeDraft] = useState(null)
+  const [themeSaving, setThemeSaving] = useState(false)
+  const [logoUploading, setLogoUploading] = useState(false)
   const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'path' })
   const [showIconPicker, setShowIconPicker] = useState(false)
 
@@ -479,6 +483,7 @@ export default function Settings() {
   useEffect(() => { loadAll() }, [])
   useEffect(() => { if (activeTab === 'features') loadFeatures() }, [activeTab])
   useEffect(() => { if (activeTab === 'notifications' && profile?.id && !notifPrefs) loadNotifPrefs() }, [activeTab, profile?.id])
+  useEffect(() => { if (activeTab === 'theme' && !themeDraft) setThemeDraft({ ...globalTheme }) }, [activeTab, globalTheme])
 
   const loadFeatures = async () => {
     setFeaturesLoading(true)
@@ -492,6 +497,50 @@ export default function Settings() {
       toast.error(error.message)
     } finally {
       setFeaturesLoading(false)
+    }
+  }
+
+  const handleSaveTheme = async () => {
+    if (!themeDraft) return
+    setThemeSaving(true)
+    try {
+      const keys = ['app_name', 'app_logo_url', 'primary_color', 'sidebar_color']
+      for (const key of keys) {
+        if (themeDraft[key] !== undefined) {
+          await supabase.from('app_settings')
+            .upsert({ key, value: themeDraft[key], label: key }, { onConflict: 'key' })
+        }
+      }
+      updateGlobalTheme(themeDraft)
+      toast.success('Theme সেভ হয়েছে!')
+    } catch (e) {
+      toast.error(e.message)
+    } finally {
+      setThemeSaving(false)
+    }
+  }
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (file.size > 1024 * 1024) { toast.error('Logo ১MB-এর বেশি হওয়া যাবে না'); return }
+    setLogoUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `logo/logo.${ext}`
+      await supabase.storage.from('app-assets').remove([path])
+      const { error } = await supabase.storage.from('app-assets')
+        .upload(path, file, { cacheControl: '3600', upsert: true })
+      if (error) throw error
+      const { data } = supabase.storage.from('app-assets').getPublicUrl(path)
+      const url = data.publicUrl + '?t=' + Date.now()
+      setThemeDraft(p => ({ ...p, app_logo_url: url }))
+      toast.success('Logo upload হয়েছে! Save করুন।')
+    } catch (err) {
+      toast.error('Upload ব্যর্থ: ' + err.message)
+    } finally {
+      setLogoUploading(false)
+      e.target.value = ''
     }
   }
 
@@ -836,6 +885,12 @@ export default function Settings() {
           >
             🔔 Notifications
           </button>
+          <button
+            onClick={() => setActiveTab('theme')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'theme' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            🎨 Theme
+          </button>
         </div>
       </div>
 
@@ -884,6 +939,143 @@ export default function Settings() {
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Theme Tab */}
+      {activeTab === 'theme' && (
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-bold text-gray-800">🎨 Theme Settings</h2>
+              <p className="text-sm text-gray-500 mt-1">App-এর রং, নাম ও logo পরিবর্তন করুন — সব user-এর জন্য apply হবে।</p>
+            </div>
+            <button onClick={handleSaveTheme} disabled={themeSaving || !themeDraft}
+              className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+              {themeSaving ? '⏳ সেভ হচ্ছে...' : '💾 সেভ করুন'}
+            </button>
+          </div>
+
+          {!themeDraft ? <div className="text-center py-8 text-gray-400">Loading...</div> : (
+            <div className="space-y-6">
+
+              {/* App Name */}
+              <div className="p-4 border border-gray-200 rounded-xl">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">📝 App Name</label>
+                <input type="text" value={themeDraft.app_name || ''}
+                  onChange={e => setThemeDraft(p => ({ ...p, app_name: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="FlowBoard" />
+                <p className="text-xs text-gray-400 mt-1">Sidebar-এর শীর্ষে দেখাবে</p>
+              </div>
+
+              {/* App Logo */}
+              <div className="p-4 border border-gray-200 rounded-xl">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">🖼️ App Logo</label>
+                <div className="flex items-center gap-4">
+                  {themeDraft.app_logo_url ? (
+                    <img src={themeDraft.app_logo_url} alt="logo" className="h-12 object-contain border border-gray-200 rounded-lg p-1 bg-gray-50" />
+                  ) : (
+                    <div className="h-12 w-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 text-xs">No logo</div>
+                  )}
+                  <div className="flex gap-2">
+                    <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${logoUploading ? 'bg-gray-300 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                      {logoUploading ? '⏳ Uploading...' : '📤 Upload'}
+                      <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
+                    </label>
+                    {themeDraft.app_logo_url && (
+                      <button onClick={() => setThemeDraft(p => ({ ...p, app_logo_url: '' }))}
+                        className="px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm hover:bg-red-100 transition">
+                        সরান
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">Logo থাকলে App Name-এর বদলে logo দেখাবে। সর্বোচ্চ ১MB।</p>
+              </div>
+
+              {/* Primary Color */}
+              <div className="p-4 border border-gray-200 rounded-xl">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">🎨 Primary Color</label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {[
+                    { name: 'Blue',   color: '#2563eb' },
+                    { name: 'Indigo', color: '#4f46e5' },
+                    { name: 'Purple', color: '#7c3aed' },
+                    { name: 'Green',  color: '#16a34a' },
+                    { name: 'Teal',   color: '#0d9488' },
+                    { name: 'Red',    color: '#dc2626' },
+                    { name: 'Orange', color: '#ea580c' },
+                    { name: 'Pink',   color: '#db2777' },
+                  ].map(c => (
+                    <button key={c.color} onClick={() => setThemeDraft(p => ({ ...p, primary_color: c.color }))}
+                      title={c.name}
+                      className={`w-9 h-9 rounded-lg transition border-2 ${themeDraft.primary_color === c.color ? 'border-gray-800 scale-110' : 'border-transparent hover:scale-105'}`}
+                      style={{ backgroundColor: c.color }} />
+                  ))}
+                  <div className="flex items-center gap-2 ml-2">
+                    <input type="color" value={themeDraft.primary_color || '#2563eb'}
+                      onChange={e => setThemeDraft(p => ({ ...p, primary_color: e.target.value }))}
+                      className="w-9 h-9 rounded-lg cursor-pointer border border-gray-300" />
+                    <span className="text-xs text-gray-500">Custom</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400">Button, badge ও active state-এ এই রং ব্যবহার হবে</p>
+              </div>
+
+              {/* Sidebar Color */}
+              <div className="p-4 border border-gray-200 rounded-xl">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">📌 Sidebar Color</label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {[
+                    { name: 'Navy',    color: '#1e3a5f' },
+                    { name: 'Blue',    color: '#1d4ed8' },
+                    { name: 'Dark',    color: '#111827' },
+                    { name: 'Slate',   color: '#1e293b' },
+                    { name: 'Green',   color: '#14532d' },
+                    { name: 'Purple',  color: '#4c1d95' },
+                    { name: 'Red',     color: '#7f1d1d' },
+                    { name: 'Teal',    color: '#134e4a' },
+                  ].map(c => (
+                    <button key={c.color} onClick={() => setThemeDraft(p => ({ ...p, sidebar_color: c.color }))}
+                      title={c.name}
+                      className={`w-9 h-9 rounded-lg transition border-2 ${themeDraft.sidebar_color === c.color ? 'border-gray-800 scale-110' : 'border-transparent hover:scale-105'}`}
+                      style={{ backgroundColor: c.color }} />
+                  ))}
+                  <div className="flex items-center gap-2 ml-2">
+                    <input type="color" value={themeDraft.sidebar_color || '#1e3a5f'}
+                      onChange={e => setThemeDraft(p => ({ ...p, sidebar_color: e.target.value }))}
+                      className="w-9 h-9 rounded-lg cursor-pointer border border-gray-300" />
+                    <span className="text-xs text-gray-500">Custom</span>
+                  </div>
+                </div>
+                {/* Preview */}
+                <div className="mt-2 rounded-lg p-3 flex items-center gap-3" style={{ backgroundColor: themeDraft.sidebar_color }}>
+                  <span className="text-white text-sm font-bold">{themeDraft.app_name || 'FlowBoard'}</span>
+                  <span className="text-white/60 text-xs">← Preview</span>
+                </div>
+              </div>
+
+              {/* Favicon — moved from Feature Toggles */}
+              <div className="p-4 border border-gray-200 rounded-xl">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">🌐 Favicon (Address Bar Icon)</label>
+                <div className="flex items-center gap-4">
+                  {themeDraft.favicon_url ? (
+                    <img src={themeDraft.favicon_url} alt="favicon" className="w-10 h-10 rounded object-contain border border-gray-200 bg-white p-1" />
+                  ) : (
+                    <div className="w-10 h-10 border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-xs">Icon</div>
+                  )}
+                  <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${faviconUploading ? 'bg-gray-300 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                    {faviconUploading ? '⏳ Uploading...' : '📤 Upload Favicon'}
+                    <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/x-icon,image/webp"
+                      className="hidden" onChange={handleFaviconUpload} disabled={faviconUploading} />
+                  </label>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">PNG/JPG/SVG/ICO — সর্বোচ্চ ৫০০KB</p>
+              </div>
+
             </div>
           )}
         </div>
