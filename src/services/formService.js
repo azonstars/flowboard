@@ -153,6 +153,7 @@ export const rejectSubmission = async (id, rejectedBy, reason) => {
 }
 
 export const getTodaySubmission = async (formId, branchCode) => {
+  if (!branchCode) return null // branch_code null হলে skip
   const today = new Date().toISOString().split('T')[0]
   const { data, error } = await supabase
     .from('form_submissions')
@@ -160,8 +161,8 @@ export const getTodaySubmission = async (formId, branchCode) => {
     .eq('form_id', formId)
     .eq('branch_code', branchCode)
     .eq('submission_date', today)
-    .single()
-  if (error && error.code !== 'PGRST116') throw error
+    .maybeSingle()
+  if (error) throw error
   return data
 }
 export const getSubmissionById = async (submissionId) => {
