@@ -79,7 +79,7 @@ export default function FormSubmitPage() {
   }
 
   const loadRangeSummary = useCallback(async () => {
-    if (!dateRange.from || !dateRange.to || !formId) return
+    if (!dateRange.from || !dateRange.to || !formId || !profile?.branch_code) return
     setLoadingRange(true)
     try {
       const { data } = await supabase.from('form_submissions')
