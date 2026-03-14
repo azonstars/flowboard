@@ -104,6 +104,31 @@ export default function FormSubmitPage() {
     finally { setLoadingRange(false) }
   }, [dateRange.from, dateRange.to, formId, profile?.branch_code])
 
+  // Subtotal calculate করো
+  const calcSubtotal = (field, data) => {
+    const sources = field.sourceFields || []
+    let count = 0, amount = 0
+    sources.forEach(srcId => {
+      count  += parseFloat(data[`${srcId}_count`]  || 0)
+      amount += parseFloat(data[`${srcId}_amount`] || 0)
+    })
+    return { count, amount }
+  }
+
+  // Grand Total calculate করো
+  const calcGrandTotal = (field, allFields, data) => {
+    const sources = field.sourceFields || []
+    let count = 0, amount = 0
+    sources.forEach(srcId => {
+      const src = allFields.find(f => f.id === srcId)
+      if (!src) return
+      const sub = calcSubtotal(src, data)
+      count  += sub.count
+      amount += sub.amount
+    })
+    return { count, amount }
+  }
+
   const handleChange = (fieldId, subFieldId, type, value) => {
     const key = subFieldId ? `${fieldId}_${subFieldId}_${type}` : `${fieldId}_${type}`
     setFormData({ ...formData, [key]: value })
@@ -271,7 +296,64 @@ export default function FormSubmitPage() {
         )}
 
         <div className="space-y-6">
-          {form.fields?.map(field => (
+          {form.fields?.map(field => {
+            // Subtotal row
+            if (field.type === 'subtotal') {
+              const { count, amount } = calcSubtotal(field, formData)
+              const srcFields = (field.sourceFields || []).map(id => form.fields.find(f => f.id === id)).filter(Boolean)
+              const hasCount  = srcFields.some(f => ['both','count'].includes(f.type))
+              const hasAmount = srcFields.some(f => ['both','amount'].includes(f.type))
+              return (
+                <div key={field.id} className="border-2 border-green-400 bg-green-50 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-bold text-green-800 w-40 shrink-0">🔹 {field.label}</h3>
+                    {hasCount && (
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-gray-500 mb-1">সংখ্যা</p>
+                        <p className="text-lg font-bold text-green-700">{count || 0}</p>
+                      </div>
+                    )}
+                    {hasAmount && (
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-gray-500 mb-1">পরিমাণ</p>
+                        <p className="text-lg font-bold text-green-700">{amount?.toLocaleString('bn-BD') || 0}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+
+            // Grand Total row
+            if (field.type === 'grandtotal') {
+              const { count, amount } = calcGrandTotal(field, form.fields, formData)
+              const srcSubtotals = (field.sourceFields || []).map(id => form.fields.find(f => f.id === id)).filter(Boolean)
+              const allSrcFields = srcSubtotals.flatMap(s => (s.sourceFields||[]).map(id => form.fields.find(f=>f.id===id)).filter(Boolean))
+              const hasCount  = allSrcFields.some(f => ['both','count'].includes(f.type))
+              const hasAmount = allSrcFields.some(f => ['both','amount'].includes(f.type))
+              return (
+                <div key={field.id} className="border-2 border-blue-500 bg-blue-50 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-bold text-blue-800 w-40 shrink-0">🔷 {field.label}</h3>
+                    {hasCount && (
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-gray-500 mb-1">সংখ্যা</p>
+                        <p className="text-xl font-bold text-blue-700">{count || 0}</p>
+                      </div>
+                    )}
+                    {hasAmount && (
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-gray-500 mb-1">পরিমাণ</p>
+                        <p className="text-xl font-bold text-blue-700">{amount?.toLocaleString('bn-BD') || 0}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+
+            // Normal field
+            return (
             <div key={field.id} className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-center gap-3 mb-2">
                 <h3 className="font-medium text-gray-800 w-40 shrink-0">{field.label}</h3>
@@ -323,7 +405,8 @@ export default function FormSubmitPage() {
                 </div>
               ))}
             </div>
-          ))}
+            ) // end normal field return
+          })} 
         </div>
 
         <div className="flex gap-3 mt-6">

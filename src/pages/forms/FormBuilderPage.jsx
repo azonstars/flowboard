@@ -197,6 +197,50 @@ export default function FormBuilderPage() {
     } : f))
   }
 
+  // Subtotal field যোগ করো — fields list-এ একটি special row
+  const addSubtotal = (afterIndex) => {
+    const numericFields = fields.filter((f, i) => i <= afterIndex && ['both','count','amount'].includes(f.type) && f.label)
+    const newField = {
+      id: Date.now().toString(),
+      label: 'মোট',
+      type: 'subtotal',
+      sourceFields: numericFields.map(f => f.id), // default: সব numeric field
+      required: false,
+      children: [],
+    }
+    const newFields = [...fields]
+    newFields.splice(afterIndex + 1, 0, newField)
+    setFields(newFields)
+  }
+
+  // Grand Total যোগ করো — সব subtotal-এর যোগ
+  const addGrandTotal = () => {
+    const subtotals = fields.filter(f => f.type === 'subtotal')
+    const newField = {
+      id: Date.now().toString(),
+      label: 'সর্বমোট (Grand Total)',
+      type: 'grandtotal',
+      sourceFields: subtotals.map(f => f.id),
+      required: false,
+      children: [],
+    }
+    setFields([...fields, newField])
+  }
+
+  // Subtotal/Grandtotal sourceFields আপডেট
+  const toggleSourceField = (subtotalId, fieldId) => {
+    setFields(fields.map(f => {
+      if (f.id !== subtotalId) return f
+      const sources = f.sourceFields || []
+      return {
+        ...f,
+        sourceFields: sources.includes(fieldId)
+          ? sources.filter(id => id !== fieldId)
+          : [...sources, fieldId]
+      }
+    }))
+  }
+
   const updateField = (id, key, value) => setFields(fields.map(f => f.id === id ? { ...f, [key]: value } : f))
 
   const updateSubField = (parentId, childId, key, value) => {
@@ -348,7 +392,47 @@ export default function FormBuilderPage() {
       {/* Fields */}
       <div className="space-y-4">
         {fields.map((field, index) => (
-          <div key={field.id} className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-blue-500">
+          <div key={field.id}>
+          {/* Subtotal / Grand Total row */}
+          {(field.type === 'subtotal' || field.type === 'grandtotal') ? (
+            <div className={`rounded-lg p-4 shadow-sm border-l-4 ${field.type === 'grandtotal' ? 'bg-blue-50 border-blue-600' : 'bg-green-50 border-green-500'}`}>
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-1">
+                  <button onClick={() => moveField(index, 'up')} className="text-gray-400 hover:text-gray-600 text-xs">▲</button>
+                  <button onClick={() => moveField(index, 'down')} className="text-gray-400 hover:text-gray-600 text-xs">▼</button>
+                </div>
+                <span className="text-sm font-bold">{field.type === 'grandtotal' ? '🔷' : '🔹'}</span>
+                <input type="text" value={field.label}
+                  onChange={e => updateField(field.id, 'label', e.target.value)}
+                  className={`flex-1 border rounded-md px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 ${field.type === 'grandtotal' ? 'border-blue-300 bg-blue-100 focus:ring-blue-400 text-blue-800' : 'border-green-300 bg-green-100 focus:ring-green-400 text-green-800'}`} />
+                <span className="text-xs text-gray-500 shrink-0">
+                  {field.type === 'grandtotal' ? 'Grand Total' : 'Subtotal'}
+                </span>
+                <button onClick={() => removeField(field.id)} className="text-red-400 hover:text-red-600">✕</button>
+              </div>
+              {/* Source fields selection */}
+              <div className="mt-3 ml-8">
+                <p className="text-xs text-gray-500 mb-2">
+                  {field.type === 'grandtotal' ? 'কোন Subtotal যোগ হবে:' : 'কোন Field যোগ হবে:'}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {(field.type === 'grandtotal'
+                    ? fields.filter(f => f.type === 'subtotal')
+                    : fields.filter((f, i) => i < index && ['both','count','amount'].includes(f.type) && f.label)
+                  ).map(src => (
+                    <label key={src.id} className="flex items-center gap-1.5 cursor-pointer bg-white border border-gray-200 rounded-lg px-2 py-1">
+                      <input type="checkbox"
+                        checked={(field.sourceFields || []).includes(src.id)}
+                        onChange={() => toggleSourceField(field.id, src.id)}
+                        className="rounded" />
+                      <span className="text-xs text-gray-700">{src.label || '(no label)'}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+          <div className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-blue-500">
             <div className="flex gap-3 items-start">
               <div className="flex flex-col gap-1 pt-1">
                 <button onClick={() => moveField(index, 'up')} className="text-gray-400 hover:text-gray-600 text-xs">▲</button>
@@ -466,7 +550,27 @@ export default function FormBuilderPage() {
               <button onClick={() => removeField(field.id)} className="text-red-500 hover:text-red-700 font-bold text-lg">✕</button>
             </div>
           </div>
+          )} {/* end subtotal/normal if */}
+
+          {/* Subtotal add button — normal field-এর পরে */}
+          {!['subtotal','grandtotal'].includes(field.type) && ['both','count','amount'].includes(field.type) && field.label && (
+            <div className="flex justify-end mt-1 mr-1">
+              <button onClick={() => addSubtotal(index)}
+                className="text-xs text-green-600 hover:text-green-800 hover:underline">
+                + Subtotal যোগ করুন এখানে
+              </button>
+            </div>
+          )}
+          </div>
         ))}
+
+        {/* Grand Total button */}
+        {fields.some(f => f.type === 'subtotal') && !fields.some(f => f.type === 'grandtotal') && (
+          <button onClick={addGrandTotal}
+            className="w-full py-2.5 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:border-blue-500 hover:bg-blue-50 transition text-sm font-medium">
+            🔷 Grand Total যোগ করুন
+          </button>
+        )}
 
         <button onClick={addField}
           className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 transition font-medium">

@@ -22,7 +22,10 @@ export default function MenuSummaryPanel({ branchCode = null, regionId = null, d
       try {
         const data = await getDashboardMenuSummary({ isFiscal, branchCode, regionId, divisionId })
         setSummary(data)
-        if (data.length > 0) setOpenParents({ [data[0].parentId]: true })
+        // প্রথম parent auto-open করো
+        if (data.length > 0) {
+          setOpenParents({ [data[0].parentId]: true })
+        }
       } catch (e) {
         console.error(e)
       } finally {
@@ -32,7 +35,8 @@ export default function MenuSummaryPanel({ branchCode = null, regionId = null, d
     load()
   }, [isFiscal, branchCode, regionId, divisionId])
 
-  const toggleParent = (id) => setOpenParents(p => ({ ...p, [id]: !p[id] }))
+  const toggleParent = (id) =>
+    setOpenParents(p => ({ ...p, [id]: !p[id] }))
 
   if (loading) return (
     <div className="bg-white rounded-xl shadow-sm p-6">
@@ -52,6 +56,7 @@ export default function MenuSummaryPanel({ branchCode = null, regionId = null, d
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Header */}
       <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
         <div>
           <h3 className="font-bold text-gray-800 text-sm">📊 মেনু-ভিত্তিক সারসংক্ষেপ</h3>
@@ -61,9 +66,12 @@ export default function MenuSummaryPanel({ branchCode = null, regionId = null, d
           {isFiscal ? 'অর্থবছর' : 'ক্যালেন্ডার'}
         </span>
       </div>
+
+      {/* Parent menus */}
       <div className="divide-y divide-gray-50">
         {summary.map(parent => (
           <div key={parent.parentId}>
+            {/* Parent toggle */}
             <button
               onClick={() => toggleParent(parent.parentId)}
               className="w-full flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition text-left">
@@ -74,6 +82,8 @@ export default function MenuSummaryPanel({ branchCode = null, regionId = null, d
               </div>
               <span className="text-gray-400 text-xs">{openParents[parent.parentId] ? '▲' : '▼'}</span>
             </button>
+
+            {/* Forms under parent */}
             {openParents[parent.parentId] && (
               <div className="px-4 pb-4 space-y-4 bg-gray-50">
                 {parent.forms.map(form => (
@@ -86,10 +96,20 @@ export default function MenuSummaryPanel({ branchCode = null, regionId = null, d
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {form.fields.map((f, i) => (
-                        <div key={i} className="bg-white rounded-lg px-3 py-2.5 border border-gray-100 shadow-sm">
-                          <p className="text-xs text-gray-500 leading-tight truncate">{f.fieldLabel}</p>
+                        <div key={i} className={`rounded-lg px-3 py-2.5 border shadow-sm ${
+                          f.isGrandTotal ? 'bg-blue-50 border-blue-300 col-span-2' :
+                          f.isSubtotal  ? 'bg-green-50 border-green-300' :
+                          'bg-white border-gray-100'
+                        }`}>
+                          <p className={`text-xs leading-tight truncate ${f.isGrandTotal ? 'text-blue-700 font-bold' : f.isSubtotal ? 'text-green-700 font-semibold' : 'text-gray-500'}`}>
+                            {f.isGrandTotal ? '🔷 ' : f.isSubtotal ? '🔹 ' : ''}{f.fieldLabel}
+                          </p>
                           <p className="text-xs text-gray-400">{f.subLabel}</p>
-                          <p className={`text-sm font-bold mt-1 ${f.type === 'amount' ? 'text-green-700' : 'text-blue-700'}`}>
+                          <p className={`text-sm font-bold mt-1 ${
+                            f.isGrandTotal ? 'text-blue-800 text-base' :
+                            f.isSubtotal ? 'text-green-700' :
+                            f.type === 'amount' ? 'text-green-700' : 'text-blue-700'
+                          }`}>
                             {formatNumber(f.value)}
                           </p>
                         </div>
