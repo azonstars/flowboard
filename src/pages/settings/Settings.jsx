@@ -12,6 +12,7 @@ import { getForms, updateForm, deleteForm } from '../../services/formService'
 import { getMenuItems, updateMenuItem, createMenuItem, deleteMenuItem } from '../../services/menuService'
 import { getReportLayouts } from '../../services/reportService'
 import { getAllAppSettings, updateAppSetting, uploadFavicon, applyFavicon } from '../../services/appSettingsService'
+import { getNotificationPrefs, saveNotificationPrefs } from '../../services/notificationPrefsService'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 
@@ -465,6 +466,8 @@ export default function Settings() {
   const [featuresLoading, setFeaturesLoading] = useState(false)
   const [faviconUploading, setFaviconUploading] = useState(false)
   const [faviconUrl, setFaviconUrl] = useState('')
+  const [notifPrefs, setNotifPrefs] = useState(null)
+  const [notifSaving, setNotifSaving] = useState(false)
   const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'path' })
   const [showIconPicker, setShowIconPicker] = useState(false)
 
@@ -475,6 +478,7 @@ export default function Settings() {
 
   useEffect(() => { loadAll() }, [])
   useEffect(() => { if (activeTab === 'features') loadFeatures() }, [activeTab])
+  useEffect(() => { if (activeTab === 'notifications' && profile?.id && !notifPrefs) loadNotifPrefs() }, [activeTab, profile?.id])
 
   const loadFeatures = async () => {
     setFeaturesLoading(true)
@@ -490,6 +494,28 @@ export default function Settings() {
       setFeaturesLoading(false)
     }
   }
+
+  const loadNotifPrefs = async () => {
+    try {
+      const prefs = await getNotificationPrefs(profile.id)
+      setNotifPrefs(prefs)
+    } catch (e) { console.error(e) }
+  }
+
+  const handleSaveNotifPrefs = async () => {
+    setNotifSaving(true)
+    try {
+      await saveNotificationPrefs(profile.id, notifPrefs)
+      toast.success('Notification settings সেভ হয়েছে!')
+    } catch (e) {
+      toast.error(e.message)
+    } finally {
+      setNotifSaving(false)
+    }
+  }
+
+  const toggleNotifPref = (key) =>
+    setNotifPrefs(p => ({ ...p, [key]: !p[key] }))
 
   const handleFaviconUpload = async (e) => {
     const file = e.target.files[0]
@@ -804,6 +830,12 @@ export default function Settings() {
           >
             ⚙️ Feature Toggles
           </button>
+          <button
+            onClick={() => setActiveTab('notifications')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'notifications' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            🔔 Notifications
+          </button>
         </div>
       </div>
 
@@ -850,6 +882,73 @@ export default function Settings() {
                   >
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${feature.value === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Notifications Tab */}
+      {activeTab === 'notifications' && (
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-bold text-gray-800">🔔 Notification Settings</h2>
+              <p className="text-sm text-gray-500 mt-1">কোন event-এ কীভাবে notify পাবেন তা নির্ধারণ করুন।</p>
+            </div>
+            <button onClick={handleSaveNotifPrefs} disabled={notifSaving || !notifPrefs}
+              className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+              {notifSaving ? '⏳ সেভ হচ্ছে...' : '💾 সেভ করুন'}
+            </button>
+          </div>
+
+          {!notifPrefs ? (
+            <div className="text-center py-8 text-gray-400">Loading...</div>
+          ) : (
+            <div className="space-y-6">
+              {/* Event rows */}
+              {[
+                { key: 'form_submit',   label: '📋 নতুন Form Submission',    desc: 'কোনো শাখা form submit করলে' },
+                { key: 'approved',      label: '✅ Submission Approved',      desc: 'আপনার submission approve হলে' },
+                { key: 'rejected',      label: '❌ Submission Rejected',      desc: 'আপনার submission reject হলে' },
+                { key: 'edit_request',  label: '✏️ Edit Request',             desc: 'কেউ edit permission চাইলে' },
+                { key: 'edit_approved', label: '🔓 Edit Request Approved',    desc: 'আপনার edit request approve হলে' },
+                { key: 'chat',          label: '💬 নতুন Chat Message',        desc: 'নতুন chat message আসলে' },
+              ].map(event => (
+                <div key={event.key} className="border border-gray-100 rounded-xl p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="font-semibold text-gray-800 text-sm">{event.label}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{event.desc}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* In-app */}
+                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                      <div>
+                        <p className="text-xs font-medium text-gray-700">🔔 In-App</p>
+                        <p className="text-xs text-gray-400">App-এর ভেতরে</p>
+                      </div>
+                      <button
+                        onClick={() => toggleNotifPref(`inapp_${event.key}`)}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${notifPrefs[`inapp_${event.key}`] ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${notifPrefs[`inapp_${event.key}`] ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                      </button>
+                    </div>
+                    {/* Push */}
+                    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                      <div>
+                        <p className="text-xs font-medium text-gray-700">📲 Push</p>
+                        <p className="text-xs text-gray-400">Browser/OS notification</p>
+                      </div>
+                      <button
+                        onClick={() => toggleNotifPref(`push_${event.key}`)}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${notifPrefs[`push_${event.key}`] ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${notifPrefs[`push_${event.key}`] ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

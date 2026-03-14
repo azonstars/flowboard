@@ -121,10 +121,23 @@ export default function Topbar({ onMenuClick }) {
       const n = payload.new
       setNotifications(prev => [n, ...prev])
       toast(`${TYPE_ICON[n.type] || '🔔'} ${n.title}`, { duration: 5000 })
-      // Browser notification (PWA)
+      // Browser notification (PWA) — preference check করো
       if (Notification.permission === 'granted') {
-        import('../../services/pwaService').then(({ showNotification }) => {
-          showNotification(n.title || '🔔 নতুন notification', { body: n.message || '' })
+        import('../../services/notificationPrefsService').then(({ getNotificationPrefs, shouldNotify }) => {
+          if (!profile?.id) return
+          getNotificationPrefs(profile.id).then(prefs => {
+            // notification type থেকে event key বের করো
+            const typeToEvent = {
+              form: 'form_submit', success: 'approved', warning: 'rejected',
+              edit: 'edit_request', edit_approved: 'edit_approved', chat: 'chat',
+            }
+            const event = typeToEvent[n.type] || 'form_submit'
+            if (shouldNotify(prefs, 'push', event)) {
+              import('../../services/pwaService').then(({ showNotification }) => {
+                showNotification(n.title || '🔔 নতুন notification', { body: n.message || '' })
+              })
+            }
+          })
         })
       }
     })
