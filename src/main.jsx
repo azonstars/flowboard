@@ -13,7 +13,7 @@ supabase
   .from('app_settings')
   .select('value')
   .eq('key', 'favicon_url')
-  .single()
+  .maybeSingle()
   .then(({ data }) => {
     if (data?.value) applyFavicon(data.value)
   })
