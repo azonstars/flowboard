@@ -453,7 +453,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
 }
 
 export default function Settings() {
-  const { fetchAllMenuData, user } = useAuth()
+  const { fetchAllMenuData, user, profile } = useAuth()
   const [allMenuItems, setAllMenuItems] = useState([])
   const [allForms, setAllForms] = useState([])
   const [allReports, setAllReports] = useState([])
