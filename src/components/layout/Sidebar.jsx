@@ -99,13 +99,13 @@ export default function Sidebar({ isOpen, onClose }) {
             {globalTheme.app_logo_url ? (
               <img src={globalTheme.app_logo_url} alt="logo" className="h-8 object-contain" />
             ) : (
-              <h1 className="text-xl font-bold" style={{color: 'var(--sidebar-text-solid)'}}>{globalTheme.app_name || 'FlowBoard'}</h1>
+              <h1 className="text-xl font-bold" style={{color: "var(--sidebar-text, rgba(26,26,26,0.75))"}}>{globalTheme.app_name || 'FlowBoard'}</h1>
             )}
-            <p className="text-xs mt-0.5" style={{color: 'var(--sidebar-text)'}}>
+            <p className="text-xs mt-0.5" style={{color: "var(--sidebar-text, rgba(26,26,26,0.75))"}}>
               {profile?.role?.replace(/_/g, ' ').toUpperCase()}
             </p>
           </div>
-          <button onClick={onClose} className="lg:hidden p-1" style={{color: 'var(--sidebar-text-solid)'}}>
+          <button onClick={onClose} className="lg:hidden p-1" style={{color: "var(--sidebar-text, rgba(26,26,26,0.75))"}}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -200,8 +200,8 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Bottom User Info */}
         <div className="absolute bottom-0 left-0 right-0 p-4 sidebar-dynamic" style={{borderTop: '1px solid var(--sidebar-border-color, rgba(0,0,0,0.08))'}}>
-          <p className="text-sm font-medium truncate" style={{color: 'var(--sidebar-text-solid)'}}>{profile?.full_name}</p>
-          <p className="text-xs truncate" style={{color: 'var(--sidebar-text)'}}>{profile?.branch_code || profile?.email}</p>
+          <p className="text-sm font-medium truncate" style={{color: "var(--sidebar-text, rgba(26,26,26,0.75))"}}>{profile?.full_name}</p>
+          <p className="text-xs truncate" style={{color: "var(--sidebar-text, rgba(26,26,26,0.75))"}}>{profile?.branch_code || profile?.email}</p>
         </div>
       </div>
     </>
