@@ -28,19 +28,37 @@ const getAutoTextColor = (bgHex) => {
 const applyGlobalTheme = (settings) => {
   const root = document.documentElement
   if (settings.primary_color) {
-    root.style.setProperty('--primary', settings.primary_color)
-    root.style.setProperty('--primary-dark', settings.primary_color)
+    const hex = settings.primary_color
+    root.style.setProperty('--primary', hex)
+    root.style.setProperty('--primary-600', hex)
+    // Hex থেকে lighter/darker shades বের করো
+    const r = parseInt(hex.slice(1,3),16)
+    const g = parseInt(hex.slice(3,5),16)
+    const b = parseInt(hex.slice(5,7),16)
+    const toHex = (v) => Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')
+    const mix = (ratio) => `#${toHex(r+(255-r)*ratio)}${toHex(g+(255-g)*ratio)}${toHex(b+(255-b)*ratio)}`
+    const darken = (ratio) => `#${toHex(r*(1-ratio))}${toHex(g*(1-ratio))}${toHex(b*(1-ratio))}`
+    root.style.setProperty('--primary-50',  mix(0.92))
+    root.style.setProperty('--primary-100', mix(0.80))
+    root.style.setProperty('--primary-200', mix(0.65))
+    root.style.setProperty('--primary-300', mix(0.45))
+    root.style.setProperty('--primary-400', mix(0.22))
+    root.style.setProperty('--primary-500', mix(0.08))
+    root.style.setProperty('--primary-700', darken(0.12))
+    root.style.setProperty('--primary-800', darken(0.22))
+    root.style.setProperty('--primary-900', darken(0.30))
+    root.style.setProperty('--primary-dark', darken(0.12))
+    root.style.setProperty('--primary-light', mix(0.80))
   }
   if (settings.sidebar_color) {
     root.style.setProperty('--sidebar-bg', settings.sidebar_color)
-    // Auto contrast text — manual override না থাকলে
     const textColor = settings.sidebar_text_color || getAutoTextColor(settings.sidebar_color)
     const isLight = getLuminance(settings.sidebar_color) > 0.35
-    root.style.setProperty('--sidebar-text', textColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(30,41,59,0.8)')
     root.style.setProperty('--sidebar-text-solid', textColor)
-    root.style.setProperty('--sidebar-active-bg', isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)')
-    root.style.setProperty('--sidebar-hover-bg', isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)')
-    root.style.setProperty('--sidebar-border-color', isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)')
+    root.style.setProperty('--sidebar-text', isLight ? 'rgba(26,26,26,0.75)' : 'rgba(236,236,236,0.75)')
+    root.style.setProperty('--sidebar-active-bg', isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)')
+    root.style.setProperty('--sidebar-hover-bg', isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)')
+    root.style.setProperty('--sidebar-border-color', isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)')
   }
   if (settings.favicon_url) {
     applyFavicon(settings.favicon_url)
@@ -59,9 +77,9 @@ export const ThemeProvider = ({ children }) => {
   const [globalTheme, setGlobalTheme] = useState({
     app_name: 'FlowBoard',
     app_logo_url: '',
-    primary_color: '#2563eb',
-    sidebar_color: '#1e3a5f',
-    sidebar_text_color: '',
+    primary_color: '#cc785c',
+    sidebar_color: '#f9f9f7',
+    sidebar_text_color: '#1a1a1a',
     favicon_url: '',
   })
 

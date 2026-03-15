@@ -105,18 +105,18 @@ export default function Sidebar({ isOpen, onClose }) {
         lg:translate-x-0 lg:static lg:z-auto lg:shrink-0
       `}>
         {/* Logo */}
-        <div className="p-5 border-b border-white/10 flex items-center justify-between">
+        <div className="p-5 flex items-center justify-between" style={{borderBottom: "1px solid var(--sidebar-border-color, rgba(0,0,0,0.08))"}}>
           <div>
             {globalTheme.app_logo_url ? (
               <img src={globalTheme.app_logo_url} alt="logo" className="h-8 object-contain" />
             ) : (
               <h1 className="text-xl font-bold">{globalTheme.app_name || 'FlowBoard'}</h1>
             )}
-            <p className="text-blue-300 text-xs mt-0.5">
+            <p className="text-xs mt-0.5" style={{color:"var(--sidebar-text)"}}>
               {profile?.role?.replace(/_/g, ' ').toUpperCase()}
             </p>
           </div>
-          <button onClick={onClose} className="lg:hidden text-blue-300 hover:text-white p-1">
+          <button onClick={onClose} className="lg:hidden p-1" style={{color:"var(--sidebar-text-solid)"}}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -218,9 +218,9 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Bottom User Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 sidebar-dynamic">
-          <p className="text-blue-200 text-sm font-medium truncate">{profile?.full_name}</p>
-          <p className="text-blue-400 text-xs truncate">{profile?.branch_code || profile?.email}</p>
+        <div className="absolute bottom-0 left-0 right-0 p-4 sidebar-dynamic" style={{borderTop: "1px solid var(--sidebar-border-color, rgba(0,0,0,0.08))"}}>
+          <p className="text-sm font-medium truncate" style={{color:"var(--sidebar-text-solid)"}}>{profile?.full_name}</p>
+          <p className="text-xs truncate" style={{color:"var(--sidebar-text)"}}>{profile?.branch_code || profile?.email}</p>
         </div>
       </div>
     </>

@@ -4,15 +4,55 @@
 
 /* ── CSS Variables — Theme System ─────────────────────── */
 :root {
-  --primary:        #2563eb;
-  --primary-dark:   #1d4ed8;
-  --primary-light:  #dbeafe;
-  --sidebar-bg:     #1e3a5f;
-  --sidebar-border: rgba(255,255,255,0.1);
-  --sidebar-text:   rgba(255,255,255,0.75);
-  --sidebar-hover:  rgba(255,255,255,0.1);
-  --sidebar-active: #ffffff;
-  --sidebar-active-text: var(--sidebar-bg);
+  /* Primary color — Claude.ai coral/terracotta */
+  --primary:        #cc785c;
+  --primary-dark:   #b5633f;
+  --primary-light:  #f5e6e0;
+  --primary-50:     #fdf5f2;
+  --primary-100:    #f5e6e0;
+  --primary-200:    #eac9bc;
+  --primary-300:    #dba891;
+  --primary-400:    #cc785c;
+  --primary-500:    #b5633f;
+  --primary-600:    #cc785c;
+  --primary-700:    #9e4f2e;
+  --primary-800:    #7d3b21;
+  --primary-900:    #5c2914;
+
+  /* Sidebar — Claude.ai light mode (cream) */
+  --sidebar-bg:           #f9f9f7;
+  --sidebar-border:       rgba(0,0,0,0.08);
+  --sidebar-text:         rgba(26,26,26,0.75);
+  --sidebar-text-solid:   #1a1a1a;
+  --sidebar-hover-bg:     rgba(0,0,0,0.05);
+  --sidebar-active-bg:    rgba(0,0,0,0.08);
+  --sidebar-border-color: rgba(0,0,0,0.08);
+
+  /* Main background */
+  --bg-primary:   #ffffff;
+  --bg-secondary: #f9f9f7;
+  --bg-card:      #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --border:       rgba(0,0,0,0.1);
+}
+
+/* Dark mode */
+.dark {
+  --sidebar-bg:           #1f1f1e;
+  --sidebar-border:       rgba(255,255,255,0.08);
+  --sidebar-text:         rgba(236,236,236,0.75);
+  --sidebar-text-solid:   #ececec;
+  --sidebar-hover-bg:     rgba(255,255,255,0.06);
+  --sidebar-active-bg:    rgba(255,255,255,0.1);
+  --sidebar-border-color: rgba(255,255,255,0.08);
+
+  --bg-primary:   #1f1f1e;
+  --bg-secondary: #2a2a28;
+  --bg-card:      #2a2a28;
+  --text-primary: #ececec;
+  --text-secondary: #a0a0a0;
+  --border:       rgba(255,255,255,0.1);
 }
 
 /* ── Dark Mode Variables ───────────────────────────────── */
