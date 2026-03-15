@@ -359,64 +359,58 @@ export default function FormSubmitPage() {
             }
 
             // Normal field
+            const cols = `1fr${field.type==='both'||field.type==='count' ? ' 1fr' : ''}${field.type==='both'||field.type==='amount' ? ' 1fr' : ''}`
             return (
             <div key={field.id} className="border border-gray-200 rounded-lg overflow-hidden">
-              {/* Header row */}
-              <div className="grid bg-gray-50 border-b border-gray-200" style={{gridTemplateColumns: `1fr${field.type==='both'||field.type==='count' ? ' 1fr' : ''}${field.type==='both'||field.type==='amount' ? ' 1fr' : ''}`}}>
-                <div className="px-4 py-2 text-xs font-semibold text-gray-500">বিবরণ</div>
-                {(field.type === 'both' || field.type === 'count') && <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-l border-gray-200">সংখ্যা</div>}
-                {(field.type === 'both' || field.type === 'amount') && <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-l border-gray-200">পরিমাণ</div>}
-              </div>
-
               {/* Main field row */}
-              <div className="grid items-center" style={{gridTemplateColumns: `1fr${field.type==='both'||field.type==='count' ? ' 1fr' : ''}${field.type==='both'||field.type==='amount' ? ' 1fr' : ''}`}}>
-                <div className="px-4 py-3">
+              <div className="grid items-center" style={{gridTemplateColumns: cols}}>
+                <div className="px-4 py-3 bg-white">
                   <h3 className="font-medium text-gray-800 text-sm">{field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
                   </h3>
                 </div>
                 {(field.type === 'both' || field.type === 'count') && (
-                  <div className="px-3 py-2 border-l border-gray-200">
+                  <div className="px-3 py-2.5 border-l border-gray-200 bg-white">
                     <input type="number"
                       value={formData[`${field.id}_count`] || ''}
                       onChange={e => handleChange(field.id, null, 'count', e.target.value)}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0" />
+                      placeholder="সংখ্যা" />
                   </div>
                 )}
                 {(field.type === 'both' || field.type === 'amount') && (
-                  <div className="px-3 py-2 border-l border-gray-200">
+                  <div className="px-3 py-2.5 border-l border-gray-200 bg-white">
                     <input type="number" step="0.01"
                       value={formData[`${field.id}_amount`] || ''}
                       onChange={e => handleChange(field.id, null, 'amount', e.target.value)}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0.00" />
+                      placeholder="পরিমাণ" />
                   </div>
                 )}
               </div>
 
               {/* Sub fields */}
-              {field.children?.map((child, ci) => (
-                <div key={child.id} className="grid items-center border-t border-gray-100 bg-gray-50/50" style={{gridTemplateColumns: `1fr${field.type==='both'||field.type==='count' ? ' 1fr' : ''}${field.type==='both'||field.type==='amount' ? ' 1fr' : ''}`}}>
-                  <div className="px-4 py-2.5 pl-8">
+              {field.children?.map((child) => (
+                <div key={child.id} className="grid items-center border-t border-gray-100" style={{gridTemplateColumns: cols}}>
+                  <div className="px-4 py-2.5 pl-8 bg-gray-50">
                     <h4 className="text-sm text-gray-600">↳ {child.label}</h4>
                   </div>
                   {(child.type === 'both' || child.type === 'count') && (
-                    <div className="px-3 py-2 border-l border-gray-200">
+                    <div className="px-3 py-2 border-l border-gray-200 bg-gray-50">
                       <input type="number"
                         value={formData[`${field.id}_${child.id}_count`] || ''}
                         onChange={e => handleChange(field.id, child.id, 'count', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="0" />
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        placeholder="সংখ্যা" />
                     </div>
                   )}
                   {(child.type === 'both' || child.type === 'amount') && (
-                    <div className="px-3 py-2 border-l border-gray-200">
+                    <div className="px-3 py-2 border-l border-gray-200 bg-gray-50">
                       <input type="number" step="0.01"
                         value={formData[`${field.id}_${child.id}_amount`] || ''}
                         onChange={e => handleChange(field.id, child.id, 'amount', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="0.00" />
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        placeholder="পরিমাণ" />
                     </div>
                   )}
                 </div>
