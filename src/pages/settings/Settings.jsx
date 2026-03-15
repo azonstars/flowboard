@@ -15,6 +15,7 @@ import { getAllAppSettings, updateAppSetting, uploadFavicon, applyFavicon } from
 import { useTheme } from '../../context/ThemeContext'
 import { getNotificationPrefs, saveNotificationPrefs } from '../../services/notificationPrefsService'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
 
 const AVAILABLE_ICONS = [
