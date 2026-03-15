@@ -301,124 +301,168 @@ export default function FormSubmitPage() {
           </div>
         )}
 
-        <div className="space-y-6">
-          {form.fields?.map(field => {
-            // Subtotal row
-            if (field.type === 'subtotal') {
-              const { count, amount } = calcSubtotal(field, formData)
-              const srcFields = (field.sourceFields || []).map(id => form.fields.find(f => f.id === id)).filter(Boolean)
-              const hasCount  = srcFields.some(f => ['both','count'].includes(f.type))
-              const hasAmount = srcFields.some(f => ['both','amount'].includes(f.type))
-              return (
-                <div key={field.id} className="border-2 border-green-400 bg-green-50 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-bold text-green-800 w-40 shrink-0">🔹 {field.label}</h3>
-                    {hasCount && (
-                      <div className="flex-1 text-center">
-                        <p className="text-xs text-gray-500 mb-1">সংখ্যা</p>
-                        <p className="text-lg font-bold text-green-700">{toBn(count)}</p>
-                      </div>
-                    )}
-                    {hasAmount && (
-                      <div className="flex-1 text-center">
-                        <p className="text-xs text-gray-500 mb-1">পরিমাণ</p>
-                        <p className="text-lg font-bold text-green-700">{toBn(amount)}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            }
+        {/* Table layout — compact */}
+        {(() => {
+          // form-এর field type বিশ্লেষণ করো header column ঠিক করতে
+          const numericFields = (form.fields || []).filter(f => ['both','count','amount','subtotal','grandtotal'].includes(f.type))
+          const hasCount  = numericFields.some(f => f.type === 'count' || f.type === 'both')
+          const hasAmount = numericFields.some(f => f.type === 'amount' || f.type === 'both')
+          if (!numericFields.length) return null
 
-            // Grand Total row
-            if (field.type === 'grandtotal') {
-              const { count, amount } = calcGrandTotal(field, form.fields, formData)
-              const srcSubtotals = (field.sourceFields || []).map(id => form.fields.find(f => f.id === id)).filter(Boolean)
-              const allSrcFields = srcSubtotals.flatMap(s => (s.sourceFields||[]).map(id => form.fields.find(f=>f.id===id)).filter(Boolean))
-              const hasCount  = allSrcFields.some(f => ['both','count'].includes(f.type))
-              const hasAmount = allSrcFields.some(f => ['both','amount'].includes(f.type))
-              return (
-                <div key={field.id} className="border-2 border-blue-500 bg-blue-50 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-bold text-blue-800 w-40 shrink-0">🔷 {field.label}</h3>
-                    {hasCount && (
-                      <div className="flex-1 text-center">
-                        <p className="text-xs text-gray-500 mb-1">সংখ্যা</p>
-                        <p className="text-xl font-bold text-blue-700">{toBn(count)}</p>
-                      </div>
-                    )}
-                    {hasAmount && (
-                      <div className="flex-1 text-center">
-                        <p className="text-xs text-gray-500 mb-1">পরিমাণ</p>
-                        <p className="text-xl font-bold text-blue-700">{toBn(amount)}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            }
+          return (
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <table style={{width:'100%',borderCollapse:'collapse',tableLayout:'fixed'}}>
+              <colgroup>
+                <col style={{width: hasCount && hasAmount ? '50%' : hasCount || hasAmount ? '60%' : '100%'}} />
+                {hasCount  && <col style={{width:'25%'}} />}
+                {hasAmount && <col style={{width:'25%'}} />}
+              </colgroup>
+              <thead>
+                <tr style={{background:'#f8fafc'}}>
+                  <th style={{padding:'8px 16px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'#64748b',borderBottom:'1px solid #e2e8f0'}}>বিবরণ</th>
+                  {hasCount  && <th style={{padding:'8px 12px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'#64748b',borderBottom:'1px solid #e2e8f0',borderLeft:'1px solid #e2e8f0'}}>সংখ্যা</th>}
+                  {hasAmount && <th style={{padding:'8px 12px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'#64748b',borderBottom:'1px solid #e2e8f0',borderLeft:'1px solid #e2e8f0'}}>পরিমাণ</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {(form.fields || []).map((field, idx) => {
 
-            // Normal field
-            const cols = `1fr${field.type==='both'||field.type==='count' ? ' 1fr' : ''}${field.type==='both'||field.type==='amount' ? ' 1fr' : ''}`
-            return (
-            <div key={field.id} className="border border-gray-200 rounded-lg overflow-hidden">
-              {/* Main field row */}
-              <div className="grid items-center" style={{gridTemplateColumns: cols}}>
-                <div className="px-4 py-3 bg-white">
-                  <h3 className="font-medium text-gray-800 text-sm">{field.label}
-                    {field.required && <span className="text-red-500 ml-1">*</span>}
-                  </h3>
-                </div>
-                {(field.type === 'both' || field.type === 'count') && (
-                  <div className="px-3 py-2.5 border-l border-gray-200 bg-white">
-                    <input type="number"
-                      value={formData[`${field.id}_count`] || ''}
-                      onChange={e => handleChange(field.id, null, 'count', e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="সংখ্যা" />
-                  </div>
-                )}
-                {(field.type === 'both' || field.type === 'amount') && (
-                  <div className="px-3 py-2.5 border-l border-gray-200 bg-white">
-                    <input type="number" step="0.01"
-                      value={formData[`${field.id}_amount`] || ''}
-                      onChange={e => handleChange(field.id, null, 'amount', e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="পরিমাণ" />
-                  </div>
-                )}
-              </div>
+                  // Subtotal row
+                  if (field.type === 'subtotal') {
+                    const { count, amount } = calcSubtotal(field, formData)
+                    return (
+                      <tr key={field.id} style={{background:'#f0fdf4'}}>
+                        <td style={{padding:'9px 16px',fontSize:'13px',fontWeight:'600',color:'#15803d',borderTop:'1px solid #bbf7d0',borderBottom:'1px solid #bbf7d0'}}>
+                          🔹 {field.label}
+                        </td>
+                        {hasCount  && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'#15803d',borderTop:'1px solid #bbf7d0',borderBottom:'1px solid #bbf7d0',borderLeft:'1px solid #bbf7d0'}}>{toBn(count)}</td>}
+                        {hasAmount && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'#15803d',borderTop:'1px solid #bbf7d0',borderBottom:'1px solid #bbf7d0',borderLeft:'1px solid #bbf7d0'}}>{toBn(amount)}</td>}
+                      </tr>
+                    )
+                  }
 
-              {/* Sub fields */}
-              {field.children?.map((child) => (
-                <div key={child.id} className="grid items-center border-t border-gray-100" style={{gridTemplateColumns: cols}}>
-                  <div className="px-4 py-2.5 pl-8 bg-gray-50">
-                    <h4 className="text-sm text-gray-600">↳ {child.label}</h4>
-                  </div>
-                  {(child.type === 'both' || child.type === 'count') && (
-                    <div className="px-3 py-2 border-l border-gray-200 bg-gray-50">
-                      <input type="number"
-                        value={formData[`${field.id}_${child.id}_count`] || ''}
-                        onChange={e => handleChange(field.id, child.id, 'count', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                        placeholder="সংখ্যা" />
-                    </div>
-                  )}
-                  {(child.type === 'both' || child.type === 'amount') && (
-                    <div className="px-3 py-2 border-l border-gray-200 bg-gray-50">
-                      <input type="number" step="0.01"
-                        value={formData[`${field.id}_${child.id}_amount`] || ''}
-                        onChange={e => handleChange(field.id, child.id, 'amount', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                        placeholder="পরিমাণ" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            ) // end normal field return
-          })} 
-        </div>
+                  // Grand Total row
+                  if (field.type === 'grandtotal') {
+                    const { count, amount } = calcGrandTotal(field, form.fields, formData)
+                    return (
+                      <tr key={field.id} style={{background:'#eff6ff'}}>
+                        <td style={{padding:'11px 16px',fontSize:'14px',fontWeight:'600',color:'#1e40af',borderTop:'2px solid #bfdbfe'}}>
+                          🔷 {field.label}
+                        </td>
+                        {hasCount  && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'#1e40af',borderTop:'2px solid #bfdbfe',borderLeft:'1px solid #bfdbfe'}}>{toBn(count)}</td>}
+                        {hasAmount && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'#1e40af',borderTop:'2px solid #bfdbfe',borderLeft:'1px solid #bfdbfe'}}>{toBn(amount)}</td>}
+                      </tr>
+                    )
+                  }
+
+                  // Text/Select/YesNo field — full width
+                  if (['text','select','yesno'].includes(field.type)) {
+                    return (
+                      <tr key={field.id} style={{borderBottom:'1px solid #f1f5f9'}}>
+                        <td colSpan={1 + (hasCount?1:0) + (hasAmount?1:0)} style={{padding:'8px 16px'}}>
+                          <div className="flex items-center gap-3">
+                            <label className="text-sm font-medium text-gray-700 shrink-0 w-40">{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</label>
+                            {field.type === 'text' && (
+                              <input type="text" value={formData[`${field.id}_text`] || ''}
+                                onChange={e => handleChange(field.id, null, 'text', e.target.value)}
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder={field.label} />
+                            )}
+                            {field.type === 'select' && (
+                              <select value={formData[`${field.id}_select`] || ''}
+                                onChange={e => handleChange(field.id, null, 'select', e.target.value)}
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- select করুন --</option>
+                                {(field.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            )}
+                            {field.type === 'yesno' && (
+                              <div className="flex gap-4">
+                                {['হ্যাঁ','না'].map(opt => (
+                                  <label key={opt} className="flex items-center gap-1.5 cursor-pointer text-sm">
+                                    <input type="radio" name={field.id} value={opt}
+                                      checked={formData[`${field.id}_yesno`] === opt}
+                                      onChange={() => handleChange(field.id, null, 'yesno', opt)} />
+                                    {opt}
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  }
+
+                  // Normal numeric field (both/count/amount)
+                  const fHasCount  = field.type === 'both' || field.type === 'count'
+                  const fHasAmount = field.type === 'both' || field.type === 'amount'
+                  return (
+                    <>
+                    <tr key={field.id} style={{borderBottom: field.children?.length ? 'none' : '1px solid #f1f5f9'}}>
+                      <td style={{padding:'8px 16px',fontSize:'13px',color:'#1e293b',fontWeight:'500'}}>
+                        {field.label}{field.required && <span style={{color:'#ef4444',marginLeft:'4px'}}>*</span>}
+                      </td>
+                      {hasCount && (
+                        <td style={{padding:'6px 8px',borderLeft:'1px solid #f1f5f9'}}>
+                          {fHasCount ? (
+                            <input type="number"
+                              value={formData[`${field.id}_count`] || ''}
+                              onChange={e => handleChange(field.id, null, 'count', e.target.value)}
+                              className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="সংখ্যা" />
+                          ) : <span className="text-gray-300 text-xs px-2">—</span>}
+                        </td>
+                      )}
+                      {hasAmount && (
+                        <td style={{padding:'6px 8px',borderLeft:'1px solid #f1f5f9'}}>
+                          {fHasAmount ? (
+                            <input type="number" step="0.01"
+                              value={formData[`${field.id}_amount`] || ''}
+                              onChange={e => handleChange(field.id, null, 'amount', e.target.value)}
+                              className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="পরিমাণ" />
+                          ) : <span className="text-gray-300 text-xs px-2">—</span>}
+                        </td>
+                      )}
+                    </tr>
+                    {field.children?.map((child, ci) => (
+                      <tr key={child.id} style={{background:'#f8fafc', borderBottom: ci === field.children.length-1 ? '1px solid #f1f5f9' : 'none'}}>
+                        <td style={{padding:'7px 16px',paddingLeft:'32px',fontSize:'12px',color:'#475569'}}>
+                          ↳ {child.label}
+                        </td>
+                        {hasCount && (
+                          <td style={{padding:'5px 8px',borderLeft:'1px solid #f1f5f9'}}>
+                            {(child.type==='both'||child.type==='count') ? (
+                              <input type="number"
+                                value={formData[`${field.id}_${child.id}_count`] || ''}
+                                onChange={e => handleChange(field.id, child.id, 'count', e.target.value)}
+                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                placeholder="সংখ্যা" />
+                            ) : <span className="text-gray-300 text-xs px-2">—</span>}
+                          </td>
+                        )}
+                        {hasAmount && (
+                          <td style={{padding:'5px 8px',borderLeft:'1px solid #f1f5f9'}}>
+                            {(child.type==='both'||child.type==='amount') ? (
+                              <input type="number" step="0.01"
+                                value={formData[`${field.id}_${child.id}_amount`] || ''}
+                                onChange={e => handleChange(field.id, child.id, 'amount', e.target.value)}
+                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                placeholder="পরিমাণ" />
+                            ) : <span className="text-gray-300 text-xs px-2">—</span>}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                    </>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          )
+        })()}
 
         <div className="flex gap-3 mt-6">
           <button onClick={() => handleSubmit('submitted')} disabled={loading}
