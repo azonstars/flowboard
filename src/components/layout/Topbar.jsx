@@ -327,7 +327,7 @@ export default function Topbar({ onMenuClick }) {
         <div className="relative" ref={dropdownRef}>
           <button onClick={() => setDropdownOpen(!dropdownOpen)}
             className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition">
-            <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{backgroundColor: "var(--primary, #cc785c)"}}>
               {profile?.full_name?.charAt(0).toUpperCase()}
             </div>
             <span className="hidden md:block text-sm font-medium text-gray-700">{profile?.full_name}</span>
