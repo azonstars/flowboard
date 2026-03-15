@@ -12,7 +12,7 @@ import { getForms, updateForm, deleteForm } from '../../services/formService'
 import { getMenuItems, updateMenuItem, createMenuItem, deleteMenuItem } from '../../services/menuService'
 import { getReportLayouts } from '../../services/reportService'
 import { getAllAppSettings, updateAppSetting, uploadFavicon, applyFavicon } from '../../services/appSettingsService'
-import { useTheme } from '../../context/ThemeContext'
+import { useTheme, getAutoTextColor } from '../../context/ThemeContext'
 import { getNotificationPrefs, saveNotificationPrefs } from '../../services/notificationPrefsService'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
@@ -506,7 +506,7 @@ export default function Settings() {
     if (!themeDraft) return
     setThemeSaving(true)
     try {
-      const keys = ['app_name', 'app_logo_url', 'primary_color', 'sidebar_color']
+      const keys = ['app_name', 'app_logo_url', 'primary_color', 'sidebar_color', 'sidebar_text_color']
       for (const key of keys) {
         if (themeDraft[key] !== undefined) {
           await supabase.from('app_settings')
@@ -1055,9 +1055,40 @@ export default function Settings() {
                 </div>
                 {/* Preview */}
                 <div className="mt-2 rounded-lg p-3 flex items-center gap-3" style={{ backgroundColor: themeDraft.sidebar_color }}>
-                  <span className="text-white text-sm font-bold">{themeDraft.app_name || 'FlowBoard'}</span>
-                  <span className="text-white/60 text-xs">← Preview</span>
+                  <span className="text-sm font-bold" style={{ color: themeDraft.sidebar_text_color || (themeDraft.sidebar_color ? getAutoTextColor(themeDraft.sidebar_color) : '#ffffff') }}>
+                    {themeDraft.app_name || 'FlowBoard'}
+                  </span>
+                  <span className="text-xs opacity-60" style={{ color: themeDraft.sidebar_text_color || '#ffffff' }}>← Preview</span>
                 </div>
+              </div>
+
+              {/* Sidebar Text Color */}
+              <div className="p-4 border border-gray-200 rounded-xl">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">✏️ Sidebar Text Color</label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {[
+                    { name: 'Auto',      color: '' },
+                    { name: 'White',     color: '#ffffff' },
+                    { name: 'Dark',      color: '#1e293b' },
+                    { name: 'Light Gray',color: '#e2e8f0' },
+                    { name: 'Yellow',    color: '#fef08a' },
+                    { name: 'Sky',       color: '#bae6fd' },
+                  ].map(c => (
+                    <button key={c.name} onClick={() => setThemeDraft(p => ({ ...p, sidebar_text_color: c.color }))}
+                      title={c.name}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition border-2 ${(themeDraft.sidebar_text_color || '') === c.color ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
+                      style={c.color ? { backgroundColor: themeDraft.sidebar_color || '#1e3a5f', color: c.color, borderColor: (themeDraft.sidebar_text_color||'') === c.color ? '#3b82f6' : 'transparent' } : {}}>
+                      {c.name}
+                    </button>
+                  ))}
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={themeDraft.sidebar_text_color || '#ffffff'}
+                      onChange={e => setThemeDraft(p => ({ ...p, sidebar_text_color: e.target.value }))}
+                      className="w-9 h-9 rounded-lg cursor-pointer border border-gray-300" />
+                    <span className="text-xs text-gray-500">Custom</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400">Auto = Sidebar color অনুযায়ী স্বয়ংক্রিয়ভাবে নির্ধারিত হবে</p>
               </div>
 
               {/* Favicon — moved from Feature Toggles */}

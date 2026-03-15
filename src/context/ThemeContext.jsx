@@ -6,21 +6,48 @@ const ThemeContext = createContext({})
 
 export const useTheme = () => useContext(ThemeContext)
 
+// Hex color থেকে luminance বের করো (0=dark, 1=light)
+const getLuminance = (hex) => {
+  const c = hex.replace('#','')
+  const r = parseInt(c.substr(0,2),16)/255
+  const g = parseInt(c.substr(2,2),16)/255
+  const b = parseInt(c.substr(4,2),16)/255
+  const toLinear = x => x <= 0.03928 ? x/12.92 : Math.pow((x+0.055)/1.055, 2.4)
+  return 0.2126*toLinear(r) + 0.7152*toLinear(g) + 0.0722*toLinear(b)
+}
+
+// Background dark হলে white text, light হলে dark text
+const getAutoTextColor = (bgHex) => {
+  try {
+    const lum = getLuminance(bgHex)
+    return lum > 0.35 ? '#1e293b' : '#ffffff'
+  } catch { return '#ffffff' }
+}
+
 // CSS variable apply করো
 const applyGlobalTheme = (settings) => {
   const root = document.documentElement
   if (settings.primary_color) {
     root.style.setProperty('--primary', settings.primary_color)
-    // darker variant
     root.style.setProperty('--primary-dark', settings.primary_color)
   }
   if (settings.sidebar_color) {
     root.style.setProperty('--sidebar-bg', settings.sidebar_color)
+    // Auto contrast text — manual override না থাকলে
+    const textColor = settings.sidebar_text_color || getAutoTextColor(settings.sidebar_color)
+    const isLight = getLuminance(settings.sidebar_color) > 0.35
+    root.style.setProperty('--sidebar-text', textColor === '#ffffff' ? 'rgba(255,255,255,0.8)' : 'rgba(30,41,59,0.8)')
+    root.style.setProperty('--sidebar-text-solid', textColor)
+    root.style.setProperty('--sidebar-active-bg', isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)')
+    root.style.setProperty('--sidebar-hover-bg', isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)')
+    root.style.setProperty('--sidebar-border-color', isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)')
   }
   if (settings.favicon_url) {
     applyFavicon(settings.favicon_url)
   }
 }
+
+export { getAutoTextColor, getLuminance }
 
 export const ThemeProvider = ({ children }) => {
   // User-level: light | dark | system
@@ -34,6 +61,7 @@ export const ThemeProvider = ({ children }) => {
     app_logo_url: '',
     primary_color: '#2563eb',
     sidebar_color: '#1e3a5f',
+    sidebar_text_color: '',
     favicon_url: '',
   })
 
@@ -66,7 +94,7 @@ export const ThemeProvider = ({ children }) => {
         const { data } = await supabase
           .from('app_settings')
           .select('key, value')
-          .in('key', ['app_name', 'app_logo_url', 'primary_color', 'sidebar_color', 'favicon_url'])
+          .in('key', ['app_name', 'app_logo_url', 'primary_color', 'sidebar_color', 'sidebar_text_color', 'favicon_url'])
 
         if (!cancelled && data?.length) {
           const settings = {}

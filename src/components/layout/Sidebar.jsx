@@ -99,7 +99,7 @@ export default function Sidebar({ isOpen, onClose }) {
       )}
 
       <div className={`
-        fixed top-0 left-0 h-full w-64 text-white z-30 sidebar-dynamic
+        fixed top-0 left-0 h-full w-64 z-30 sidebar-dynamic
         transform transition-transform duration-300
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:z-auto lg:shrink-0
@@ -134,7 +134,7 @@ export default function Sidebar({ isOpen, onClose }) {
             return (
               <div key={item.id}>
                 <div className={`flex items-center rounded-lg transition ${
-                  isParentActive ? 'bg-white/20 text-white font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  isParentActive ? 'sidebar-active-item font-semibold' : 'sidebar-normal-item'
                 }`}>
                   {hasChildren(item) || item.path === '#' ? (
                     <button onClick={() => toggleExpand(item.id)}
@@ -168,8 +168,8 @@ export default function Sidebar({ isOpen, onClose }) {
                       <Link key={child.id} to={child.path || '#'} onClick={onClose}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition text-sm ${
                           isActive(child.path)
-                            ? 'bg-white/20 text-white font-semibold'
-                            : 'text-white/60 hover:bg-white/10 hover:text-white'
+                            ? 'sidebar-active-item font-semibold'
+                            : 'sidebar-normal-item'
                         }`}>
                         <span className="text-base shrink-0">{child.icon || '📌'}</span>
                         <span>{child.label}</span>
@@ -185,8 +185,8 @@ export default function Sidebar({ isOpen, onClose }) {
             <div>
               <div className={`flex items-center rounded-lg transition ${
                 controlPanelChildren.some(c => isActive(c.path))
-                  ? 'bg-white/20 text-white'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  ? 'sidebar-active-item'
+                  : 'sidebar-normal-item'
               }`}>
                 <button onClick={() => toggleExpand(CONTROL_PANEL.id)}
                   className="flex items-center gap-3 px-3 py-2.5 flex-1 text-left w-full">
@@ -204,8 +204,8 @@ export default function Sidebar({ isOpen, onClose }) {
                     <Link key={child.id} to={child.path} onClick={onClose}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg transition text-sm ${
                         isActive(child.path)
-                          ? 'bg-white/20 text-white font-semibold'
-                          : 'text-white/60 hover:bg-white/10 hover:text-white'
+                          ? 'sidebar-active-item font-semibold'
+                          : 'sidebar-normal-item'
                       }`}>
                       <span className="text-base shrink-0">{child.icon}</span>
                       <span>{child.label}</span>

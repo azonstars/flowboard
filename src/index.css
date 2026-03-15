@@ -45,9 +45,10 @@
 /* ── Sidebar dynamic color ─────────────────────────────── */
 .sidebar-dynamic {
   background-color: var(--sidebar-bg) !important;
+  color: var(--sidebar-text-solid, #ffffff) !important;
 }
 .sidebar-border-dynamic {
-  border-color: var(--sidebar-border) !important;
+  border-color: var(--sidebar-border-color, rgba(255,255,255,0.1)) !important;
 }
 
 /* ── Dark mode — main content areas ───────────────────── */
