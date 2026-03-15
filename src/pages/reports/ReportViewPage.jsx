@@ -317,7 +317,7 @@ export default function ReportViewPage() {
             {bulkExporting ? '⏳ Exporting...' : '📦 Bulk Export'}
           </button>
           {isAdmin && (
-            <button onClick={() => navigate('/reports/builder')} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+            <button onClick={() => navigate('/reports/builder')} className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition text-sm">
               + New Report
             </button>
           )}
@@ -328,7 +328,7 @@ export default function ReportViewPage() {
       <div className="flex gap-2">
         {[{k:'report',l:'📋 Report'},{k:'comparison',l:'📊 Month Comparison'},{k:'bulk',l:'📦 Bulk Export'}].map(t => (
           <button key={t.k} onClick={() => setActiveTab(t.k)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm ${activeTab===t.k ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm ${activeTab===t.k ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
             {t.l}
           </button>
         ))}
@@ -344,25 +344,25 @@ export default function ReportViewPage() {
                 <label className="text-xs text-gray-500 block mb-1">মাস ১</label>
                 <input type="month" value={compMonths.month1}
                   onChange={e => setCompMonths(p => ({...p, month1: e.target.value}))}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
               </div>
               <div>
                 <label className="text-xs text-gray-500 block mb-1">মাস ২</label>
                 <input type="month" value={compMonths.month2}
                   onChange={e => setCompMonths(p => ({...p, month2: e.target.value}))}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
               </div>
               <div>
                 <label className="text-xs text-gray-500 block mb-1">Report</label>
                 <select value={selectedLayout?.id || ''}
                   onChange={e => { const l = layouts.find(x => x.id === e.target.value); setSelectedLayout(l || null) }}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-48">
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 min-w-48">
                   <option value="">Report বেছে নিন</option>
                   {layouts.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
                 </select>
               </div>
               <button onClick={loadComparison} disabled={compLoading || !selectedLayout}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium disabled:opacity-50">
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium disabled:opacity-50">
                 {compLoading ? '⏳ Loading...' : '🔍 Compare'}
               </button>
             </div>
@@ -442,13 +442,13 @@ export default function ReportViewPage() {
               <label className="text-xs text-gray-500 block mb-1">শুরুর তারিখ</label>
               <input type="date" value={filters.startDate}
                 onChange={e => setFilters(p => ({...p, startDate: e.target.value}))}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
             </div>
             <div>
               <label className="text-xs text-gray-500 block mb-1">শেষের তারিখ</label>
               <input type="date" value={filters.endDate}
                 onChange={e => setFilters(p => ({...p, endDate: e.target.value}))}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
             </div>
             <button onClick={handleBulkExport} disabled={bulkExporting || layouts.length === 0}
               className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium disabled:opacity-50">
@@ -477,14 +477,14 @@ export default function ReportViewPage() {
               <p className="text-sm text-gray-500">No reports found.</p>
             ) : layouts.map(layout => (
               <div key={layout.id}
-                className={`p-3 rounded-lg cursor-pointer border transition ${selectedLayout?.id === layout.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}
+                className={`p-3 rounded-lg cursor-pointer border transition ${selectedLayout?.id === layout.id ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}
                 onClick={() => handleSelectLayout(layout)}
               >
                 <p className="font-medium text-sm text-gray-800">{layout.title}</p>
                 <p className="text-xs text-gray-500 mt-1">{layout.is_shared ? '🌐 Shared' : '🔒 Private'}</p>
                 {isAdmin && (
                   <div className="flex gap-2 mt-2">
-                    <button onClick={e => { e.stopPropagation(); navigate(`/reports/builder?edit=${layout.id}`) }} className="text-xs text-blue-600 hover:underline">Edit</button>
+                    <button onClick={e => { e.stopPropagation(); navigate(`/reports/builder?edit=${layout.id}`) }} className="text-xs text-primary-600 hover:underline">Edit</button>
                     <button onClick={e => { e.stopPropagation(); handleDelete(layout.id) }} className="text-xs text-red-600 hover:underline">Delete</button>
                   </div>
                 )}
@@ -511,7 +511,7 @@ export default function ReportViewPage() {
                         const range = getYearRangeToToday(next)
                         setFilters(p => ({ ...p, startDate: range.from, endDate: range.to }))
                       }}
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${fiscalMode ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${fiscalMode ? 'bg-primary-600' : 'bg-gray-300'}`}>
                       <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${fiscalMode ? 'translate-x-5' : 'translate-x-0.5'}`} />
                     </button>
                     <span className="text-xs text-gray-500">অর্থবছর</span>
@@ -519,12 +519,12 @@ export default function ReportViewPage() {
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">শুরুর তারিখ</label>
                     <input type="date" value={filters.startDate} onChange={e => setFilters({ ...filters, startDate: e.target.value })}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">শেষের তারিখ</label>
                     <input type="date" value={filters.endDate} onChange={e => setFilters({ ...filters, endDate: e.target.value })}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
                   </div>
                 </div>
 
@@ -533,7 +533,7 @@ export default function ReportViewPage() {
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">Division</label>
                       <select value={filters.division_id} onChange={e => handleDivisionChange(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="">সব Division</option>
                         {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                       </select>
@@ -541,7 +541,7 @@ export default function ReportViewPage() {
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">Region</label>
                       <select value={filters.region_id} onChange={e => handleRegionChange(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="">সব Region</option>
                         {filteredRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                       </select>
@@ -549,7 +549,7 @@ export default function ReportViewPage() {
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
                       <select value={filters.branch_code} onChange={e => setFilters({ ...filters, branch_code: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="">সব Branch</option>
                         {filteredBranches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
                       </select>
@@ -562,7 +562,7 @@ export default function ReportViewPage() {
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">Region</label>
                       <select value={filters.region_id} onChange={e => handleRegionChange(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="">সব Region</option>
                         {filteredRegions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                       </select>
@@ -570,7 +570,7 @@ export default function ReportViewPage() {
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
                       <select value={filters.branch_code} onChange={e => setFilters({ ...filters, branch_code: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="">সব Branch</option>
                         {filteredBranches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
                       </select>
@@ -582,7 +582,7 @@ export default function ReportViewPage() {
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
                     <select value={filters.branch_code} onChange={e => setFilters({ ...filters, branch_code: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                       <option value="">সব Branch</option>
                       {filteredBranches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
                     </select>
@@ -590,7 +590,7 @@ export default function ReportViewPage() {
                 )}
 
                 <button onClick={() => loadReport(selectedLayout, filters)}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                  className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition text-sm font-medium">
                   🔍 Apply Filter
                 </button>
               </div>

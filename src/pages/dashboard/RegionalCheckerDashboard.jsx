@@ -15,7 +15,7 @@ const STATUS_COLORS = {
   approved: 'bg-green-100 text-green-700',
   rejected: 'bg-red-100 text-red-700',
   draft: 'bg-gray-100 text-gray-600',
-  edit_allowed: 'bg-blue-100 text-blue-700',
+  edit_allowed: 'bg-primary-100 text-primary-700',
 }
 
 export default function RegionalCheckerDashboard() {
@@ -187,8 +187,8 @@ export default function RegionalCheckerDashboard() {
           <p className="text-gray-500 mt-1">Regional Manager Dashboard</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>📊 Dashboard</button>
-          <button onClick={() => setActiveTab('requests')} className={`px-4 py-2 rounded-lg text-sm font-medium transition relative ${activeTab === 'requests' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+          <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'dashboard' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>📊 Dashboard</button>
+          <button onClick={() => setActiveTab('requests')} className={`px-4 py-2 rounded-lg text-sm font-medium transition relative ${activeTab === 'requests' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
             ✏️ Edit Requests
             {stats.pendingRequests > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">{stats.pendingRequests}</span>}
           </button>
@@ -198,7 +198,7 @@ export default function RegionalCheckerDashboard() {
       {activeTab === 'dashboard' && (<>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Region Branches', value: stats.totalBranches, color: 'border-blue-500' },
+            { label: 'Region Branches', value: stats.totalBranches, color: 'border-primary-500' },
             { label: "Today's Submissions", value: stats.todaySubmissions, color: 'border-green-500' },
             { label: 'Total Submissions', value: stats.totalSubmissions, color: 'border-yellow-500' },
             { label: 'Pending Edit Requests', value: stats.pendingRequests, color: 'border-red-500' },
@@ -229,7 +229,7 @@ export default function RegionalCheckerDashboard() {
           <div className="p-6 border-b border-gray-200 flex justify-between items-center">
             <h2 className="font-bold text-gray-800">Recent Submissions</h2>
             {appSettings?.feature_checker_all_submissions_btn !== false && (
-              <button onClick={() => navigate('/submissions')} className="text-sm text-blue-600 hover:underline">সব দেখুন →</button>
+              <button onClick={() => navigate('/submissions')} className="text-sm text-primary-600 hover:underline">সব দেখুন →</button>
             )}
           </div>
           <div className="divide-y divide-gray-200">
@@ -268,7 +268,7 @@ export default function RegionalCheckerDashboard() {
                         </div>
                         <p className="text-sm text-gray-600">Branch: <strong>{req.branch_code}</strong> | Submission: {req.submission_date}</p>
                         <p className="text-sm text-gray-500">Requested by: {req.requester?.full_name}</p>
-                        {req.request_reason && <p className="text-sm text-blue-700 mt-1 bg-blue-50 px-3 py-1.5 rounded-lg">কারণ: {req.request_reason}</p>}
+                        {req.request_reason && <p className="text-sm text-primary-700 mt-1 bg-primary-50 px-3 py-1.5 rounded-lg">কারণ: {req.request_reason}</p>}
                       </div>
                       {req.status === 'pending' && (
                         <div className="flex gap-2 shrink-0">

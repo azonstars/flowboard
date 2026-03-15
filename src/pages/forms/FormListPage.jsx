@@ -80,7 +80,7 @@ export default function FormListPage() {
         {isAdmin && (
           <button
             onClick={() => navigate('/forms/builder')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition"
           >
             + New Form
           </button>
@@ -114,7 +114,7 @@ export default function FormListPage() {
                       const expired = form.expires_at < today
                       const soon = !expired && form.expires_at <= new Date(Date.now() + 3*86400000).toISOString().split('T')[0]
                       return (
-                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${expired ? 'bg-red-100 text-red-600' : soon ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${expired ? 'bg-red-100 text-red-600' : soon ? 'bg-orange-100 text-orange-600' : 'bg-primary-100 text-primary-600'}`}>
                           {expired ? `⏰ Expired` : `⏳ ${form.expires_at}`}
                         </span>
                       )
@@ -135,12 +135,12 @@ export default function FormListPage() {
                             onClick={() => handleDeadlineToggle(form)}
                             disabled={togglingDeadline === form.id}
                             title={form.expires_at ? 'Deadline বন্ধ করুন' : 'Deadline চালু করুন'}
-                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${form.expires_at ? 'bg-blue-600' : 'bg-gray-300'} disabled:opacity-50`}>
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${form.expires_at ? 'bg-primary-600' : 'bg-gray-300'} disabled:opacity-50`}>
                             <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${form.expires_at ? 'translate-x-4' : 'translate-x-1'}`}/>
                           </button>
                           <span className="text-xs">
                             {form.expires_at
-                              ? <span className={new Date(form.expires_at) < new Date() ? 'text-red-500 font-medium' : 'text-blue-600'}>{form.expires_at}</span>
+                              ? <span className={new Date(form.expires_at) < new Date() ? 'text-red-500 font-medium' : 'text-primary-600'}>{form.expires_at}</span>
                               : <span className="text-gray-400">বন্ধ ({form.expires_at_backup})</span>}
                           </span>
                         </div>
@@ -162,7 +162,7 @@ export default function FormListPage() {
                       <>
                         <button
                           onClick={() => navigate(`/forms/builder?edit=${form.id}`)}
-                          className="text-blue-600 hover:underline text-sm"
+                          className="text-primary-600 hover:underline text-sm"
                         >
                           Edit
                         </button>

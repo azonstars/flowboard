@@ -130,7 +130,7 @@ export default function ReportBuilderPage() {
         </h1>
         <div className="flex gap-3">
           <button onClick={() => navigate('/reports')} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Cancel</button>
-          <button onClick={handleSave} disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
+          <button onClick={handleSave} disabled={loading} className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50">
             {loading ? 'Saving...' : 'Save Report'}
           </button>
         </div>
@@ -144,7 +144,7 @@ export default function ReportBuilderPage() {
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Enter report title"
             />
           </div>
@@ -153,7 +153,7 @@ export default function ReportBuilderPage() {
             <select
               value={selectedForm}
               onChange={e => handleFormSelect(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Select a form</option>
               {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
@@ -174,7 +174,7 @@ export default function ReportBuilderPage() {
 
       <div className="space-y-3">
         {rows.map((row, index) => (
-          <div key={row.id} className={`bg-white rounded-lg p-4 shadow-sm border-l-4 ${row.type === 'subtotal' ? 'border-yellow-500' : 'border-blue-500'}`}>
+          <div key={row.id} className={`bg-white rounded-lg p-4 shadow-sm border-l-4 ${row.type === 'subtotal' ? 'border-yellow-500' : 'border-primary-500'}`}>
             <div className="flex gap-3 items-center">
               <div className="flex flex-col gap-1">
                 <button onClick={() => moveRow(index, 'up')} className="text-gray-400 hover:text-gray-600 text-xs">▲</button>
@@ -187,7 +187,7 @@ export default function ReportBuilderPage() {
                   <select
                     value={row.type}
                     onChange={e => updateRow(row.id, 'type', e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="field">Field</option>
                     <option value="subtotal">Subtotal</option>
@@ -200,7 +200,7 @@ export default function ReportBuilderPage() {
                     type="text"
                     value={row.label}
                     onChange={e => updateRow(row.id, 'label', e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="Row label"
                   />
                 </div>
@@ -211,7 +211,7 @@ export default function ReportBuilderPage() {
                     <select
                       value={row.fieldId}
                       onChange={e => updateRow(row.id, 'fieldId', e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="">Select field</option>
                       {formFields.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
@@ -224,7 +224,7 @@ export default function ReportBuilderPage() {
                   <select
                     value={row.calcType}
                     onChange={e => updateRow(row.id, 'calcType', e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     {CALC_TYPES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -239,7 +239,7 @@ export default function ReportBuilderPage() {
         <div className="flex gap-3">
           <button
             onClick={() => addRow('field')}
-            className="flex-1 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 transition"
+            className="flex-1 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-primary-500 hover:text-primary-500 transition"
           >
             + Add Field Row
           </button>

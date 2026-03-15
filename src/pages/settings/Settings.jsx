@@ -56,7 +56,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
 
   return (
     <div ref={setNodeRef} style={style} className={`mb-2 ${isSubItem ? 'ml-8' : ''}`}>
-      <div className={`border rounded-lg bg-white ${isDragging ? 'shadow-xl border-blue-300' : 'shadow-sm'} ${isSubItem ? 'border-l-4 border-l-blue-400' : ''}`}>
+      <div className={`border rounded-lg bg-white ${isDragging ? 'shadow-xl border-primary-300' : 'shadow-sm'} ${isSubItem ? 'border-l-4 border-l-blue-400' : ''}`}>
         {/* Header */}
         <div className="flex items-center gap-2 p-3">
           <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
@@ -69,10 +69,10 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
             <span className={`font-medium text-sm ${!isVisible ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
               {item.label || item.title}
             </span>
-            {isSubItem && <span className="ml-2 text-xs text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">sub-menu</span>}
+            {isSubItem && <span className="ml-2 text-xs text-primary-500 bg-primary-50 px-1.5 py-0.5 rounded">sub-menu</span>}
           </div>
           {children.length > 0 && (
-            <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">{children.length} sub</span>
+            <span className="text-xs bg-primary-100 text-primary-600 px-2 py-0.5 rounded-full">{children.length} sub</span>
           )}
           <button
             onClick={() => onUpdate(item, 'is_active', !isVisible)}
@@ -92,19 +92,19 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
           <div className="border-t border-gray-100 p-4 space-y-4">
 
             {/* Parent Selection */}
-            <div className="bg-blue-50 rounded-lg p-3">
-              <label className="block text-xs font-medium text-blue-700 mb-1">📂 Parent Menu (Sub-menu of)</label>
+            <div className="bg-primary-50 rounded-lg p-3">
+              <label className="block text-xs font-medium text-primary-700 mb-1">📂 Parent Menu (Sub-menu of)</label>
               <select
                 value={item.parent_id || ''}
                 onChange={e => onChangeParent(item, e.target.value || null)}
-                className="w-full border border-blue-200 bg-white rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-primary-200 bg-white rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">— Top Level (No Parent) —</option>
                 {possibleParents.map(p => (
                   <option key={p.id} value={p.id}>{p.icon || '📋'} {p.label || p.title}</option>
                 ))}
               </select>
-              <p className="text-xs text-blue-500 mt-1">Select a parent to make this a sub-menu item</p>
+              <p className="text-xs text-primary-500 mt-1">Select a parent to make this a sub-menu item</p>
             </div>
 
             {/* Label */}
@@ -114,7 +114,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                 type="text"
                 value={item.label || item.title || ''}
                 onChange={e => onUpdate(item, 'label', e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
@@ -128,7 +128,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                     onUpdate(item, 'link_type', e.target.value)
                     if (e.target.value === 'blank') onUpdate(item, 'path', '#')
                   }}
-                  className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                  className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-2"
                 >
                   <option value="path">Custom Path</option>
                   <option value="form">Form (Submit Page)</option>
@@ -145,7 +145,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                       onUpdate(item, 'path', `/forms/submit/${e.target.value}`)
                       if (form && !item.label) onUpdate(item, 'label', form.title)
                     }}
-                    className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Select Form</option>
                     {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
@@ -161,7 +161,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                       onUpdate(item, 'report_id', e.target.value)
                       onUpdate(item, 'path', `/reports?report_id=${e.target.value}`)
                     }}
-                    className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Select Report</option>
                     {allReports.map(r => <option key={r.id} value={r.id}>{r.title || r.name}</option>)}
@@ -171,7 +171,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                     type="text"
                     value={item.path || ''}
                     onChange={e => onUpdate(item, 'path', e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="/dashboard"
                   />
                 )}
@@ -194,7 +194,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                     <div className="grid grid-cols-10 gap-1">
                       {AVAILABLE_ICONS.map(icon => (
                         <button key={icon} onClick={() => { onUpdate(item, 'icon', icon); setShowIconPicker(false) }}
-                          className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${(item.icon || item.menu_icon) === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
+                          className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-primary-50 transition ${(item.icon || item.menu_icon) === icon ? 'bg-primary-100 ring-2 ring-primary-500' : ''}`}>
                           {icon}
                         </button>
                       ))}
@@ -234,7 +234,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-medium text-gray-600">Sub Menu Items</label>
-                  <button onClick={() => setShowSubMenuForm(!showSubMenuForm)} className="text-xs text-blue-600 hover:underline">
+                  <button onClick={() => setShowSubMenuForm(!showSubMenuForm)} className="text-xs text-primary-600 hover:underline">
                     + Add Sub Menu
                   </button>
                 </div>
@@ -242,7 +242,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                 {children.length > 0 && (
                   <div className="space-y-1 mb-3">
                     {children.map(child => (
-                      <div key={child.id} className="bg-blue-50 rounded-lg border-l-4 border-blue-300">
+                      <div key={child.id} className="bg-primary-50 rounded-lg border-l-4 border-primary-300">
                         {/* Child preview row */}
                         <div className="flex items-center gap-2 p-2">
                           <span>{child.icon || '📌'}</span>
@@ -250,7 +250,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                           <span className="text-xs text-gray-400 hidden sm:block">{child.path}</span>
                           <button
                             onClick={() => onUpdate(item, 'editingChild', child.id === item._editingChild ? null : child.id)}
-                            className="text-xs text-blue-500 hover:text-blue-700 px-1"
+                            className="text-xs text-primary-500 hover:text-primary-700 px-1"
                             title="Edit"
                           >✏️</button>
                           <button onClick={() => onUpdate(item, 'removeChild', child.id)} className="text-red-400 hover:text-red-600 px-1">✕</button>
@@ -258,14 +258,14 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
 
                         {/* Child edit form */}
                         {item._editingChild === child.id && (
-                          <div className="px-3 pb-3 space-y-2 border-t border-blue-200">
+                          <div className="px-3 pb-3 space-y-2 border-t border-primary-200">
                             <input type="text" value={child.label}
                               onChange={e => onUpdate(item, 'updateChild', { ...child, label: e.target.value })}
-                              className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                               placeholder="Label" />
                             <input type="text" value={child.path || ''}
                               onChange={e => onUpdate(item, 'updateChild', { ...child, path: e.target.value })}
-                              className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                               placeholder="Path (e.g. /reports)" />
                             {/* Child Icon Picker */}
                             <div>
@@ -274,7 +274,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                                 {AVAILABLE_ICONS.map(icon => (
                                   <button key={icon}
                                     onClick={() => onUpdate(item, 'updateChild', { ...child, icon })}
-                                    className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${child.icon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
+                                    className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-primary-50 transition ${child.icon === icon ? 'bg-primary-100 ring-2 ring-primary-500' : ''}`}>
                                     {icon}
                                   </button>
                                 ))}
@@ -302,7 +302,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                             </div>
                             <button
                               onClick={() => onUpdate(item, 'editingChild', null)}
-                              className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700"
+                              className="text-xs bg-primary-600 text-white px-3 py-1.5 rounded-lg hover:bg-primary-700"
                             >Done</button>
                           </div>
                         )}
@@ -312,15 +312,15 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                 )}
 
                 {showSubMenuForm && (
-                  <div className="bg-blue-50 rounded-lg p-3 space-y-2">
+                  <div className="bg-primary-50 rounded-lg p-3 space-y-2">
                     <input type="text" placeholder="Label"
                       value={subItem.label}
                       onChange={e => setSubItem({ ...subItem, label: e.target.value })}
-                      className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                     <select value={subItem.link_type}
                       onChange={e => setSubItem({ ...subItem, link_type: e.target.value })}
-                      className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="custom">Custom Path</option>
                       <option value="form">Form (Submit Page)</option>
@@ -337,7 +337,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                             label: subItem.label || (form ? form.title : ''),
                           })
                         }}
-                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
                         <option value="">Select Form</option>
                         {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
@@ -352,7 +352,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                           ...subItem, report_id: e.target.value,
                           path: `/reports?report_id=${e.target.value}`,
                         })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
                         <option value="">Select Report</option>
                         {allReports.map(r => <option key={r.id} value={r.id}>{r.title || r.name}</option>)}
@@ -361,7 +361,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                       <input type="text" placeholder="Path (e.g. /reports)"
                         value={subItem.path}
                         onChange={e => setSubItem({ ...subItem, path: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     )}
                     <div className="relative">
@@ -376,7 +376,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                           <div className="grid grid-cols-10 gap-1">
                             {AVAILABLE_ICONS.map(icon => (
                               <button key={icon} onClick={() => { setSubItem({ ...subItem, icon }); setShowSubIconPicker(false) }}
-                                className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${subItem.icon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
+                                className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-primary-50 transition ${subItem.icon === icon ? 'bg-primary-100 ring-2 ring-primary-500' : ''}`}>
                                 {icon}
                               </button>
                             ))}
@@ -417,7 +417,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                           setSubItem({ label: '', path: '', icon: '📌', link_type: 'custom', roles: [] })
                           setShowSubMenuForm(false)
                         }}
-                        className="flex-1 bg-blue-600 text-white py-1.5 rounded-lg text-sm hover:bg-blue-700"
+                        className="flex-1 bg-primary-600 text-white py-1.5 rounded-lg text-sm hover:bg-primary-700"
                       >Add</button>
                       <button onClick={() => setShowSubMenuForm(false)} className="flex-1 bg-gray-200 text-gray-700 py-1.5 rounded-lg text-sm hover:bg-gray-300">Cancel</button>
                     </div>
@@ -438,7 +438,7 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
         {children.length > 0 && !isExpanded && (
           <div className="border-t border-gray-100 ml-8 mr-3 mb-2 mt-1 space-y-1">
             {children.map(child => (
-              <div key={child.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border-l-4 border-blue-200">
+              <div key={child.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border-l-4 border-primary-200">
                 <span className="text-sm">{child.icon || '📌'}</span>
                 <span className="flex-1 text-xs text-gray-600">{child.label}</span>
                 <span className="text-xs text-gray-400">
@@ -871,25 +871,25 @@ export default function Settings() {
         <div className="flex border-b border-gray-200 mt-4 px-6">
           <button
             onClick={() => setActiveTab('menu_manager')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'menu_manager' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'menu_manager' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             📋 Menu Manager
           </button>
           <button
             onClick={() => setActiveTab('features')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'features' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'features' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             ⚙️ Feature Toggles
           </button>
           <button
             onClick={() => setActiveTab('notifications')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'notifications' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'notifications' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             🔔 Notifications
           </button>
           <button
             onClick={() => setActiveTab('theme')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'theme' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition -mb-px ${activeTab === 'theme' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             🎨 Theme
           </button>
@@ -912,7 +912,7 @@ export default function Settings() {
                 {faviconUrl && (
                   <img src={faviconUrl} alt="favicon" className="w-8 h-8 rounded object-contain border border-gray-200 bg-white p-0.5" />
                 )}
-                <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${faviconUploading ? 'bg-gray-300 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${faviconUploading ? 'bg-gray-300 text-gray-500' : 'bg-primary-600 text-white hover:bg-primary-700'}`}>
                   {faviconUploading ? '⏳ Uploading...' : '📤 Icon Upload'}
                   <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/x-icon,image/webp"
                     className="hidden" onChange={handleFaviconUpload} disabled={faviconUploading} />
@@ -926,7 +926,7 @@ export default function Settings() {
           ) : (
             <div className="space-y-3">
               {features.filter(f => f.key !== 'favicon_url').map(feature => (
-                <div key={feature.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-blue-200 hover:bg-blue-50 transition">
+                <div key={feature.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-primary-200 hover:bg-primary-50 transition">
                   <div className="flex-1 mr-4">
                     <p className="font-medium text-gray-800 text-sm">{feature.label || feature.key}</p>
                     {feature.description && (
@@ -935,7 +935,7 @@ export default function Settings() {
                   </div>
                   <button
                     onClick={() => handleToggleFeature(feature.key, feature.value)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${feature.value === 'true' ? 'bg-blue-600' : 'bg-gray-300'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${feature.value === 'true' ? 'bg-primary-600' : 'bg-gray-300'}`}
                   >
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${feature.value === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
@@ -955,7 +955,7 @@ export default function Settings() {
               <p className="text-sm text-gray-500 mt-1">App-এর রং, নাম ও logo পরিবর্তন করুন — সব user-এর জন্য apply হবে।</p>
             </div>
             <button onClick={handleSaveTheme} disabled={themeSaving || !themeDraft}
-              className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+              className="px-5 py-2 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 transition disabled:opacity-50">
               {themeSaving ? '⏳ সেভ হচ্ছে...' : '💾 সেভ করুন'}
             </button>
           </div>
@@ -968,7 +968,7 @@ export default function Settings() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">📝 App Name</label>
                 <input type="text" value={themeDraft.app_name || ''}
                   onChange={e => setThemeDraft(p => ({ ...p, app_name: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
                   placeholder="FlowBoard" />
                 <p className="text-xs text-gray-400 mt-1">Sidebar-এর শীর্ষে দেখাবে</p>
               </div>
@@ -983,7 +983,7 @@ export default function Settings() {
                     <div className="h-12 w-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 text-xs">No logo</div>
                   )}
                   <div className="flex gap-2">
-                    <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${logoUploading ? 'bg-gray-300 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                    <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${logoUploading ? 'bg-gray-300 text-gray-500' : 'bg-primary-600 text-white hover:bg-primary-700'}`}>
                       {logoUploading ? '⏳ Uploading...' : '📤 Upload'}
                       <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
                     </label>
@@ -1076,7 +1076,7 @@ export default function Settings() {
                   ].map(c => (
                     <button key={c.name} onClick={() => setThemeDraft(p => ({ ...p, sidebar_text_color: c.color }))}
                       title={c.name}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition border-2 ${(themeDraft.sidebar_text_color || '') === c.color ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition border-2 ${(themeDraft.sidebar_text_color || '') === c.color ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
                       style={c.color ? { backgroundColor: themeDraft.sidebar_color || '#1e3a5f', color: c.color, borderColor: (themeDraft.sidebar_text_color||'') === c.color ? '#3b82f6' : 'transparent' } : {}}>
                       {c.name}
                     </button>
@@ -1100,7 +1100,7 @@ export default function Settings() {
                   ) : (
                     <div className="w-10 h-10 border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-xs">Icon</div>
                   )}
-                  <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${faviconUploading ? 'bg-gray-300 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                  <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${faviconUploading ? 'bg-gray-300 text-gray-500' : 'bg-primary-600 text-white hover:bg-primary-700'}`}>
                     {faviconUploading ? '⏳ Uploading...' : '📤 Upload Favicon'}
                     <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/x-icon,image/webp"
                       className="hidden" onChange={handleFaviconUpload} disabled={faviconUploading} />
@@ -1123,7 +1123,7 @@ export default function Settings() {
               <p className="text-sm text-gray-500 mt-1">কোন event-এ কীভাবে notify পাবেন তা নির্ধারণ করুন।</p>
             </div>
             <button onClick={handleSaveNotifPrefs} disabled={notifSaving || !notifPrefs}
-              className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+              className="px-5 py-2 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 transition disabled:opacity-50">
               {notifSaving ? '⏳ সেভ হচ্ছে...' : '💾 সেভ করুন'}
             </button>
           </div>
@@ -1157,7 +1157,7 @@ export default function Settings() {
                       </div>
                       <button
                         onClick={() => toggleNotifPref(`inapp_${event.key}`)}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${notifPrefs[`inapp_${event.key}`] ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${notifPrefs[`inapp_${event.key}`] ? 'bg-primary-600' : 'bg-gray-300'}`}>
                         <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${notifPrefs[`inapp_${event.key}`] ? 'translate-x-5' : 'translate-x-0.5'}`} />
                       </button>
                     </div>
@@ -1169,7 +1169,7 @@ export default function Settings() {
                       </div>
                       <button
                         onClick={() => toggleNotifPref(`push_${event.key}`)}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${notifPrefs[`push_${event.key}`] ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${notifPrefs[`push_${event.key}`] ? 'bg-primary-600' : 'bg-gray-300'}`}>
                         <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${notifPrefs[`push_${event.key}`] ? 'translate-x-5' : 'translate-x-0.5'}`} />
                       </button>
                     </div>
@@ -1193,7 +1193,7 @@ export default function Settings() {
             <div className="flex border-b">
               {['menu', 'forms', 'custom'].map(tab => (
                 <button key={tab} onClick={() => setLeftTab(tab)}
-                  className={`flex-1 px-2 py-3 text-xs font-medium transition capitalize ${leftTab === tab ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>
+                  className={`flex-1 px-2 py-3 text-xs font-medium transition capitalize ${leftTab === tab ? 'border-b-2 border-primary-600 text-primary-600' : 'text-gray-500 hover:text-gray-700'}`}>
                   {tab === 'menu' ? 'Menu Items' : tab === 'forms' ? 'Forms' : 'Custom Link'}
                 </button>
               ))}
@@ -1207,7 +1207,7 @@ export default function Settings() {
                     <span className="text-sm text-gray-800">{item.label}</span>
                   </div>
                   <button onClick={() => handleAddMenuItem(item)} disabled={inMenuIds.includes(item.id)}
-                    className={`text-xs px-3 py-1 rounded-lg transition ${inMenuIds.includes(item.id) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                    className={`text-xs px-3 py-1 rounded-lg transition ${inMenuIds.includes(item.id) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-primary-600 text-white hover:bg-primary-700'}`}>
                     {inMenuIds.includes(item.id) ? 'Added' : 'Add'}
                   </button>
                 </div>
@@ -1235,7 +1235,7 @@ export default function Settings() {
                       🗑️
                     </button>
                     <button onClick={() => handleAddForm(form)} disabled={inMenuIds.includes(form.id)}
-                      className={`text-xs px-3 py-1 rounded-lg transition ${inMenuIds.includes(form.id) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                      className={`text-xs px-3 py-1 rounded-lg transition ${inMenuIds.includes(form.id) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-primary-600 text-white hover:bg-primary-700'}`}>
                       {inMenuIds.includes(form.id) ? 'Added' : 'Add'}
                     </button>
                   </div>
@@ -1248,14 +1248,14 @@ export default function Settings() {
                     <label className="block text-xs font-medium text-gray-600 mb-1">Label</label>
                     <input type="text" value={customLink.label}
                       onChange={e => setCustomLink({ ...customLink, label: e.target.value })}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="Menu label" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Link To</label>
                     <select value={customLink.link_type}
                       onChange={e => setCustomLink({ ...customLink, link_type: e.target.value })}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2">
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 mb-2">
                       <option value="path">Custom Path</option>
                       <option value="form">Form (Submit Page)</option>
                       <option value="blank">Blank (No Link)</option>
@@ -1264,7 +1264,7 @@ export default function Settings() {
                     {customLink.link_type === 'form' ? (
                       <select value={customLink.form_id || ''}
                         onChange={e => setCustomLink({ ...customLink, form_id: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="">Select Form</option>
                         {allForms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
                       </select>
@@ -1275,14 +1275,14 @@ export default function Settings() {
                     ) : customLink.link_type === 'report' ? (
                       <select value={customLink.report_id || ''}
                         onChange={e => setCustomLink({ ...customLink, report_id: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="">Select Report</option>
                         {allReports.map(r => <option key={r.id} value={r.id}>{r.title || r.name}</option>)}
                       </select>
                     ) : (
                       <input type="text" value={customLink.path}
                         onChange={e => setCustomLink({ ...customLink, path: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="/custom-page" />
                     )}
                   </div>
@@ -1299,7 +1299,7 @@ export default function Settings() {
                           <div className="grid grid-cols-8 gap-1">
                             {AVAILABLE_ICONS.map(icon => (
                               <button key={icon} onClick={() => { setCustomLink({ ...customLink, icon }); setShowIconPicker(false) }}
-                                className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-blue-50 transition ${customLink.icon === icon ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
+                                className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-primary-50 transition ${customLink.icon === icon ? 'bg-primary-100 ring-2 ring-primary-500' : ''}`}>
                                 {icon}
                               </button>
                             ))}
@@ -1309,7 +1309,7 @@ export default function Settings() {
                     </div>
                   </div>
                   <button onClick={handleAddCustomLink}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                    className="w-full bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition text-sm font-medium">
                     + Add to Menu
                   </button>
                 </div>
@@ -1325,7 +1325,7 @@ export default function Settings() {
                 <p className="text-xs text-gray-500 mt-0.5">🔃 Drag to reorder • ▼ Click to edit & set parent</p>
               </div>
               <button onClick={handleSave} disabled={saving}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 font-medium">
+                className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition disabled:opacity-50 font-medium">
                 {saving ? 'Saving...' : 'Save Menu'}
               </button>
             </div>

@@ -576,7 +576,7 @@ export default function AdvancedReportViewer() {
         <h1 className="text-xl font-bold text-gray-800">📊 Advanced Reports</h1>
         {(isAdmin || isCentral) && (
           <button onClick={() => navigate('/advanced-reports/builder')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">
             + New Template
           </button>
         )}
@@ -591,7 +591,7 @@ export default function AdvancedReportViewer() {
             : templates.map(t => (
               <div key={t.id}
                 onClick={() => handleSelectTemplate(t)}
-                className={`p-3 rounded-lg cursor-pointer border transition text-sm ${selected?.id === t.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+                className={`p-3 rounded-lg cursor-pointer border transition text-sm ${selected?.id === t.id ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}>
                 <p className="font-medium text-gray-800">{t.title}</p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {t.type === 'branch_wise' ? '🏢 Branch-wise' : t.type === 'summary' ? '📌 Summary' : '📋 Category-wise'}
@@ -599,7 +599,7 @@ export default function AdvancedReportViewer() {
                 {(isAdmin || isCentral) && (
                   <div className="flex gap-2 mt-1">
                     <button onClick={e => { e.stopPropagation(); navigate(`/advanced-reports/builder?edit=${t.id}`) }}
-                      className="text-xs text-blue-500 hover:underline">Edit</button>
+                      className="text-xs text-primary-500 hover:underline">Edit</button>
                     <button onClick={e => { e.stopPropagation(); handleDelete(t.id) }}
                       className="text-xs text-red-400 hover:underline">Delete</button>
                     <button onClick={e => {
@@ -632,7 +632,7 @@ export default function AdvancedReportViewer() {
                         setDateFrom(range.from)
                         setDateTo(range.to)
                       }}
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${fiscalMode ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${fiscalMode ? 'bg-primary-600' : 'bg-gray-300'}`}>
                       <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${fiscalMode ? 'translate-x-5' : 'translate-x-0.5'}`} />
                     </button>
                     <span className="text-xs text-gray-500">অর্থবছর</span>
@@ -640,18 +640,18 @@ export default function AdvancedReportViewer() {
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">শুরু</label>
                     <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
                   </div>
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">শেষ</label>
                     <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
                   </div>
                   {showDivFilter && (
                     <div>
                       <label className="text-xs text-gray-500 block mb-1">বিভাগ</label>
                       <select value={fDiv} onChange={e => { setFDiv(e.target.value); setFReg(''); setFBranch('') }}
-                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
                         <option value="">সব বিভাগ</option>
                         {visDiv.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                       </select>
@@ -661,7 +661,7 @@ export default function AdvancedReportViewer() {
                     <div>
                       <label className="text-xs text-gray-500 block mb-1">অঞ্চল</label>
                       <select value={fReg} onChange={e => { setFReg(e.target.value); setFBranch('') }}
-                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
                         <option value="">সব অঞ্চল</option>
                         {visReg.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                       </select>
@@ -671,7 +671,7 @@ export default function AdvancedReportViewer() {
                     <div>
                       <label className="text-xs text-gray-500 block mb-1">শাখা</label>
                       <select value={fBranch} onChange={e => setFBranch(e.target.value)}
-                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
                         <option value="">সব শাখা</option>
                         {visBr.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
                       </select>
@@ -682,7 +682,7 @@ export default function AdvancedReportViewer() {
                       <label className="text-xs text-gray-500 block mb-1">ইউজার ফিল্টার <span className="text-gray-400">(Ctrl+click)</span></label>
                       <select multiple value={fUsers}
                         onChange={e => setFUsers(Array.from(e.target.selectedOptions, o => o.value))}
-                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-44 max-h-24">
+                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 min-w-44 max-h-24">
                         {summaryUsers.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
                       </select>
                       {fUsers.length > 0 && (
@@ -691,7 +691,7 @@ export default function AdvancedReportViewer() {
                     </div>
                   )}
                   <button onClick={loadReport} disabled={loading}
-                    className="px-5 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+                    className="px-5 py-1.5 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50">
                     {loading ? '⏳' : '🔄 Refresh'}
                   </button>
                 </div>
@@ -704,7 +704,7 @@ export default function AdvancedReportViewer() {
                     <h2 className="font-bold text-gray-800">{selected.title}</h2>
                     <p className="text-xs text-gray-400 flex items-center gap-2">
                   <span>{dateFrom} — {dateTo} · {subs.length} submissions</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${selected?.report_mode === 'latest' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${selected?.report_mode === 'latest' ? 'bg-orange-100 text-orange-700' : 'bg-primary-100 text-primary-700'}`}>
                     {selected?.report_mode === 'latest' ? '🟠 সর্বশেষ' : '🔵 সর্বমোট'}
                   </span>
                 </p>
@@ -741,16 +741,16 @@ export default function AdvancedReportViewer() {
                       <thead>
                         <tr>
                           <th rowSpan={2}
-                            className="px-2 py-2 text-center bg-blue-700 text-white border border-blue-600 sticky left-0 z-20 w-8">
+                            className="px-2 py-2 text-center bg-primary-700 text-white border border-primary-600 sticky left-0 z-20 w-8">
                             #
                           </th>
                           <th rowSpan={2}
-                            className="px-3 py-2 text-left bg-blue-700 text-white border border-blue-600 sticky left-8 z-20 min-w-36 whitespace-nowrap">
+                            className="px-3 py-2 text-left bg-primary-700 text-white border border-primary-600 sticky left-8 z-20 min-w-36 whitespace-nowrap">
                             {rowHeader()}
                           </th>
                           {selected.column_groups.map(g => (
                             <th key={g.id} colSpan={g.columns.length}
-                              className="px-3 py-2 text-center bg-blue-700 text-white border border-blue-600 whitespace-nowrap font-semibold">
+                              className="px-3 py-2 text-center bg-primary-700 text-white border border-primary-600 whitespace-nowrap font-semibold">
                               {g.label}
                             </th>
                           ))}
@@ -758,7 +758,7 @@ export default function AdvancedReportViewer() {
                         <tr>
                           {allCols.map(col => (
                             <th key={col.id}
-                              className="px-2 py-1.5 text-center bg-blue-600 text-white border border-blue-500 whitespace-nowrap">
+                              className="px-2 py-1.5 text-center bg-primary-600 text-white border border-primary-500 whitespace-nowrap">
                               {col.label}
                             </th>
                           ))}
@@ -766,11 +766,11 @@ export default function AdvancedReportViewer() {
                       </thead>
                       <tbody>
                         {tableRows.map((row, ri) => (
-                          <tr key={ri} className={row.isTotal ? 'bg-blue-50 border-t-2 border-blue-200' : ri%2===0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-blue-50'}>
-                            <td className={`px-2 py-2 text-center border border-gray-200 sticky left-0 z-10 text-xs text-gray-400 ${row.isTotal ? 'bg-blue-50' : ri%2===0 ? 'bg-white' : 'bg-gray-50'}`}>
+                          <tr key={ri} className={row.isTotal ? 'bg-primary-50 border-t-2 border-primary-200' : ri%2===0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-primary-50'}>
+                            <td className={`px-2 py-2 text-center border border-gray-200 sticky left-0 z-10 text-xs text-gray-400 ${row.isTotal ? 'bg-primary-50' : ri%2===0 ? 'bg-white' : 'bg-gray-50'}`}>
                               {row.isTotal ? '' : ri + 1}
                             </td>
-                            <td className={`px-3 py-2 border border-gray-200 sticky left-8 z-10 whitespace-nowrap ${row.isTotal ? 'bg-blue-50 font-bold text-blue-800' : ri%2===0 ? 'bg-white' : 'bg-gray-50'}`}
+                            <td className={`px-3 py-2 border border-gray-200 sticky left-8 z-10 whitespace-nowrap ${row.isTotal ? 'bg-primary-50 font-bold text-primary-800' : ri%2===0 ? 'bg-white' : 'bg-gray-50'}`}
                               style={{ paddingLeft: `${(row.level||0)*12+12}px` }}>
                               {row.label}
                             </td>
@@ -781,7 +781,7 @@ export default function AdvancedReportViewer() {
                               const color = isP ? (n >= 100 ? 'text-green-600' : n >= 75 ? 'text-yellow-600' : 'text-red-500') : ''
                               return (
                                 <td key={col.id}
-                                  className={`px-2 py-2 text-right border border-gray-200 tabular-nums ${row.isTotal ? 'font-bold text-blue-800' : color}`}>
+                                  className={`px-2 py-2 text-right border border-gray-200 tabular-nums ${row.isTotal ? 'font-bold text-primary-800' : color}`}>
                                   {isP ? `${fmtNum(val)}%` : fmtNum(val)}
                                 </td>
                               )

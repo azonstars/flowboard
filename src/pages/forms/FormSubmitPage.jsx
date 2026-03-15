@@ -244,8 +244,8 @@ export default function FormSubmitPage() {
       )}
 
       <div className="bg-white rounded-lg p-6 shadow-sm">
-        <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-700">
+        <div className="mb-4 p-3 bg-primary-50 rounded-lg">
+          <p className="text-sm text-primary-700">
             Branch: <strong>{profile?.branch_code}</strong> |
             {isEditMode
               ? <> তারিখ: <strong>{editSubmission?.submission_date}</strong></>
@@ -256,20 +256,20 @@ export default function FormSubmitPage() {
 
         {/* Date Range Summary */}
         {!isEditMode && (
-          <div className="mb-4 border border-blue-100 rounded-xl overflow-hidden">
-            <div className="bg-blue-50 px-4 py-3 flex flex-wrap items-end gap-3">
+          <div className="mb-4 border border-primary-100 rounded-xl overflow-hidden">
+            <div className="bg-primary-50 px-4 py-3 flex flex-wrap items-end gap-3">
               <div>
-                <label className="block text-xs text-blue-700 font-medium mb-1">📅 From</label>
+                <label className="block text-xs text-primary-700 font-medium mb-1">📅 From</label>
                 <input type="date" value={dateRange.from} onChange={e => setDateRange(p => ({ ...p, from: e.target.value }))}
-                  className="border border-blue-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                  className="border border-primary-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
               </div>
               <div>
-                <label className="block text-xs text-blue-700 font-medium mb-1">📅 To</label>
+                <label className="block text-xs text-primary-700 font-medium mb-1">📅 To</label>
                 <input type="date" value={dateRange.to} onChange={e => setDateRange(p => ({ ...p, to: e.target.value }))}
-                  className="border border-blue-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                  className="border border-primary-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
               </div>
               <button onClick={loadRangeSummary} disabled={!dateRange.from || !dateRange.to || loadingRange}
-                className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition disabled:opacity-50">
+                className="px-4 py-1.5 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 transition disabled:opacity-50">
                 {loadingRange ? '⏳' : '🔍 দেখুন'}
               </button>
               {rangeSummary && (
@@ -288,7 +288,7 @@ export default function FormSubmitPage() {
                     const amount = rangeSummary[`${field.id}_amount`]
                     if (!count && !amount) return null
                     return (
-                      <span key={field.id} className="bg-blue-50 px-2 py-0.5 rounded">
+                      <span key={field.id} className="bg-primary-50 px-2 py-0.5 rounded">
                         <strong>{field.label}:</strong>
                         {count ? ` সংখ্যা ${toBn(count)}` : ''}
                         {amount ? ` পরিমাণ ${toBn(amount)}` : ''}
@@ -365,13 +365,13 @@ export default function FormSubmitPage() {
                             {field.type === 'text' && (
                               <input type="text" value={formData[`${field.id}_text`] || ''}
                                 onChange={e => handleChange(field.id, null, 'text', e.target.value)}
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 placeholder={field.label} />
                             )}
                             {field.type === 'select' && (
                               <select value={formData[`${field.id}_select`] || ''}
                                 onChange={e => handleChange(field.id, null, 'select', e.target.value)}
-                                className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                                 <option value="">-- select করুন --</option>
                                 {(field.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
                               </select>
@@ -409,7 +409,7 @@ export default function FormSubmitPage() {
                             <input type="number"
                               value={formData[`${field.id}_count`] || ''}
                               onChange={e => handleChange(field.id, null, 'count', e.target.value)}
-                              className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                               placeholder="সংখ্যা" />
                           ) : <span className="text-gray-300 text-xs px-2">—</span>}
                         </td>
@@ -420,7 +420,7 @@ export default function FormSubmitPage() {
                             <input type="number" step="0.01"
                               value={formData[`${field.id}_amount`] || ''}
                               onChange={e => handleChange(field.id, null, 'amount', e.target.value)}
-                              className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                               placeholder="পরিমাণ" />
                           ) : <span className="text-gray-300 text-xs px-2">—</span>}
                         </td>
@@ -437,7 +437,7 @@ export default function FormSubmitPage() {
                               <input type="number"
                                 value={formData[`${field.id}_${child.id}_count`] || ''}
                                 onChange={e => handleChange(field.id, child.id, 'count', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
                                 placeholder="সংখ্যা" />
                             ) : <span className="text-gray-300 text-xs px-2">—</span>}
                           </td>
@@ -448,7 +448,7 @@ export default function FormSubmitPage() {
                               <input type="number" step="0.01"
                                 value={formData[`${field.id}_${child.id}_amount`] || ''}
                                 onChange={e => handleChange(field.id, child.id, 'amount', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
                                 placeholder="পরিমাণ" />
                             ) : <span className="text-gray-300 text-xs px-2">—</span>}
                           </td>
@@ -466,7 +466,7 @@ export default function FormSubmitPage() {
 
         <div className="flex gap-3 mt-6">
           <button onClick={() => handleSubmit('submitted')} disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
+            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50">
             {loading ? 'Saving...' : isEditMode ? '✅ Update করুন' : 'Submit'}
           </button>
           {/* Draft edit mode তে Draft Save বাটন */}

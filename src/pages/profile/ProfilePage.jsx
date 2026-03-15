@@ -84,7 +84,7 @@ export default function ProfilePage() {
           onChange={e => setPwData({ ...pwData, [field]: e.target.value })}
           onKeyDown={e => e.key === 'Enter' && handlePasswordChange()}
           autoFocus={autoFocus}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder={placeholder}
         />
         <button type="button"
@@ -101,13 +101,13 @@ export default function ProfilePage() {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Avatar Card */}
       <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col items-center text-center">
-        <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4">
+        <div className="w-24 h-24 bg-primary-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4">
           {avatarLetter}
         </div>
         <h1 className="text-2xl font-bold text-gray-800">{profile?.full_name}</h1>
         <p className="text-gray-500 mt-1">{ROLE_LABELS[profile?.role] || profile?.role}</p>
         {profile?.branch_code && (
-          <span className="mt-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+          <span className="mt-2 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
             🏢 Branch: {profile.branch_code}
           </span>
         )}
@@ -118,13 +118,13 @@ export default function ProfilePage() {
         <div className="flex border-b border-gray-200">
           <button
             onClick={() => setActiveTab('info')}
-            className={`flex-1 py-3 text-sm font-medium transition ${activeTab === 'info' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 py-3 text-sm font-medium transition ${activeTab === 'info' ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50' : 'text-gray-500 hover:text-gray-700'}`}
           >
             👤 Profile Info
           </button>
           <button
             onClick={() => setActiveTab('password')}
-            className={`flex-1 py-3 text-sm font-medium transition ${activeTab === 'password' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 py-3 text-sm font-medium transition ${activeTab === 'password' ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50' : 'text-gray-500 hover:text-gray-700'}`}
           >
             🔒 Password Change
           </button>
@@ -138,7 +138,7 @@ export default function ProfilePage() {
               {!editing && (
                 <button
                   onClick={() => { setEditing(true); setFormData({ full_name: profile?.full_name || '', phone: profile?.phone || '' }) }}
-                  className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="text-sm px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
                 >
                   ✏️ Edit
                 </button>
@@ -151,19 +151,19 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">পূর্ণ নাম <span className="text-red-500">*</span></label>
                   <input type="text" value={formData.full_name}
                     onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="আপনার পূর্ণ নাম" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                   <input type="text" value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="01XXXXXXXXX" />
                 </div>
                 <div className="flex gap-3 pt-2">
                   <button onClick={handleSave} disabled={saving}
-                    className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition text-sm font-medium disabled:opacity-50">
+                    className="flex-1 bg-primary-600 text-white py-2.5 rounded-lg hover:bg-primary-700 transition text-sm font-medium disabled:opacity-50">
                     {saving ? 'Saving...' : '💾 Save করুন'}
                   </button>
                   <button onClick={() => setEditing(false)}
@@ -202,7 +202,7 @@ export default function ProfilePage() {
             )}
 
             <button onClick={handlePasswordChange} disabled={pwSaving}
-              className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition text-sm font-medium disabled:opacity-50 mt-2">
+              className="w-full bg-primary-600 text-white py-2.5 rounded-lg hover:bg-primary-700 transition text-sm font-medium disabled:opacity-50 mt-2">
               {pwSaving ? 'Changing...' : '🔒 Password পরিবর্তন করুন'}
             </button>
           </div>

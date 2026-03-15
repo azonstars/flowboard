@@ -87,7 +87,7 @@ export default function BranchManagement() {
         <h1 className="text-2xl font-bold text-gray-800">Branch Management</h1>
         <button
           onClick={() => openModal()}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition"
         >
           + Add New
         </button>
@@ -102,7 +102,7 @@ export default function BranchManagement() {
               onClick={() => setActiveTab(tab)}
               className={`px-6 py-3 text-sm font-medium capitalize transition ${
                 activeTab === tab
-                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  ? 'border-b-2 border-primary-600 text-primary-600'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -144,7 +144,7 @@ export default function BranchManagement() {
                           </td>
                         )}
                         <td className="py-3">
-                          <button onClick={() => openModal(item)} className="text-blue-600 hover:underline text-sm mr-3">Edit</button>
+                          <button onClick={() => openModal(item)} className="text-primary-600 hover:underline text-sm mr-3">Edit</button>
                           <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:underline text-sm">Delete</button>
                         </td>
                       </tr>
@@ -176,7 +176,7 @@ export default function BranchManagement() {
                     )}
                     <div className="flex gap-2 pt-1 border-t border-gray-100">
                       <button onClick={() => openModal(item)}
-                        className="flex-1 text-xs px-3 py-2 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 transition text-center">
+                        className="flex-1 text-xs px-3 py-2 rounded-lg border border-primary-300 text-primary-600 hover:bg-primary-50 transition text-center">
                         ✏️ Edit
                       </button>
                       <button onClick={() => handleDelete(item.id)}
@@ -207,7 +207,7 @@ export default function BranchManagement() {
                   type="text"
                   value={formData.name || ''}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
@@ -222,7 +222,7 @@ export default function BranchManagement() {
                     ...formData,
                     [activeTab === 'branches' ? 'branch_code' : 'code']: e.target.value
                   })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
@@ -232,7 +232,7 @@ export default function BranchManagement() {
                   <select
                     value={formData.division_id || ''}
                     onChange={e => setFormData({ ...formData, division_id: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Select Division</option>
                     {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -247,7 +247,7 @@ export default function BranchManagement() {
                     <select
                       value={formData.division_id || ''}
                       onChange={e => setFormData({ ...formData, division_id: e.target.value })}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="">Select Division</option>
                       {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -258,7 +258,7 @@ export default function BranchManagement() {
                     <select
                       value={formData.region_id || ''}
                       onChange={e => setFormData({ ...formData, region_id: e.target.value })}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="">Select Region</option>
                       {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
@@ -271,7 +271,7 @@ export default function BranchManagement() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleSubmit}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                className="flex-1 bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition"
               >
                 {editItem ? 'Update' : 'Create'}
               </button>

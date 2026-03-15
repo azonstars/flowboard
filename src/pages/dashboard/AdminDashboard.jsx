@@ -16,10 +16,10 @@ const ActivityHeatmap = ({ data }) => {
   const getColor = (count) => {
     if (count === 0) return 'bg-gray-100'
     const pct = count / max
-    if (pct < 0.25) return 'bg-blue-100'
-    if (pct < 0.5) return 'bg-blue-300'
-    if (pct < 0.75) return 'bg-blue-500'
-    return 'bg-blue-700'
+    if (pct < 0.25) return 'bg-primary-100'
+    if (pct < 0.5) return 'bg-primary-300'
+    if (pct < 0.75) return 'bg-primary-500'
+    return 'bg-primary-700'
   }
   const weeks = []
   for (let i = 0; i < data.length; i += 7) weeks.push(data.slice(i, i + 7))
@@ -42,7 +42,7 @@ const ActivityHeatmap = ({ data }) => {
       </div>
       <div className="flex items-center gap-2 mt-3 text-xs text-gray-400">
         <span>কম</span>
-        {['bg-gray-100','bg-blue-100','bg-blue-300','bg-blue-500','bg-blue-700'].map((c,i) => <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />)}
+        {['bg-gray-100','bg-primary-100','bg-primary-300','bg-primary-500','bg-primary-700'].map((c,i) => <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />)}
         <span>বেশি</span>
       </div>
       <MenuSummaryPanel />
@@ -163,13 +163,13 @@ export default function AdminDashboard() {
           {[{l:'৭ দিন',d:7},{l:'৩০ দিন',d:30},{l:'৯০ দিন',d:90}].map(({l,d})=>{
             const from = new Date(Date.now()-d*86400000).toISOString().split('T')[0]
             return <button key={d} onClick={()=>setRange(d)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${dateFrom===from&&dateTo===today?'bg-blue-600 text-white':'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{l}</button>
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${dateFrom===from&&dateTo===today?'bg-primary-600 text-white':'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{l}</button>
           })}
           <input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)}
-            className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+            className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary-400"/>
           <span className="text-gray-400 text-xs">→</span>
           <input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)}
-            className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+            className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary-400"/>
         </div>
       </div>
 
@@ -177,14 +177,14 @@ export default function AdminDashboard() {
       <div className="flex gap-2 flex-wrap">
         {[{k:'overview',l:'📊 Overview'},{k:'branches',l:'🏢 Branches'},{k:'heatmap',l:'🗓 Activity'},{k:'forms',l:'📋 Forms'}].map(t=>(
           <button key={t.k} onClick={()=>setActiveTab(t.k)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm ${activeTab===t.k?'bg-blue-600 text-white':'bg-white text-gray-600 hover:bg-gray-50'}`}>{t.l}</button>
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm ${activeTab===t.k?'bg-primary-600 text-white':'bg-white text-gray-600 hover:bg-gray-50'}`}>{t.l}</button>
         ))}
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          {label:'Branches',value:stats.branches,color:'border-blue-500',icon:'🏢'},
+          {label:'Branches',value:stats.branches,color:'border-primary-500',icon:'🏢'},
           {label:'Users',value:stats.users,color:'border-purple-500',icon:'👥'},
           {label:'Active Forms',value:stats.forms,color:'border-yellow-500',icon:'📋'},
           {label:'আজকের',value:stats.submissions,color:'border-green-500',icon:'📬'},
@@ -250,7 +250,7 @@ export default function AdminDashboard() {
                           <div className="flex-1">
                             <div className="flex justify-between mb-1">
                               <span className="text-sm font-medium text-gray-800">{b.name}</span>
-                              <span className="text-sm font-bold text-blue-600">{b.count}টি</span>
+                              <span className="text-sm font-bold text-primary-600">{b.count}টি</span>
                             </div>
                             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                               <div className="h-full rounded-full" style={{width:`${pct}%`,background:i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#b45309':'#3b82f6'}}/>
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
                 {[...heatmapData].filter(d=>d.count>0).sort((a,b)=>b.count-a.count).slice(0,5).map((d,i)=>(
                   <div key={d.date} className="flex justify-between text-sm py-1.5 border-b border-gray-50">
                     <span className="text-gray-600">{i+1}. {d.date}</span>
-                    <span className="font-bold text-blue-600">{d.count}টি</span>
+                    <span className="font-bold text-primary-600">{d.count}টি</span>
                   </div>
                 ))}
               </div>
@@ -337,9 +337,9 @@ export default function AdminDashboard() {
                           <span className="text-sm text-gray-400 w-5">{i+1}.</span>
                           <span className="flex-1 text-sm font-medium text-gray-800">{f.name}</span>
                           <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-blue-500 rounded-full" style={{width:`${pct}%`}}/>
+                            <div className="h-full bg-primary-500 rounded-full" style={{width:`${pct}%`}}/>
                           </div>
-                          <span className="text-sm font-bold text-blue-600 w-12 text-right">{f.count}টি</span>
+                          <span className="text-sm font-bold text-primary-600 w-12 text-right">{f.count}টি</span>
                           <span className="text-xs text-gray-400 w-10 text-right">{pct}%</span>
                         </div>
                       )

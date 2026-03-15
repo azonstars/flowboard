@@ -155,8 +155,8 @@ export default function CentralCheckerDashboard() {
           <p className="text-gray-500 mt-1">Central Checker Dashboard</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>📊 Dashboard</button>
-          <button onClick={() => setActiveTab('requests')} className={`px-4 py-2 rounded-lg text-sm font-medium transition relative ${activeTab === 'requests' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+          <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'dashboard' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>📊 Dashboard</button>
+          <button onClick={() => setActiveTab('requests')} className={`px-4 py-2 rounded-lg text-sm font-medium transition relative ${activeTab === 'requests' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
             ✏️ সব Edit Requests
             {pendingCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">{pendingCount}</span>}
           </button>
@@ -164,7 +164,7 @@ export default function CentralCheckerDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg p-6 shadow-sm border-l-4 border-blue-500">
+        <div className="bg-white rounded-lg p-6 shadow-sm border-l-4 border-primary-500">
           <p className="text-sm text-gray-500">Total Branches</p>
           <p className="text-3xl font-bold text-gray-800 mt-1">{stats.totalBranches}</p>
         </div>
@@ -220,7 +220,7 @@ export default function CentralCheckerDashboard() {
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="font-bold text-gray-800">Recent Submissions</h2>
           {appSettings?.feature_checker_all_submissions_btn !== false && (
-            <button onClick={() => navigate('/submissions')} className="text-sm text-blue-600 hover:underline">সব দেখুন →</button>
+            <button onClick={() => navigate('/submissions')} className="text-sm text-primary-600 hover:underline">সব দেখুন →</button>
           )}
         </div>
         <div className="divide-y divide-gray-200">
@@ -257,11 +257,11 @@ export default function CentralCheckerDashboard() {
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-medium text-gray-800">{req.form_submissions?.forms?.title}</p>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${req.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{req.status}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${req.required_checker === 'central_checker' ? 'bg-purple-100 text-purple-700' : req.required_checker === 'divisional_checker' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>{req.required_checker?.replace('_checker', '').replace('_', ' ')}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${req.required_checker === 'central_checker' ? 'bg-purple-100 text-purple-700' : req.required_checker === 'divisional_checker' ? 'bg-primary-100 text-primary-700' : 'bg-green-100 text-green-700'}`}>{req.required_checker?.replace('_checker', '').replace('_', ' ')}</span>
                       </div>
                       <p className="text-sm text-gray-600">Branch: <strong>{req.branch_code}</strong> | {req.submission_date} | <span className="text-orange-600">{req.days_old} দিন পুরনো</span></p>
                       <p className="text-sm text-gray-500">Requested by: {req.requester?.full_name}</p>
-                      {req.request_reason && <p className="text-sm text-blue-700 mt-1 bg-blue-50 px-3 py-1.5 rounded-lg">কারণ: {req.request_reason}</p>}
+                      {req.request_reason && <p className="text-sm text-primary-700 mt-1 bg-primary-50 px-3 py-1.5 rounded-lg">কারণ: {req.request_reason}</p>}
                     </div>
                     {req.status === 'pending' && (
                       <div className="flex gap-2 shrink-0">

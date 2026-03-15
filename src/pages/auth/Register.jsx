@@ -56,7 +56,7 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center text-blue-600 mb-2">FlowBoard</h1>
+        <h1 className="text-2xl font-bold text-center text-primary-600 mb-2">FlowBoard</h1>
         <p className="text-center text-gray-500 mb-6">Create your account</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,7 +67,7 @@ export default function Register() {
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Enter your full name"
               required
             />
@@ -80,7 +80,7 @@ export default function Register() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Enter your email"
               required
             />
@@ -92,7 +92,7 @@ export default function Register() {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               {Object.entries(ROLE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
@@ -108,7 +108,7 @@ export default function Register() {
                 name="branchCode"
                 value={formData.branchCode}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Enter your branch code"
                 required
               />
@@ -122,7 +122,7 @@ export default function Register() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Enter your password"
               required
             />
@@ -135,7 +135,7 @@ export default function Register() {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Confirm your password"
               required
             />
@@ -144,7 +144,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full bg-primary-600 text-white py-2 rounded-md hover:bg-primary-700 transition disabled:opacity-50"
           >
             {loading ? 'Registering...' : 'Register'}
           </button>
@@ -153,7 +153,7 @@ export default function Register() {
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-500">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 hover:underline">
+            <Link to="/login" className="text-primary-600 hover:underline">
               Sign In
             </Link>
           </p>

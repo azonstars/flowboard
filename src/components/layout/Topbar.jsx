@@ -225,7 +225,7 @@ export default function Topbar({ onMenuClick }) {
         {/* PWA Install Button */}
         {canInstall && !isPWA && (
           <button onClick={handleInstallPWA}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white rounded-lg text-xs font-medium hover:bg-primary-700 transition"
             title="App হিসেবে install করুন">
             📲 Install App
           </button>
@@ -251,7 +251,7 @@ export default function Topbar({ onMenuClick }) {
               d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
           {chatUnread > 0 && (
-            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-bold px-1 animate-pulse">
+            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-primary-600 text-white text-xs rounded-full flex items-center justify-center font-bold px-1 animate-pulse">
               {chatUnread > 99 ? '99+' : chatUnread}
             </span>
           )}
@@ -302,14 +302,14 @@ export default function Topbar({ onMenuClick }) {
                   </div>
                 ) : notifications.map(notif => (
                   <button key={notif.id} onClick={() => handleNotifClick(notif)}
-                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 flex gap-3 ${!notif.is_read ? 'bg-blue-50' : ''}`}>
+                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 flex gap-3 ${!notif.is_read ? 'bg-primary-50' : ''}`}>
                     <span className="text-xl shrink-0 mt-0.5">{TYPE_ICON[notif.type] || '🔔'}</span>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm leading-snug ${!notif.is_read ? 'font-semibold text-gray-800' : 'text-gray-600'}`}>{notif.title}</p>
                       {notif.message && <p className="text-xs text-gray-500 mt-0.5 truncate">{notif.message}</p>}
                       <p className="text-xs text-gray-400 mt-1">{formatNotifTime(notif.created_at)}</p>
                     </div>
-                    {!notif.is_read && <span className="w-2 h-2 bg-blue-500 rounded-full shrink-0 mt-2" />}
+                    {!notif.is_read && <span className="w-2 h-2 bg-primary-500 rounded-full shrink-0 mt-2" />}
                   </button>
                 ))}
               </div>
@@ -327,7 +327,7 @@ export default function Topbar({ onMenuClick }) {
         <div className="relative" ref={dropdownRef}>
           <button onClick={() => setDropdownOpen(!dropdownOpen)}
             className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+            <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
               {profile?.full_name?.charAt(0).toUpperCase()}
             </div>
             <span className="hidden md:block text-sm font-medium text-gray-700">{profile?.full_name}</span>

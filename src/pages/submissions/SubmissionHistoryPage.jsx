@@ -154,19 +154,19 @@ export default function SubmissionHistoryPage() {
             <label className="block text-xs font-medium text-gray-600 mb-1">শুরুর তারিখ</label>
             <input type="date" value={filters.startDate}
               onChange={e => setFilters({ ...filters, startDate: e.target.value })}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">শেষের তারিখ</label>
             <input type="date" value={filters.endDate}
               onChange={e => setFilters({ ...filters, endDate: e.target.value })}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">ফর্ম</label>
             <select value={filters.form_id} onChange={e => setFilters({ ...filters, form_id: e.target.value })}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
               <option value="">সব ফর্ম</option>
               {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
             </select>
@@ -175,7 +175,7 @@ export default function SubmissionHistoryPage() {
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
             <select value={filters.status} onChange={e => setFilters({ ...filters, status: e.target.value })}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
               <option value="">সব Status</option>
               <option value="submitted">⏳ Pending</option>
               <option value="approved">✅ Approved</option>
@@ -189,7 +189,7 @@ export default function SubmissionHistoryPage() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
               <select value={filters.branch_code} onChange={e => setFilters({ ...filters, branch_code: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                 <option value="">সব Branch</option>
                 {branches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
               </select>
@@ -197,7 +197,7 @@ export default function SubmissionHistoryPage() {
           )}
 
           <button onClick={() => loadSubmissions(filters)}
-            className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+            className="bg-primary-600 text-white px-5 py-2 rounded-lg hover:bg-primary-700 transition text-sm font-medium">
             🔍 Filter
           </button>
         </div>

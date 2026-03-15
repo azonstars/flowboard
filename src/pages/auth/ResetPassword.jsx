@@ -25,7 +25,7 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center text-blue-600 mb-2">FlowBoard</h1>
+        <h1 className="text-2xl font-bold text-center text-primary-600 mb-2">FlowBoard</h1>
         <p className="text-center text-gray-500 mb-6">Reset your password</p>
 
         {sent ? (
@@ -33,7 +33,7 @@ export default function ResetPassword() {
             <div className="bg-green-50 text-green-700 p-4 rounded-md">
               Password reset email sent! Please check your inbox.
             </div>
-            <Link to="/login" className="text-blue-600 hover:underline text-sm">
+            <Link to="/login" className="text-primary-600 hover:underline text-sm">
               Back to Login
             </Link>
           </div>
@@ -45,7 +45,7 @@ export default function ResetPassword() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Enter your email"
                 required
               />
@@ -54,13 +54,13 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+              className="w-full bg-primary-600 text-white py-2 rounded-md hover:bg-primary-700 transition disabled:opacity-50"
             >
               {loading ? 'Sending...' : 'Send Reset Email'}
             </button>
 
             <div className="text-center">
-              <Link to="/login" className="text-sm text-blue-600 hover:underline">
+              <Link to="/login" className="text-sm text-primary-600 hover:underline">
                 Back to Login
               </Link>
             </div>

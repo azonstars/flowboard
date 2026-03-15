@@ -62,7 +62,7 @@ export default function MenuSummaryPanel({ branchCode = null, regionId = null, d
           <h3 className="font-bold text-gray-800 text-sm">📊 মেনু-ভিত্তিক সারসংক্ষেপ</h3>
           <p className="text-xs text-gray-400 mt-0.5">{summary[0]?.yearLabel}</p>
         </div>
-        <span className={`text-xs px-2 py-1 rounded-full font-medium ${isFiscal ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+        <span className={`text-xs px-2 py-1 rounded-full font-medium ${isFiscal ? 'bg-primary-100 text-primary-700' : 'bg-purple-100 text-purple-700'}`}>
           {isFiscal ? 'অর্থবছর' : 'ক্যালেন্ডার'}
         </span>
       </div>
@@ -90,25 +90,25 @@ export default function MenuSummaryPanel({ branchCode = null, regionId = null, d
                   <div key={form.formId} className="pt-3">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="text-xs font-semibold text-gray-600">{form.formTitle}</p>
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${form.mode === 'latest' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${form.mode === 'latest' ? 'bg-orange-100 text-orange-600' : 'bg-primary-100 text-primary-600'}`}>
                         {form.mode === 'latest' ? 'সর্বশেষ' : 'সর্বমোট'}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                       {form.fields.map((f, i) => (
                         <div key={i} className={`rounded-lg px-3 py-2.5 border shadow-sm ${
-                          f.isGrandTotal ? 'bg-blue-50 border-blue-300 col-span-2' :
+                          f.isGrandTotal ? 'bg-primary-50 border-primary-300 col-span-2' :
                           f.isSubtotal  ? 'bg-green-50 border-green-300' :
                           'bg-white border-gray-100'
                         }`}>
-                          <p className={`text-xs leading-tight truncate ${f.isGrandTotal ? 'text-blue-700 font-bold' : f.isSubtotal ? 'text-green-700 font-semibold' : 'text-gray-500'}`}>
+                          <p className={`text-xs leading-tight truncate ${f.isGrandTotal ? 'text-primary-700 font-bold' : f.isSubtotal ? 'text-green-700 font-semibold' : 'text-gray-500'}`}>
                             {f.isGrandTotal ? '🔷 ' : f.isSubtotal ? '🔹 ' : ''}{f.fieldLabel}
                           </p>
                           <p className="text-xs text-gray-400">{f.subLabel}</p>
                           <p className={`text-sm font-bold mt-1 ${
-                            f.isGrandTotal ? 'text-blue-800 text-base' :
+                            f.isGrandTotal ? 'text-primary-800 text-base' :
                             f.isSubtotal ? 'text-green-700' :
-                            f.type === 'amount' ? 'text-green-700' : 'text-blue-700'
+                            f.type === 'amount' ? 'text-green-700' : 'text-primary-700'
                           }`}>
                             {formatNumber(f.value)}
                           </p>

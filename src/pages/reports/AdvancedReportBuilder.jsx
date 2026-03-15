@@ -161,7 +161,7 @@ export default function AdvancedReportBuilder() {
           <button onClick={() => navigate('/advanced-reports')}
             className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">বাতিল</button>
           <button onClick={handleSave} disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50">
             {saving ? 'Saving...' : '💾 Save'}
           </button>
         </div>
@@ -174,13 +174,13 @@ export default function AdvancedReportBuilder() {
           <div>
             <label className="text-xs text-gray-500 block mb-1">Report Title *</label>
             <input value={title} onChange={e => setTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none"
               placeholder="যেমন: আমানত সংগ্রহ প্রতিবেদন ২০২৫-২৬"/>
           </div>
           <div>
             <label className="text-xs text-gray-500 block mb-1">Report Type *</label>
             <select value={reportType} onChange={e => setReportType(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none">
               <option value="branch_wise">Branch-wise — শাখা/অঞ্চল/বিভাগ ভিত্তিক (Image 1)</option>
               <option value="summary">Summary — একটি মোট row (Image 2)</option>
               <option value="category_wise">Category-wise — বিবরণ/খাত ভিত্তিক (Image 3)</option>
@@ -189,7 +189,7 @@ export default function AdvancedReportBuilder() {
           <div>
             <label className="text-xs text-gray-500 block mb-1">Current Year Form *</label>
             <select value={formId} onChange={e => setFormId(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none">
               <option value="">Form বেছে নিন</option>
               {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
             </select>
@@ -200,7 +200,7 @@ export default function AdvancedReportBuilder() {
               <span className="ml-1 text-gray-400">(শুধু "গত বছর" column থাকলে)</span>
             </label>
             <select value={prevYearFormId} onChange={e => setPrevYearFormId(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none">
               <option value="">প্রযোজ্য নয়</option>
               {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
             </select>
@@ -213,7 +213,7 @@ export default function AdvancedReportBuilder() {
           </div>
         )}
         {needsWeekly && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 text-sm text-blue-700">
+          <div className="bg-primary-50 border border-primary-200 rounded-lg px-4 py-2 text-sm text-primary-700">
             ⏱ সাপ্তাহিক অর্জন column আছে — প্রতি বৃহস্পতিবার থেকে পরের বৃহস্পতিবার পর্যন্ত data দেখাবে।
           </div>
         )}
@@ -226,38 +226,38 @@ export default function AdvancedReportBuilder() {
           <div>
             <label className="text-xs text-gray-500 block mb-1">সংগঠনের নাম (শীর্ষে)</label>
             <input value={headerConfig.orgName} onChange={e => updHeader('orgName', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none"
               placeholder="বাংলাদেশ কৃষি ব্যাংক"/>
           </div>
           <div>
             <label className="text-xs text-gray-500 block mb-1">কার্যালয়ের নাম</label>
             <input value={headerConfig.officeName} onChange={e => updHeader('officeName', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none"
               placeholder="যেমন: আঞ্চলিক কার্যালয়, রাঙামাটি"/>
           </div>
           <div>
             <label className="text-xs text-gray-500 block mb-1">পরিশিষ্ট/ছক নম্বর (ডান কোণে)</label>
             <input value={headerConfig.appNumber} onChange={e => updHeader('appNumber', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none"
               placeholder='ছক-"ক"'/>
           </div>
           <div>
             <label className="text-xs text-gray-500 block mb-1">একক লেবেল (ডান কোণে, নিচে)</label>
             <input value={headerConfig.unitLabel} onChange={e => updHeader('unitLabel', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none"
               placeholder="(কোটি টাকা)"/>
           </div>
           <div className="md:col-span-2">
             <label className="text-xs text-gray-500 block mb-1">বিবরণ / subtitle (শিরোনামের নিচে)</label>
             <textarea value={headerConfig.subTitle} onChange={e => updHeader('subTitle', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none"
               rows={2}
               placeholder="যেমন: রাঙামাটি অঞ্চলের বিগত অর্থ-বছরের তুলনায় ঋণ বিতরণ, ঋণ আদায়..."/>
           </div>
           <div>
             <label className="text-xs text-gray-500 block mb-1">Page Size</label>
             <select value={headerConfig.pageSize} onChange={e => updHeader('pageSize', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 focus:outline-none">
               <option value="legal">Legal (14×8.5 ইঞ্চি)</option>
               <option value="a3">A3 (16.5×11.7 ইঞ্চি)</option>
               <option value="a4">A4 (11.7×8.3 ইঞ্চি)</option>
@@ -267,7 +267,7 @@ export default function AdvancedReportBuilder() {
             <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
               <input type="checkbox" checked={headerConfig.showWeekNumber}
                 onChange={e => updHeader('showWeekNumber', e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600"/>
+                className="w-4 h-4 rounded border-gray-300 text-primary-600"/>
               সপ্তাহ নম্বর দেখাও
             </label>
           </div>
@@ -291,7 +291,7 @@ export default function AdvancedReportBuilder() {
         <div className="flex justify-between items-center border-b pb-2">
           <h2 className="font-semibold text-gray-700">📊 Column Groups</h2>
           <button onClick={addGroup}
-            className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-sm hover:bg-blue-100">
+            className="px-3 py-1.5 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg text-sm hover:bg-primary-100">
             + Group যোগ
           </button>
         </div>
@@ -303,7 +303,7 @@ export default function AdvancedReportBuilder() {
               <div className="bg-gray-50 px-4 py-2.5 flex items-center gap-3">
                 <span className="text-xs text-gray-400 font-bold w-5">{gi + 1}</span>
                 <input value={group.label} onChange={e => updGroup(group.id, 'label', e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-semibold focus:ring-1 focus:ring-blue-400 focus:outline-none"
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-semibold focus:ring-1 focus:ring-primary-400 focus:outline-none"
                   placeholder="Group নাম (যেমন: আমানত সংগ্রহ ২০২৫-২৬)"/>
                 <button onClick={() => addCol(group.id)}
                   className="px-3 py-1.5 text-xs bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100">
@@ -322,12 +322,12 @@ export default function AdvancedReportBuilder() {
 
                     {/* Column name */}
                     <input value={col.label} onChange={e => updCol(group.id, col.id, 'label', e.target.value)}
-                      className="w-36 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none"
+                      className="w-36 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary-400 focus:outline-none"
                       placeholder="Column নাম"/>
 
                     {/* Calc type */}
                     <select value={col.calcType} onChange={e => updCol(group.id, col.id, 'calcType', e.target.value)}
-                      className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                      className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary-400 focus:outline-none">
                       {CALC_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                     </select>
 
@@ -352,7 +352,7 @@ export default function AdvancedReportBuilder() {
                     {/* Normal field select */}
                     {!['percent'].includes(col.calcType) && (
                       <select value={col.fieldId} onChange={e => updCol(group.id, col.id, 'fieldId', e.target.value)}
-                        className="flex-1 min-w-48 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                        className="flex-1 min-w-48 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary-400 focus:outline-none">
                         <option value="">Form field বেছে নিন</option>
                         {formFields.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
                       </select>
@@ -375,7 +375,7 @@ export default function AdvancedReportBuilder() {
           <div className="flex justify-between items-center border-b pb-2">
             <h2 className="font-semibold text-gray-700">📋 Rows Configuration</h2>
             <button onClick={() => addRow(rowsConfig.length - 1)}
-              className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-sm hover:bg-blue-100">
+              className="px-3 py-1.5 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg text-sm hover:bg-primary-100">
               + Row যোগ
             </button>
           </div>
@@ -390,7 +390,7 @@ export default function AdvancedReportBuilder() {
                   <option value={2}>—— Sub-sub</option>
                 </select>
                 <input value={row.label} onChange={e => updRow(row.id, 'label', e.target.value)}
-                  className="flex-1 min-w-40 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none"
+                  className="flex-1 min-w-40 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-primary-400 focus:outline-none"
                   placeholder="বিবরণ"/>
                 <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer whitespace-nowrap">
                   <input type="checkbox" checked={row.isTotal || false}
@@ -409,7 +409,7 @@ export default function AdvancedReportBuilder() {
                 ))}
                 <div className="flex gap-1 ml-auto">
                   <button onClick={() => addRow(ri)}
-                    className="text-blue-400 hover:text-blue-600 border border-blue-200 rounded px-1.5 py-0.5 text-xs">+</button>
+                    className="text-primary-400 hover:text-primary-600 border border-primary-200 rounded px-1.5 py-0.5 text-xs">+</button>
                   {rowsConfig.length > 1 && (
                     <button onClick={() => delRow(row.id)}
                       className="text-red-400 hover:text-red-600 border border-red-200 rounded px-1.5 py-0.5 text-xs">×</button>

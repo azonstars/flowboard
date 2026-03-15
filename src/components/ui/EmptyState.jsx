@@ -49,7 +49,7 @@ export default function EmptyState({ type = 'submission', title = 'কোনো 
       )}
       {action && (
         <button onClick={action.onClick}
-          className="mt-5 px-5 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition font-medium">
+          className="mt-5 px-5 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition font-medium">
           {action.label}
         </button>
       )}

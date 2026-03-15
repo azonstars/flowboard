@@ -25,8 +25,8 @@ const FormPreviewModal = ({ form, fields, onClose }) => {
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
         </div>
         <div className="overflow-y-auto flex-1 p-6 space-y-5">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-bold text-blue-800 text-lg">{form || 'Form Title'}</h3>
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+            <h3 className="font-bold text-primary-800 text-lg">{form || 'Form Title'}</h3>
           </div>
           {fields.filter(f => f.label).map(field => {
             if (!isVisible(field)) return null
@@ -67,7 +67,7 @@ const FormPreviewModal = ({ form, fields, onClose }) => {
                         <input type="number"
                           value={previewData[field.id + '_count'] || ''}
                           onChange={e => setPreviewData(p => ({...p, [field.id + '_count']: e.target.value, [field.id]: e.target.value}))}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
                       </div>
                     )}
                     {(field.type === 'both' || field.type === 'amount') && (
@@ -76,21 +76,21 @@ const FormPreviewModal = ({ form, fields, onClose }) => {
                         <input type="number"
                           value={previewData[field.id + '_amount'] || ''}
                           onChange={e => setPreviewData(p => ({...p, [field.id + '_amount']: e.target.value, [field.id]: e.target.value}))}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
                       </div>
                     )}
                     {field.type === 'select' && (
                       <select
                         value={previewData[field.id] || ''}
                         onChange={e => setPreviewData(p => ({...p, [field.id]: e.target.value}))}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
                         <option value="">বেছে নিন</option>
                         {(field.options || []).map((opt, i) => <option key={i} value={opt}>{opt}</option>)}
                       </select>
                     )}
                     {field.type === 'text' && (
                       <input type="text" placeholder={field.placeholder || field.label}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
                     )}
                     {field.type === 'yesno' && (
                       <div className="flex gap-3">
@@ -114,7 +114,7 @@ const FormPreviewModal = ({ form, fields, onClose }) => {
         </div>
         <div className="p-4 border-t border-gray-100 flex justify-end">
           <button onClick={onClose}
-            className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+            className="px-5 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium">
             বন্ধ করুন
           </button>
         </div>
@@ -324,7 +324,7 @@ export default function FormBuilderPage() {
             Cancel
           </button>
           <button onClick={handleSave} disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 text-sm font-medium">
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50 text-sm font-medium">
             {loading ? 'Saving...' : '💾 Save Form'}
           </button>
         </div>
@@ -336,7 +336,7 @@ export default function FormBuilderPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Form Title *</label>
             <input type="text" value={formTitle} onChange={e => setFormTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Form এর নাম লিখুন" />
           </div>
           <div>
@@ -345,13 +345,13 @@ export default function FormBuilderPage() {
               <span className="ml-2 text-xs text-gray-400 font-normal">এই তারিখের পর submit করা যাবে না</span>
             </label>
             <input type="date" value={expiresAt} onChange={e => setExpiresAt(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"/>
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Form এর বিবরণ (optional)" rows={2} />
         </div>
         {/* Report Mode */}
@@ -363,8 +363,8 @@ export default function FormBuilderPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setReportMode('cumulative')}
-              className={`flex-1 px-4 py-3 rounded-xl border-2 text-left transition ${reportMode === 'cumulative' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-              <p className={`text-sm font-semibold ${reportMode === 'cumulative' ? 'text-blue-700' : 'text-gray-700'}`}>
+              className={`flex-1 px-4 py-3 rounded-xl border-2 text-left transition ${reportMode === 'cumulative' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
+              <p className={`text-sm font-semibold ${reportMode === 'cumulative' ? 'text-primary-700' : 'text-gray-700'}`}>
                 {reportMode === 'cumulative' ? '🔵' : '⚪'} সর্বমোট যোগফল
               </p>
               <p className="text-xs text-gray-500 mt-1">অর্থবছর / ক্যালেন্ডার বছরে এ পর্যন্ত সব submission-এর যোগফল দেখাবে</p>
@@ -395,7 +395,7 @@ export default function FormBuilderPage() {
           <div key={field.id}>
           {/* Subtotal / Grand Total row */}
           {(field.type === 'subtotal' || field.type === 'grandtotal') ? (
-            <div className={`rounded-lg p-4 shadow-sm border-l-4 ${field.type === 'grandtotal' ? 'bg-blue-50 border-blue-600' : 'bg-green-50 border-green-500'}`}>
+            <div className={`rounded-lg p-4 shadow-sm border-l-4 ${field.type === 'grandtotal' ? 'bg-primary-50 border-primary-600' : 'bg-green-50 border-green-500'}`}>
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-1">
                   <button onClick={() => moveField(index, 'up')} className="text-gray-400 hover:text-gray-600 text-xs">▲</button>
@@ -404,7 +404,7 @@ export default function FormBuilderPage() {
                 <span className="text-sm font-bold">{field.type === 'grandtotal' ? '🔷' : '🔹'}</span>
                 <input type="text" value={field.label}
                   onChange={e => updateField(field.id, 'label', e.target.value)}
-                  className={`flex-1 border rounded-md px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 ${field.type === 'grandtotal' ? 'border-blue-300 bg-blue-100 focus:ring-blue-400 text-blue-800' : 'border-green-300 bg-green-100 focus:ring-green-400 text-green-800'}`} />
+                  className={`flex-1 border rounded-md px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 ${field.type === 'grandtotal' ? 'border-primary-300 bg-primary-100 focus:ring-primary-400 text-primary-800' : 'border-green-300 bg-green-100 focus:ring-green-400 text-green-800'}`} />
                 <span className="text-xs text-gray-500 shrink-0">
                   {field.type === 'grandtotal' ? 'Grand Total' : 'Subtotal'}
                 </span>
@@ -432,7 +432,7 @@ export default function FormBuilderPage() {
               </div>
             </div>
           ) : (
-          <div className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-blue-500">
+          <div className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-primary-500">
             <div className="flex gap-3 items-start">
               <div className="flex flex-col gap-1 pt-1">
                 <button onClick={() => moveField(index, 'up')} className="text-gray-400 hover:text-gray-600 text-xs">▲</button>
@@ -443,10 +443,10 @@ export default function FormBuilderPage() {
                 <div className="flex gap-3 flex-wrap">
                   <input type="text" value={field.label}
                     onChange={e => updateField(field.id, 'label', e.target.value)}
-                    className="flex-1 min-w-40 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 min-w-40 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="Field label" />
                   <select value={field.type} onChange={e => updateField(field.id, 'type', e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
                     {FIELD_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
                   <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
@@ -465,14 +465,14 @@ export default function FormBuilderPage() {
                       <div key={oi} className="flex gap-2">
                         <input type="text" value={opt}
                           onChange={e => { const opts = [...(field.options||[])]; opts[oi]=e.target.value; updateField(field.id,'options',opts) }}
-                          className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary-400"
                           placeholder={`Option ${oi+1}`}/>
                         <button onClick={() => { const opts=(field.options||[]).filter((_,i)=>i!==oi); updateField(field.id,'options',opts) }}
                           className="text-red-400 hover:text-red-600 text-sm">✕</button>
                       </div>
                     ))}
                     <button onClick={() => updateField(field.id,'options',[...(field.options||[]),''])}
-                      className="text-xs text-blue-600 hover:underline">+ Option যোগ করুন</button>
+                      className="text-xs text-primary-600 hover:underline">+ Option যোগ করুন</button>
                   </div>
                 )}
 
@@ -529,10 +529,10 @@ export default function FormBuilderPage() {
                   <div key={child.id} className="ml-6 flex gap-3 items-center border-l-2 border-gray-200 pl-4">
                     <input type="text" value={child.label}
                       onChange={e => updateSubField(field.id, child.id, 'label', e.target.value)}
-                      className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                       placeholder="Sub field label" />
                     <select value={child.type} onChange={e => updateSubField(field.id, child.id, 'type', e.target.value)}
-                      className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                      className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
                       <option value="both">সংখ্যা + পরিমাণ</option>
                       <option value="count">সংখ্যা only</option>
                       <option value="amount">পরিমাণ only</option>
@@ -542,7 +542,7 @@ export default function FormBuilderPage() {
                 ))}
 
                 {['both','count','amount'].includes(field.type) && (
-                  <button onClick={() => addSubField(field.id)} className="text-sm text-blue-600 hover:underline">
+                  <button onClick={() => addSubField(field.id)} className="text-sm text-primary-600 hover:underline">
                     + Sub Field যোগ করুন
                   </button>
                 )}
@@ -567,13 +567,13 @@ export default function FormBuilderPage() {
         {/* Grand Total button */}
         {fields.some(f => f.type === 'subtotal') && !fields.some(f => f.type === 'grandtotal') && (
           <button onClick={addGrandTotal}
-            className="w-full py-2.5 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:border-blue-500 hover:bg-blue-50 transition text-sm font-medium">
+            className="w-full py-2.5 border-2 border-dashed border-primary-300 rounded-lg text-primary-600 hover:border-primary-500 hover:bg-primary-50 transition text-sm font-medium">
             🔷 Grand Total যোগ করুন
           </button>
         )}
 
         <button onClick={addField}
-          className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 transition font-medium">
+          className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-primary-500 hover:text-primary-500 transition font-medium">
           + Field যোগ করুন
         </button>
       </div>
@@ -622,7 +622,7 @@ export default function FormBuilderPage() {
             </div>
             <div className="p-6 space-y-4">
               <input type="text" value={templateName} onChange={e => setTemplateName(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Template এর নাম" autoFocus />
               <div className="flex gap-3">
                 <button onClick={handleSaveAsTemplate}

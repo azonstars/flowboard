@@ -158,7 +158,7 @@ export default function UserManagement() {
           <select
             value={data.branch_code || ''}
             onChange={e => setData({ ...data, branch_code: e.target.value })}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">Select Branch</option>
             {branches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
@@ -171,7 +171,7 @@ export default function UserManagement() {
           <select
             value={data.division_id || ''}
             onChange={e => setData({ ...data, division_id: e.target.value })}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">Select Division</option>
             {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -184,7 +184,7 @@ export default function UserManagement() {
           <select
             value={data.region_id || ''}
             onChange={e => setData({ ...data, region_id: e.target.value })}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">Select Region</option>
             {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
@@ -204,11 +204,11 @@ export default function UserManagement() {
             placeholder="Search users..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition"
           >
             + Create User
           </button>
@@ -238,7 +238,7 @@ export default function UserManagement() {
                     <td className="px-6 py-4 text-sm font-medium text-gray-800">{user.full_name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">{ROLE_LABELS[user.role]}</span>
+                      <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs">{ROLE_LABELS[user.role]}</span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{user.branch_code || '—'}</td>
                     <td className="px-6 py-4">
@@ -247,7 +247,7 @@ export default function UserManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4 flex gap-3">
-                      <button onClick={() => openEditModal(user)} className="text-blue-600 hover:underline text-sm">Edit</button>
+                      <button onClick={() => openEditModal(user)} className="text-primary-600 hover:underline text-sm">Edit</button>
                       <button onClick={() => handleToggleStatus(user)} className={`text-sm hover:underline ${user.is_active ? 'text-red-600' : 'text-green-600'}`}>
                         {user.is_active ? 'Deactivate' : 'Activate'}
                       </button>
@@ -273,12 +273,12 @@ export default function UserManagement() {
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-500">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">{ROLE_LABELS[user.role]}</span>
+                  <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full">{ROLE_LABELS[user.role]}</span>
                   {user.branch_code && <span>🏢 {user.branch_code}</span>}
                 </div>
                 <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
                   <button onClick={() => openEditModal(user)}
-                    className="flex-1 text-xs px-3 py-2 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 transition text-center">
+                    className="flex-1 text-xs px-3 py-2 rounded-lg border border-primary-300 text-primary-600 hover:bg-primary-50 transition text-center">
                     ✏️ Edit
                   </button>
                   <button onClick={() => handleToggleStatus(user)}
@@ -308,7 +308,7 @@ export default function UserManagement() {
                   type="text"
                   value={createData.full_name}
                   onChange={e => setCreateData({ ...createData, full_name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter full name"
                 />
               </div>
@@ -318,7 +318,7 @@ export default function UserManagement() {
                 <select
                   value={createData.role}
                   onChange={e => setCreateData({ ...createData, role: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   {Object.entries(ROLE_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>{label}</option>
@@ -333,7 +333,7 @@ export default function UserManagement() {
                   <label className="block text-sm font-medium text-gray-700">Email</label>
                   <button
                     onClick={generateRandom}
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-xs text-primary-600 hover:underline"
                   >
                     ⚡ Generate Random
                   </button>
@@ -342,7 +342,7 @@ export default function UserManagement() {
                   type="email"
                   value={createData.email}
                   onChange={e => setCreateData({ ...createData, email: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter email"
                 />
               </div>
@@ -353,7 +353,7 @@ export default function UserManagement() {
                   type="text"
                   value={createData.password}
                   onChange={e => setCreateData({ ...createData, password: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Minimum 6 characters"
                 />
               </div>
@@ -363,7 +363,7 @@ export default function UserManagement() {
               <button
                 onClick={handleCreate}
                 disabled={creating}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                className="flex-1 bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition disabled:opacity-50"
               >
                 {creating ? 'Creating...' : 'Create User'}
               </button>
@@ -390,7 +390,7 @@ export default function UserManagement() {
                   type="text"
                   value={formData.full_name || ''}
                   onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -398,7 +398,7 @@ export default function UserManagement() {
                 <select
                   value={formData.role || ''}
                   onChange={e => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   {Object.entries(ROLE_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>{label}</option>
@@ -410,7 +410,7 @@ export default function UserManagement() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleUpdate}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                className="flex-1 bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition"
               >
                 Update
               </button>

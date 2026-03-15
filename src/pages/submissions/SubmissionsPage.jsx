@@ -168,7 +168,7 @@ export default function SubmissionsPage() {
             <select
               value={filters.status}
               onChange={e => handleFilterChange('status', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">সব</option>
               <option value="submitted">⏳ Pending</option>
@@ -183,7 +183,7 @@ export default function SubmissionsPage() {
             <select
               value={filters.branch_code}
               onChange={e => handleFilterChange('branch_code', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">সব Branch</option>
               {branches.map(b => (
@@ -198,7 +198,7 @@ export default function SubmissionsPage() {
               type="date"
               value={filters.startDate}
               onChange={e => handleFilterChange('startDate', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
 
@@ -208,13 +208,13 @@ export default function SubmissionsPage() {
               type="date"
               value={filters.endDate}
               onChange={e => handleFilterChange('endDate', e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
 
           <button
             onClick={handleApplyFilter}
-            className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+            className="bg-primary-600 text-white px-5 py-2 rounded-lg hover:bg-primary-700 transition text-sm font-medium"
           >
             🔍 Filter
           </button>

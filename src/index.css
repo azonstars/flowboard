@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── CSS Variables — Theme System ─────────────────────── */
 :root {
-  /* Primary color — Claude.ai coral/terracotta */
   --primary:        #cc785c;
   --primary-dark:   #b5633f;
   --primary-light:  #f5e6e0;
@@ -18,8 +16,6 @@
   --primary-700:    #9e4f2e;
   --primary-800:    #7d3b21;
   --primary-900:    #5c2914;
-
-  /* Sidebar — Claude.ai light mode (cream) */
   --sidebar-bg:           #f9f9f7;
   --sidebar-border:       rgba(0,0,0,0.08);
   --sidebar-text:         rgba(26,26,26,0.75);
@@ -27,8 +23,6 @@
   --sidebar-hover-bg:     rgba(0,0,0,0.05);
   --sidebar-active-bg:    rgba(0,0,0,0.08);
   --sidebar-border-color: rgba(0,0,0,0.08);
-
-  /* Main background */
   --bg-primary:   #ffffff;
   --bg-secondary: #f9f9f7;
   --bg-card:      #ffffff;
@@ -37,7 +31,6 @@
   --border:       rgba(0,0,0,0.1);
 }
 
-/* Dark mode */
 .dark {
   --sidebar-bg:           #1f1f1e;
   --sidebar-border:       rgba(255,255,255,0.08);
@@ -46,7 +39,6 @@
   --sidebar-hover-bg:     rgba(255,255,255,0.06);
   --sidebar-active-bg:    rgba(255,255,255,0.1);
   --sidebar-border-color: rgba(255,255,255,0.08);
-
   --bg-primary:   #1f1f1e;
   --bg-secondary: #2a2a28;
   --bg-card:      #2a2a28;
@@ -55,26 +47,6 @@
   --border:       rgba(255,255,255,0.1);
 }
 
-/* ── Dark Mode Variables ───────────────────────────────── */
-:root {
-  --bg-primary:   #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-card:      #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --border:       #e5e7eb;
-}
-
-.dark {
-  --bg-primary:   #111827;
-  --bg-secondary: #1f2937;
-  --bg-card:      #1f2937;
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --border:       #374151;
-}
-
-/* ── Utility classes ────────────────────────────────────── */
 .bg-theme-primary   { background-color: var(--bg-primary); }
 .bg-theme-secondary { background-color: var(--bg-secondary); }
 .bg-theme-card      { background-color: var(--bg-card); }
@@ -82,16 +54,14 @@
 .text-theme-secondary { color: var(--text-secondary); }
 .border-theme       { border-color: var(--border); }
 
-/* ── Sidebar dynamic color ─────────────────────────────── */
 .sidebar-dynamic {
   background-color: var(--sidebar-bg) !important;
-  color: var(--sidebar-text-solid, #ffffff) !important;
+  color: var(--sidebar-text-solid, #1a1a1a) !important;
 }
 .sidebar-border-dynamic {
-  border-color: var(--sidebar-border-color, rgba(255,255,255,0.1)) !important;
+  border-color: var(--sidebar-border-color, rgba(0,0,0,0.08)) !important;
 }
 
-/* ── Dark mode — main content areas ───────────────────── */
 .dark .bg-white       { background-color: var(--bg-card) !important; }
 .dark .bg-gray-50     { background-color: var(--bg-secondary) !important; }
 .dark .bg-gray-100    { background-color: #374151 !important; }
@@ -103,7 +73,6 @@
 .dark .border-gray-100 { border-color: #374151 !important; }
 .dark .shadow-sm      { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
 
-/* ── Dark mode — inputs ─────────────────────────────────── */
 .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .dark select,
 .dark textarea {
@@ -112,11 +81,22 @@
   border-color: #4b5563 !important;
 }
 
-/* ── Dark mode — tables ─────────────────────────────────── */
 .dark thead { background-color: #1f2937 !important; }
 .dark tbody tr:hover { background-color: #374151 !important; }
 
-/* ── Scrollbar ──────────────────────────────────────────── */
+.sidebar-normal-item {
+  color: var(--sidebar-text, rgba(26,26,26,0.75));
+  transition: background-color 0.15s, color 0.15s;
+}
+.sidebar-normal-item:hover {
+  background-color: var(--sidebar-hover-bg, rgba(0,0,0,0.05));
+  color: var(--sidebar-text-solid, #1a1a1a);
+}
+.sidebar-active-item {
+  background-color: var(--sidebar-active-bg, rgba(0,0,0,0.08));
+  color: var(--sidebar-text-solid, #1a1a1a);
+}
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }

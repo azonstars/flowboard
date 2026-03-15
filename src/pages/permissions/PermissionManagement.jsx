@@ -91,7 +91,7 @@ export default function PermissionManagement() {
         <h1 className="text-2xl font-bold text-gray-800">Permission Management</h1>
         <button
           onClick={() => setModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition"
         >
           + Grant Permission
         </button>
@@ -126,7 +126,7 @@ export default function PermissionManagement() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${p.is_edited ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs ${p.is_edited ? 'bg-primary-100 text-primary-700' : 'bg-yellow-100 text-yellow-700'}`}>
                       {p.is_edited ? '✅ Done' : '⏳ Pending'}
                     </span>
                   </td>
@@ -159,7 +159,7 @@ export default function PermissionManagement() {
                 <select
                   value={formData.branch_code}
                   onChange={e => setFormData({ ...formData, branch_code: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Select Branch</option>
                   {branches.map(b => <option key={b.id} value={b.branch_code}>{b.name} ({b.branch_code})</option>)}
@@ -171,7 +171,7 @@ export default function PermissionManagement() {
                 <select
                   value={formData.form_id}
                   onChange={e => setFormData({ ...formData, form_id: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">All Forms</option>
                   {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
@@ -183,7 +183,7 @@ export default function PermissionManagement() {
                 <select
                   value={formData.manager_id}
                   onChange={e => setFormData({ ...formData, manager_id: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Select Manager</option>
                   {managers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
@@ -195,7 +195,7 @@ export default function PermissionManagement() {
                 <select
                   value={formData.employee_id}
                   onChange={e => setFormData({ ...formData, employee_id: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Select Employee</option>
                   {employees.map(e => <option key={e.id} value={e.id}>{e.full_name}</option>)}
@@ -209,7 +209,7 @@ export default function PermissionManagement() {
                     type="date"
                     value={formData.valid_from}
                     onChange={e => setFormData({ ...formData, valid_from: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -218,7 +218,7 @@ export default function PermissionManagement() {
                     type="date"
                     value={formData.valid_until}
                     onChange={e => setFormData({ ...formData, valid_until: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -227,7 +227,7 @@ export default function PermissionManagement() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleSubmit}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                className="flex-1 bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 transition"
               >
                 Grant Permission
               </button>

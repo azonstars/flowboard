@@ -34,7 +34,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center text-blue-600 mb-2">FlowBoard</h1>
+        <h1 className="text-2xl font-bold text-center text-primary-600 mb-2">FlowBoard</h1>
         <p className="text-center text-gray-500 mb-6">Sign in to your account</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -44,7 +44,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Enter your email"
               required
             />
@@ -56,7 +56,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Enter your password"
               required
             />
@@ -65,19 +65,19 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full bg-primary-600 text-white py-2 rounded-md hover:bg-primary-700 transition disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <div className="mt-4 text-center space-y-2">
-          <Link to="/reset-password" className="text-sm text-blue-600 hover:underline block">
+          <Link to="/reset-password" className="text-sm text-primary-600 hover:underline block">
             Forgot password?
           </Link>
           <p className="text-sm text-gray-500">
             Don't have an account?{' '}
-            <Link to="/register" className="text-blue-600 hover:underline">
+            <Link to="/register" className="text-primary-600 hover:underline">
               Register
             </Link>
           </p>

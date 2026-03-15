@@ -14,7 +14,7 @@ const STATUS_COLORS = {
   submitted: 'bg-yellow-100 text-yellow-700',
   approved: 'bg-green-100 text-green-700',
   rejected: 'bg-red-100 text-red-700',
-  edit_allowed: 'bg-blue-100 text-blue-700',
+  edit_allowed: 'bg-primary-100 text-primary-700',
 }
 const STATUS_LABELS = {
   draft: '📝 Draft',
@@ -196,14 +196,14 @@ export default function BranchDashboard() {
 
       {/* Edit allowed alert */}
       {approvedEditRequests.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+        <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 flex items-center gap-3">
           <span className="text-2xl">✏️</span>
           <div className="flex-1">
-            <p className="font-semibold text-blue-800">Edit Permission পেয়েছেন!</p>
-            <p className="text-sm text-blue-600">{approvedEditRequests.length}টি submission edit করার permission আছে</p>
+            <p className="font-semibold text-primary-800">Edit Permission পেয়েছেন!</p>
+            <p className="text-sm text-primary-600">{approvedEditRequests.length}টি submission edit করার permission আছে</p>
           </div>
           <button onClick={() => document.getElementById('recent-submissions')?.scrollIntoView({ behavior: 'smooth' })}
-            className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition">
+            className="text-sm bg-primary-600 text-white px-3 py-1.5 rounded-lg hover:bg-primary-700 transition">
             দেখুন ↓
           </button>
         </div>
@@ -211,7 +211,7 @@ export default function BranchDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg p-6 shadow-sm border-l-4 border-blue-500">
+        <div className="bg-white rounded-lg p-6 shadow-sm border-l-4 border-primary-500">
           <p className="text-sm text-gray-500">আজকের Submissions</p>
           <p className="text-3xl font-bold text-gray-800 mt-1">{stats.todaySubmissions}</p>
         </div>
@@ -246,7 +246,7 @@ export default function BranchDashboard() {
                     <span className="text-xl">{form.menu_icon || '📋'}</span>
                     <span className="text-sm font-medium text-gray-800">{form.title}</span>
                   </div>
-                  <button onClick={() => navigate(`/forms/submit/${form.id}`)} className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Submit করুন →</button>
+                  <button onClick={() => navigate(`/forms/submit/${form.id}`)} className="text-xs px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">Submit করুন →</button>
                 </div>
               ))}
           </div>
@@ -306,7 +306,7 @@ export default function BranchDashboard() {
                         className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${
                           sub.status === 'draft'
                             ? 'bg-gray-600 text-white hover:bg-gray-700'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-primary-600 text-white hover:bg-primary-700'
                         }`}>
                         ✏️ Edit
                       </button>
@@ -342,11 +342,11 @@ export default function BranchDashboard() {
               <span className="bg-yellow-100 text-yellow-700 text-xs px-3 py-1.5 rounded-full font-medium">⏳ {pendingEditRequests}টি request pending</span>
             )}
             <button onClick={() => navigate('/my-submissions')}
-              className="text-xs px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition font-medium">
+              className="text-xs px-3 py-1.5 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition font-medium">
               📋 All Submissions →
             </button>
             {appSettings?.feature_branch_all_forms_btn !== false && (
-              <button onClick={() => navigate('/forms')} className="text-sm text-blue-600 hover:underline">সব Forms →</button>
+              <button onClick={() => navigate('/forms')} className="text-sm text-primary-600 hover:underline">সব Forms →</button>
             )}
           </div>
         </div>
@@ -375,7 +375,7 @@ export default function BranchDashboard() {
                         className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${
                           sub.status === 'draft'
                             ? 'bg-gray-600 text-white hover:bg-gray-700'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-primary-600 text-white hover:bg-primary-700'
                         }`}>
                         ✏️ Edit
                       </button>
@@ -409,18 +409,18 @@ export default function BranchDashboard() {
             <p className="text-sm text-gray-500 mb-4">
               "{selectedSub.forms?.title}" — {selectedSub.submission_date}
               <br/>
-              <span className="text-blue-600 font-medium">→ Regional Manager কে পাঠানো হবে</span>
+              <span className="text-primary-600 font-medium">→ Regional Manager কে পাঠানো হবে</span>
             </p>
             <textarea
               value={editReason}
               onChange={e => setEditReason(e.target.value)}
               placeholder="কেন edit করতে চান? কারণ লিখুন..."
               rows={4}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
             />
             <div className="flex gap-3 mt-4">
               <button onClick={handleEditRequest} disabled={submitting}
-                className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50">
+                className="flex-1 bg-primary-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-primary-700 transition disabled:opacity-50">
                 {submitting ? '⏳ পাঠানো হচ্ছে...' : 'Request পাঠান'}
               </button>
               <button onClick={() => setShowEditModal(false)}

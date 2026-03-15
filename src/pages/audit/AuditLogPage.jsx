@@ -10,7 +10,7 @@ const ROLE_LABELS = {
 }
 const ROLE_COLORS = {
   admin: 'bg-red-100 text-red-700', central_checker: 'bg-purple-100 text-purple-700',
-  divisional_checker: 'bg-blue-100 text-blue-700', regional_checker: 'bg-cyan-100 text-cyan-700',
+  divisional_checker: 'bg-primary-100 text-primary-700', regional_checker: 'bg-cyan-100 text-cyan-700',
   branch_manager: 'bg-green-100 text-green-700', branch_employee: 'bg-gray-100 text-gray-700'
 }
 
@@ -99,7 +99,7 @@ export default function AuditLogPage() {
           </p>
         </div>
         <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg">
-          মোট <span className="font-bold text-blue-600">{total}</span>টি record
+          মোট <span className="font-bold text-primary-600">{total}</span>টি record
         </div>
       </div>
 
@@ -113,7 +113,7 @@ export default function AuditLogPage() {
           ].map(t => (
             <button key={t.k} onClick={() => { setActiveTab(t.k); setPage(0) }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm
-                ${activeTab === t.k ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                ${activeTab === t.k ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
               {t.l}
             </button>
           ))}
@@ -126,7 +126,7 @@ export default function AuditLogPage() {
           <div>
             <label className="text-xs text-gray-500 block mb-1">User</label>
             <select value={filterUser} onChange={e => { setFilterUser(e.target.value); setPage(0) }}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-40">
+              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 min-w-40">
               <option value="">সব User</option>
               {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
             </select>
@@ -134,7 +134,7 @@ export default function AuditLogPage() {
           <div>
             <label className="text-xs text-gray-500 block mb-1">Action</label>
             <select value={filterAction} onChange={e => { setFilterAction(e.target.value); setPage(0) }}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
               <option value="">সব Action</option>
               {Object.entries(ACTION_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
@@ -142,12 +142,12 @@ export default function AuditLogPage() {
           <div>
             <label className="text-xs text-gray-500 block mb-1">From</label>
             <input type="date" value={filterFrom} onChange={e => { setFilterFrom(e.target.value); setPage(0) }}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
           </div>
           <div>
             <label className="text-xs text-gray-500 block mb-1">To</label>
             <input type="date" value={filterTo} onChange={e => { setFilterTo(e.target.value); setPage(0) }}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
           </div>
           <button onClick={resetFilters}
             className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
@@ -161,7 +161,7 @@ export default function AuditLogPage() {
         <div className="flex flex-wrap gap-2">
           {Object.entries(actionCounts).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([action, cnt]) => (
             <span key={action} className="bg-white shadow-sm border border-gray-100 text-xs px-3 py-1.5 rounded-full text-gray-600">
-              {ACTION_LABELS[action] || action} <span className="font-bold text-blue-600 ml-1">{cnt}</span>
+              {ACTION_LABELS[action] || action} <span className="font-bold text-primary-600 ml-1">{cnt}</span>
             </span>
           ))}
         </div>

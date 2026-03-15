@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../services/supabase'
 import { ROLES } from '../../constants/roles'
 import { useTheme } from '../../context/ThemeContext'
-import { supabase } from '../../services/supabase'
 
-
-// Admin-এর জন্য Control Panel static group
 const CONTROL_PANEL = {
   id: '__control_panel__',
   label: 'Control Panel',
@@ -14,11 +12,11 @@ const CONTROL_PANEL = {
   path: '#',
   roles: [ROLES.ADMIN],
   children: [
-    { id: '__cp_settings__',     label: 'App Settings',   icon: '🔧', path: '/settings',     roles: [ROLES.ADMIN] },
-    { id: '__cp_users__',        label: 'Users',          icon: '👥', path: '/users',         roles: [ROLES.ADMIN] },
-    { id: '__cp_branches__',     label: 'Branches',       icon: '🏢', path: '/branches',      roles: [ROLES.ADMIN] },
-    { id: '__cp_permissions__',  label: 'Permissions',    icon: '🔒', path: '/permissions',   roles: [ROLES.ADMIN, ROLES.REGIONAL_CHECKER] },
-    { id: '__cp_excel__',        label: 'Excel Import',   icon: '📥', path: '/excel-import',  roles: [ROLES.ADMIN, ROLES.CENTRAL_CHECKER, ROLES.DIVISIONAL_CHECKER, ROLES.REGIONAL_CHECKER] },
+    { id: '__cp_settings__',     label: 'App Settings',   icon: '🔧', path: '/settings',      roles: [ROLES.ADMIN] },
+    { id: '__cp_users__',        label: 'Users',          icon: '👥', path: '/users',          roles: [ROLES.ADMIN] },
+    { id: '__cp_branches__',     label: 'Branches',       icon: '🏢', path: '/branches',       roles: [ROLES.ADMIN] },
+    { id: '__cp_permissions__',  label: 'Permissions',    icon: '🔒', path: '/permissions',    roles: [ROLES.ADMIN, ROLES.REGIONAL_CHECKER] },
+    { id: '__cp_excel__',        label: 'Excel Import',   icon: '📥', path: '/excel-import',   roles: [ROLES.ADMIN, ROLES.CENTRAL_CHECKER, ROLES.DIVISIONAL_CHECKER, ROLES.REGIONAL_CHECKER] },
   ],
 }
 
@@ -29,7 +27,6 @@ export default function Sidebar({ isOpen, onClose }) {
   const [expandedItems, setExpandedItems] = useState({})
   const [chatUnread, setChatUnread] = useState(0)
 
-  // DB-based menu items (Users/Branches/Permissions/Settings Control Panel-এ গেছে তাই বাদ)
   const CONTROL_PANEL_PATHS = ['/users', '/branches', '/permissions', '/settings']
   const filteredItems = allMenuItems.filter(item => {
     if (CONTROL_PANEL_PATHS.includes(item.path)) return false
@@ -37,11 +34,8 @@ export default function Sidebar({ isOpen, onClose }) {
     return item.roles.includes(profile?.role)
   })
 
-  // Control Panel: admin বা regional_checker হলে দেখাবে
   const showControlPanel = [ROLES.ADMIN, ROLES.REGIONAL_CHECKER].includes(profile?.role)
-  const controlPanelChildren = CONTROL_PANEL.children.filter(c =>
-    c.roles.includes(profile?.role)
-  )
+  const controlPanelChildren = CONTROL_PANEL.children.filter(c => c.roles.includes(profile?.role))
 
   const isActive = (path) => path && path !== '#' && location.pathname.startsWith(path)
   const toggleExpand = (id) => setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }))
@@ -56,7 +50,6 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const hasChildren = (item) => filteredChildren(item.children).length > 0
 
-  // Chat unread count
   useEffect(() => {
     if (!profile?.id) return
     const load = async () => {
@@ -81,9 +74,7 @@ export default function Sidebar({ isOpen, onClose }) {
       } catch (e) {}
     }
     load()
-    // /chat page-এ গেলে reset
     if (location.pathname === '/chat') setChatUnread(0)
-
     const sub = supabase.channel('sidebar_chat_unread')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
         () => { if (location.pathname !== '/chat') load() }
@@ -93,11 +84,9 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Mobile Overlay */}
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" onClick={onClose} />
       )}
-
       <div className={`
         fixed top-0 left-0 h-full w-64 z-30 sidebar-dynamic
         transform transition-transform duration-300
@@ -105,18 +94,18 @@ export default function Sidebar({ isOpen, onClose }) {
         lg:translate-x-0 lg:static lg:z-auto lg:shrink-0
       `}>
         {/* Logo */}
-        <div className="p-5 flex items-center justify-between" style={{borderBottom: "1px solid var(--sidebar-border-color, rgba(0,0,0,0.08))"}}>
+        <div className="p-5 flex items-center justify-between" style={{borderBottom: '1px solid var(--sidebar-border-color, rgba(0,0,0,0.08))'}}>
           <div>
             {globalTheme.app_logo_url ? (
               <img src={globalTheme.app_logo_url} alt="logo" className="h-8 object-contain" />
             ) : (
-              <h1 className="text-xl font-bold">{globalTheme.app_name || 'FlowBoard'}</h1>
+              <h1 className="text-xl font-bold" style={{color: 'var(--sidebar-text-solid)'}}>{globalTheme.app_name || 'FlowBoard'}</h1>
             )}
-            <p className="text-xs mt-0.5" style={{color:"var(--sidebar-text)"}}>
+            <p className="text-xs mt-0.5" style={{color: 'var(--sidebar-text)'}}>
               {profile?.role?.replace(/_/g, ' ').toUpperCase()}
             </p>
           </div>
-          <button onClick={onClose} className="lg:hidden p-1" style={{color:"var(--sidebar-text-solid)"}}>
+          <button onClick={onClose} className="lg:hidden p-1" style={{color: 'var(--sidebar-text-solid)'}}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -133,9 +122,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
             return (
               <div key={item.id}>
-                <div className={`flex items-center rounded-lg transition ${
-                  isParentActive ? 'sidebar-active-item font-semibold' : 'sidebar-normal-item'
-                }`}>
+                <div className={`flex items-center rounded-lg transition ${isParentActive ? 'sidebar-active-item' : 'sidebar-normal-item'}`}>
                   {hasChildren(item) || item.path === '#' ? (
                     <button onClick={() => toggleExpand(item.id)}
                       className="flex items-center gap-3 px-3 py-2.5 flex-1 text-left w-full">
@@ -154,22 +141,19 @@ export default function Sidebar({ isOpen, onClose }) {
                       <span className="text-lg shrink-0">{item.icon || '📋'}</span>
                       <span className={`font-medium text-sm flex-1 ${isParentActive ? 'font-semibold' : ''}`}>{item.label}</span>
                       {isChatItem && chatUnread > 0 && (
-                        <span className="ml-auto min-w-[20px] h-5 bg-blue-400 text-white text-xs rounded-full flex items-center justify-center font-bold px-1">
+                        <span className="ml-auto min-w-[20px] h-5 bg-primary-600 text-white text-xs rounded-full flex items-center justify-center font-bold px-1">
                           {chatUnread > 99 ? '99+' : chatUnread}
                         </span>
                       )}
                     </Link>
                   )}
                 </div>
-
                 {hasChildren(item) && isExpanded && (
-                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/10 pl-3">
+                  <div className="ml-4 mt-1 space-y-1 border-l-2 pl-3" style={{borderColor: 'var(--sidebar-border-color)'}}>
                     {children.map(child => (
                       <Link key={child.id} to={child.path || '#'} onClick={onClose}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition text-sm ${
-                          isActive(child.path)
-                            ? 'sidebar-active-item font-semibold'
-                            : 'sidebar-normal-item'
+                          isActive(child.path) ? 'sidebar-active-item font-semibold' : 'sidebar-normal-item'
                         }`}>
                         <span className="text-base shrink-0">{child.icon || '📌'}</span>
                         <span>{child.label}</span>
@@ -180,13 +164,12 @@ export default function Sidebar({ isOpen, onClose }) {
               </div>
             )
           })}
-          {/* Control Panel — static admin group */}
+
+          {/* Control Panel */}
           {showControlPanel && (
             <div>
               <div className={`flex items-center rounded-lg transition ${
-                controlPanelChildren.some(c => isActive(c.path))
-                  ? 'sidebar-active-item'
-                  : 'sidebar-normal-item'
+                controlPanelChildren.some(c => isActive(c.path)) ? 'sidebar-active-item' : 'sidebar-normal-item'
               }`}>
                 <button onClick={() => toggleExpand(CONTROL_PANEL.id)}
                   className="flex items-center gap-3 px-3 py-2.5 flex-1 text-left w-full">
@@ -199,13 +182,11 @@ export default function Sidebar({ isOpen, onClose }) {
                 </button>
               </div>
               {expandedItems[CONTROL_PANEL.id] && (
-                <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/10 pl-3">
+                <div className="ml-4 mt-1 space-y-1 border-l-2 pl-3" style={{borderColor: 'var(--sidebar-border-color)'}}>
                   {controlPanelChildren.map(child => (
                     <Link key={child.id} to={child.path} onClick={onClose}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg transition text-sm ${
-                        isActive(child.path)
-                          ? 'sidebar-active-item font-semibold'
-                          : 'sidebar-normal-item'
+                        isActive(child.path) ? 'sidebar-active-item font-semibold' : 'sidebar-normal-item'
                       }`}>
                       <span className="text-base shrink-0">{child.icon}</span>
                       <span>{child.label}</span>
@@ -218,9 +199,9 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Bottom User Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 sidebar-dynamic" style={{borderTop: "1px solid var(--sidebar-border-color, rgba(0,0,0,0.08))"}}>
-          <p className="text-sm font-medium truncate" style={{color:"var(--sidebar-text-solid)"}}>{profile?.full_name}</p>
-          <p className="text-xs truncate" style={{color:"var(--sidebar-text)"}}>{profile?.branch_code || profile?.email}</p>
+        <div className="absolute bottom-0 left-0 right-0 p-4 sidebar-dynamic" style={{borderTop: '1px solid var(--sidebar-border-color, rgba(0,0,0,0.08))'}}>
+          <p className="text-sm font-medium truncate" style={{color: 'var(--sidebar-text-solid)'}}>{profile?.full_name}</p>
+          <p className="text-xs truncate" style={{color: 'var(--sidebar-text)'}}>{profile?.branch_code || profile?.email}</p>
         </div>
       </div>
     </>

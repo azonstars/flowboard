@@ -221,7 +221,7 @@ export default function ExcelImportPage() {
                 setPreview([]); setErrors([]); setDone(null)
                 if (fileRef.current) fileRef.current.value = ''
               }}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
               <option value="">-- form select করুন --</option>
               {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
             </select>
@@ -234,12 +234,12 @@ export default function ExcelImportPage() {
           </button>
         </div>
         {selectedForm && (
-          <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-            <p className="text-xs text-blue-700 font-medium">✅ নির্বাচিত: {selectedForm.title}</p>
-            <p className="text-xs text-blue-500 mt-0.5">
+          <div className="mt-3 p-3 bg-primary-50 rounded-lg">
+            <p className="text-xs text-primary-700 font-medium">✅ নির্বাচিত: {selectedForm.title}</p>
+            <p className="text-xs text-primary-500 mt-0.5">
               Fields: {selectedForm.fields?.map(f => f.label).join(', ')}
             </p>
-            <p className="text-xs text-blue-500 mt-1">
+            <p className="text-xs text-primary-500 mt-1">
               💡 Template download করুন → data পূরণ করুন → নিচে upload করুন
             </p>
           </div>
@@ -250,7 +250,7 @@ export default function ExcelImportPage() {
       <div className="bg-white rounded-xl p-5 shadow-sm">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">ধাপ ২ — Excel ফাইল আপলোড করুন</p>
         <div
-          className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition cursor-pointer"
+          className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary-400 transition cursor-pointer"
           onClick={() => fileRef.current?.click()}>
           <p className="text-3xl mb-2">📊</p>
           <p className="text-sm font-medium text-gray-600">Excel ফাইল (.xlsx) এখানে click করে বেছে নিন</p>
@@ -286,7 +286,7 @@ export default function ExcelImportPage() {
             <button
               onClick={handleImport}
               disabled={importing}
-              className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+              className="px-5 py-2 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 transition disabled:opacity-50">
               {importing ? '⏳ Import হচ্ছে...' : `✅ Import করুন (${preview.length}টি)`}
             </button>
           </div>
@@ -313,7 +313,7 @@ export default function ExcelImportPage() {
                     {selectedForm?.fields?.map(f => (
                       <>
                         {(f.type === 'both' || f.type === 'count') && (
-                          <td key={f.id + '_c'} className="px-4 py-2 text-blue-700">
+                          <td key={f.id + '_c'} className="px-4 py-2 text-primary-700">
                             {row.data_json[`${f.id}_count`] || '—'}
                           </td>
                         )}

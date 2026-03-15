@@ -9,7 +9,7 @@ import toast from 'react-hot-toast'
 
 const STATUS_COLORS = {
   approved: 'bg-green-100 text-green-700',
-  edit_allowed: 'bg-blue-100 text-blue-700',
+  edit_allowed: 'bg-primary-100 text-primary-700',
   submitted: 'bg-yellow-100 text-yellow-700',
   draft: 'bg-gray-100 text-gray-600',
   rejected: 'bg-red-100 text-red-700',
@@ -191,7 +191,7 @@ export default function BranchSubmissionsPage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1 font-medium">📄 Form</label>
             <select value={selectedForm} onChange={e => setSelectedForm(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-[160px]">
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 min-w-[160px]">
               <option value="">সব Form</option>
               {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
             </select>
@@ -202,11 +202,11 @@ export default function BranchSubmissionsPage() {
             <label className="block text-xs text-gray-500 mb-1 font-medium">🔍 Filter Mode</label>
             <div className="flex rounded-lg border border-gray-200 overflow-hidden">
               <button onClick={() => setFilterMode('range')}
-                className={`px-3 py-2 text-sm transition ${filterMode === 'range' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                className={`px-3 py-2 text-sm transition ${filterMode === 'range' ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                 Range
               </button>
               <button onClick={() => setFilterMode('single')}
-                className={`px-3 py-2 text-sm transition ${filterMode === 'single' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                className={`px-3 py-2 text-sm transition ${filterMode === 'single' ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                 Single Date
               </button>
             </div>
@@ -216,19 +216,19 @@ export default function BranchSubmissionsPage() {
             <div>
               <label className="block text-xs text-gray-500 mb-1 font-medium">📅 তারিখ</label>
               <input type="date" value={singleDate} onChange={e => setSingleDate(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
             </div>
           ) : (
             <>
               <div>
                 <label className="block text-xs text-gray-500 mb-1 font-medium">📅 From</label>
                 <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1 font-medium">📅 To</label>
                 <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
               </div>
             </>
           )}
@@ -290,7 +290,7 @@ export default function BranchSubmissionsPage() {
                           <div className="flex items-center justify-end gap-2 flex-wrap">
                             {canDirectEdit && (
                               <button onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
-                                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${sub.status === 'draft' ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition ${sub.status === 'draft' ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-primary-600 text-white hover:bg-primary-700'}`}>
                                 ✏️ Edit
                               </button>
                             )}
@@ -350,7 +350,7 @@ export default function BranchSubmissionsPage() {
                     <div className="flex flex-wrap gap-2">
                       {canDirectEdit && (
                         <button onClick={() => navigate(`/forms/submit/${sub.form_id}?submissionId=${sub.id}&date=${sub.submission_date}`)}
-                          className={`text-xs px-3 py-2 rounded-lg font-medium transition ${sub.status === 'draft' ? 'bg-gray-600 text-white' : 'bg-blue-600 text-white'}`}>
+                          className={`text-xs px-3 py-2 rounded-lg font-medium transition ${sub.status === 'draft' ? 'bg-gray-600 text-white' : 'bg-primary-600 text-white'}`}>
                           ✏️ Edit
                         </button>
                       )}
@@ -386,7 +386,7 @@ export default function BranchSubmissionsPage() {
             <p className="text-sm text-gray-500 mb-1">
               <strong>{selectedSub.forms?.title}</strong> — {selectedSub.submission_date}
             </p>
-            <p className="text-sm text-blue-600 font-medium mb-4">
+            <p className="text-sm text-primary-600 font-medium mb-4">
               → {getRequiredChecker(selectedSub.submission_date).label} কে পাঠানো হবে
             </p>
             <textarea
@@ -394,11 +394,11 @@ export default function BranchSubmissionsPage() {
               onChange={e => setEditReason(e.target.value)}
               placeholder="কেন edit করতে চান? কারণ লিখুন..."
               rows={4}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
             />
             <div className="flex gap-3 mt-4">
               <button onClick={handleEditRequest} disabled={submitting}
-                className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50">
+                className="flex-1 bg-primary-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-primary-700 transition disabled:opacity-50">
                 {submitting ? '⏳ পাঠানো হচ্ছে...' : 'Request পাঠান'}
               </button>
               <button onClick={() => setShowModal(false)}
