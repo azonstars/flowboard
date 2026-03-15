@@ -502,6 +502,34 @@ export default function Settings() {
     }
   }
 
+  const DEFAULT_THEME = {
+    app_name: 'FlowBoard',
+    app_logo_url: '',
+    primary_color: '#cc785c',
+    sidebar_color: '#f9f9f7',
+    sidebar_text_color: '#1a1a1a',
+    favicon_url: '',
+  }
+
+  const handleResetTheme = async () => {
+    if (!window.confirm('Default theme-এ ফিরে যাবেন? সব পরিবর্তন মুছে যাবে।')) return
+    setThemeSaving(true)
+    try {
+      const keys = Object.keys(DEFAULT_THEME)
+      for (const key of keys) {
+        await supabase.from('app_settings')
+          .upsert({ key, value: DEFAULT_THEME[key], label: key }, { onConflict: 'key' })
+      }
+      setThemeDraft({ ...DEFAULT_THEME })
+      updateGlobalTheme(DEFAULT_THEME)
+      toast.success('Default theme-এ ফিরে গেছে!')
+    } catch (e) {
+      toast.error(e.message)
+    } finally {
+      setThemeSaving(false)
+    }
+  }
+
   const handleSaveTheme = async () => {
     if (!themeDraft) return
     setThemeSaving(true)
@@ -954,10 +982,16 @@ export default function Settings() {
               <h2 className="text-lg font-bold text-gray-800">🎨 Theme Settings</h2>
               <p className="text-sm text-gray-500 mt-1">App-এর রং, নাম ও logo পরিবর্তন করুন — সব user-এর জন্য apply হবে।</p>
             </div>
-            <button onClick={handleSaveTheme} disabled={themeSaving || !themeDraft}
-              className="px-5 py-2 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 transition disabled:opacity-50">
-              {themeSaving ? '⏳ সেভ হচ্ছে...' : '💾 সেভ করুন'}
-            </button>
+            <div className="flex gap-2">
+              <button onClick={handleResetTheme} disabled={themeSaving}
+                className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 transition disabled:opacity-50">
+                🔄 Default
+              </button>
+              <button onClick={handleSaveTheme} disabled={themeSaving || !themeDraft}
+                className="px-5 py-2 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 transition disabled:opacity-50">
+                {themeSaving ? '⏳ সেভ হচ্ছে...' : '💾 সেভ করুন'}
+              </button>
+            </div>
           </div>
 
           {!themeDraft ? <div className="text-center py-8 text-gray-400">Loading...</div> : (
