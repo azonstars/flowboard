@@ -51,14 +51,19 @@ const applyGlobalTheme = (settings) => {
     root.style.setProperty('--primary-light', mix(0.80))
   }
   if (settings.sidebar_color) {
-    root.style.setProperty('--sidebar-bg', settings.sidebar_color)
     const textColor = settings.sidebar_text_color || getAutoTextColor(settings.sidebar_color)
-    const isLight = getLuminance(settings.sidebar_color) > 0.35
-    root.style.setProperty('--sidebar-text-solid', textColor)
-    root.style.setProperty('--sidebar-text', isLight ? 'rgba(26,26,26,0.75)' : 'rgba(236,236,236,0.75)')
-    root.style.setProperty('--sidebar-active-bg', isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)')
-    root.style.setProperty('--sidebar-hover-bg', isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)')
-    root.style.setProperty('--sidebar-border-color', isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)')
+    localStorage.setItem('flowboard_sidebar_color', settings.sidebar_color)
+    localStorage.setItem('flowboard_sidebar_text', textColor)
+    const isDarkNow = document.documentElement.classList.contains('dark')
+    if (!isDarkNow) {
+      root.style.setProperty('--sidebar-bg', settings.sidebar_color)
+      const isLight = getLuminance(settings.sidebar_color) > 0.35
+      root.style.setProperty('--sidebar-text-solid', textColor)
+      root.style.setProperty('--sidebar-text', isLight ? 'rgba(26,26,26,0.75)' : 'rgba(236,236,236,0.75)')
+      root.style.setProperty('--sidebar-active-bg', isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)')
+      root.style.setProperty('--sidebar-hover-bg', isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)')
+      root.style.setProperty('--sidebar-border-color', isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)')
+    }
   }
   if (settings.favicon_url) {
     applyFavicon(settings.favicon_url)
