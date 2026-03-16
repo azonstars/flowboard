@@ -75,16 +75,10 @@
 }
 
 /* ── Dark mode — backgrounds ─────────────────────────────── */
-.dark .bg-white,
-.dark .bg-gray-50,
-.dark [class*="rounded"][class*="shadow"],
-.dark [class*="rounded-lg"],
-.dark [class*="rounded-xl"] {
-  background-color: var(--bg-card, #2a2a28) !important;
-}
-.dark .bg-gray-100,
-.dark .bg-gray-200 { background-color: #374151 !important; }
-.dark .bg-gray-50  { background-color: var(--bg-secondary, #2a2a28) !important; }
+.dark .bg-white     { background-color: var(--bg-card, #2a2a28) !important; }
+.dark .bg-gray-50   { background-color: var(--bg-secondary, #2a2a28) !important; }
+.dark .bg-gray-100  { background-color: #374151 !important; }
+.dark .bg-gray-200  { background-color: #374151 !important; }
 
 /* ── Dark mode — text ────────────────────────────────────── */
 .dark,
@@ -144,6 +138,74 @@
 .sidebar-normal-item { color: var(--sidebar-text) !important; transition: background-color 0.15s, color 0.15s; }
 .sidebar-normal-item:hover { background-color: var(--sidebar-hover-bg) !important; color: var(--sidebar-text-solid) !important; }
 .sidebar-active-item { background-color: var(--sidebar-active-bg) !important; color: var(--sidebar-text-solid) !important; }
+
+
+/* ── Chat page dark mode ─────────────────────────────────── */
+.dark .chat-message-bubble { background-color: var(--bg-secondary) !important; }
+.dark [class*="bg-white"]  { background-color: var(--bg-card) !important; }
+.dark [class*="bg-gray-50"]{ background-color: var(--bg-secondary) !important; }
+
+/* ── Report page dark mode ───────────────────────────────── */
+.dark .report-table th { background-color: var(--bg-secondary) !important; color: var(--text-secondary) !important; }
+.dark .report-table td { background-color: var(--bg-card) !important; color: var(--text-primary) !important; }
+
+/* ── Comprehensive text colors ───────────────────────────── */
+.dark p, .dark span, .dark label, .dark td, .dark th,
+.dark li, .dark a:not([class*="text-"]) {
+  color: var(--text-primary, #ececec);
+}
+.dark .text-gray-900 { color: var(--text-primary) !important; }
+.dark .text-gray-800 { color: var(--text-primary) !important; }
+.dark .text-gray-700 { color: #e5e7eb !important; }
+.dark .text-gray-600 { color: #d1d5db !important; }
+.dark .text-gray-500 { color: #9ca3af !important; }
+.dark .text-gray-400 { color: #6b7280 !important; }
+
+/* ── Comprehensive borders ───────────────────────────────── */
+.dark .border-gray-200 { border-color: var(--border) !important; }
+.dark .border-gray-300 { border-color: var(--border) !important; }
+.dark .border-gray-100 { border-color: rgba(255,255,255,0.06) !important; }
+
+/* ── Inputs comprehensive ────────────────────────────────── */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
+.dark select,
+.dark textarea {
+  background-color: var(--bg-secondary, #374151) !important;
+  color: var(--text-primary, #f9fafb) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+
+/* ── Tables comprehensive ────────────────────────────────── */
+.dark table  { background-color: var(--bg-card) !important; }
+.dark thead  { background-color: var(--bg-secondary) !important; }
+.dark thead th { color: var(--text-secondary) !important; }
+.dark tbody td { color: var(--text-primary) !important; }
+.dark tbody tr { border-color: var(--border) !important; }
+.dark tbody tr:hover { background-color: rgba(255,255,255,0.04) !important; }
+
+/* ── Cards & modals ──────────────────────────────────────── */
+.dark .shadow-sm  { box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; }
+.dark .shadow-xl  { box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important; }
+.dark .shadow-lg  { box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important; }
+
+/* ── Hover backgrounds ───────────────────────────────────── */
+.dark .hover\:bg-gray-50:hover  { background-color: rgba(255,255,255,0.04) !important; }
+.dark .hover\:bg-gray-100:hover { background-color: rgba(255,255,255,0.06) !important; }
+
+/* ── Semantic color backgrounds (dimmed) ─────────────────── */
+.dark .bg-blue-50   { background-color: rgba(59,130,246,0.12) !important; }
+.dark .bg-blue-100  { background-color: rgba(59,130,246,0.18) !important; }
+.dark .bg-green-50  { background-color: rgba(34,197,94,0.10) !important; }
+.dark .bg-green-100 { background-color: rgba(34,197,94,0.16) !important; }
+.dark .bg-red-50    { background-color: rgba(239,68,68,0.10) !important; }
+.dark .bg-red-100   { background-color: rgba(239,68,68,0.16) !important; }
+.dark .bg-yellow-50 { background-color: rgba(234,179,8,0.10) !important; }
+.dark .bg-purple-50 { background-color: rgba(168,85,247,0.10) !important; }
+.dark .bg-orange-50 { background-color: rgba(249,115,22,0.10) !important; }
+
+/* ── Dividers ────────────────────────────────────────────── */
+.dark .divide-gray-100 > * + * { border-color: rgba(255,255,255,0.06) !important; }
+.dark .divide-gray-200 > * + * { border-color: var(--border) !important; }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
