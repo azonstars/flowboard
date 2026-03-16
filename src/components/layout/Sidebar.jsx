@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
 import { ROLES } from '../../constants/roles'
 import { useTheme } from '../../context/ThemeContext'
+import { MenuIcon } from '../ui/LucideIcon'
 
 const CONTROL_PANEL = {
   id: '__control_panel__',
@@ -126,7 +127,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   {hasChildren(item) || item.path === '#' ? (
                     <button onClick={() => toggleExpand(item.id)}
                       className="flex items-center gap-3 px-3 py-2.5 flex-1 text-left w-full">
-                      <span className="text-lg shrink-0">{item.icon || '📋'}</span>
+                      <MenuIcon icon={item.icon} size={18} className="shrink-0" />
                       <span className={`font-medium flex-1 text-sm ${isParentActive ? 'font-semibold' : ''}`}>{item.label}</span>
                       {hasChildren(item) && (
                         <svg className={`w-4 h-4 transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
@@ -138,7 +139,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   ) : (
                     <Link to={item.path} onClick={onClose}
                       className="flex items-center gap-3 px-3 py-2.5 flex-1">
-                      <span className="text-lg shrink-0">{item.icon || '📋'}</span>
+                      <MenuIcon icon={item.icon} size={18} className="shrink-0" />
                       <span className={`font-medium text-sm flex-1 ${isParentActive ? 'font-semibold' : ''}`}>{item.label}</span>
                       {isChatItem && chatUnread > 0 && (
                         <span className="ml-auto min-w-[20px] h-5 bg-primary-600 text-white text-xs rounded-full flex items-center justify-center font-bold px-1">
@@ -173,7 +174,7 @@ export default function Sidebar({ isOpen, onClose }) {
               }`}>
                 <button onClick={() => toggleExpand(CONTROL_PANEL.id)}
                   className="flex items-center gap-3 px-3 py-2.5 flex-1 text-left w-full">
-                  <span className="text-lg shrink-0">{CONTROL_PANEL.icon}</span>
+                  <MenuIcon icon={CONTROL_PANEL.icon} size={18} className="shrink-0" />
                   <span className="font-medium flex-1 text-sm">Control Panel</span>
                   <svg className={`w-4 h-4 transition-transform duration-200 shrink-0 ${expandedItems[CONTROL_PANEL.id] ? 'rotate-180' : ''}`}
                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,7 +189,7 @@ export default function Sidebar({ isOpen, onClose }) {
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg transition text-sm ${
                         isActive(child.path) ? 'sidebar-active-item font-semibold' : 'sidebar-normal-item'
                       }`}>
-                      <span className="text-base shrink-0">{child.icon}</span>
+                      <MenuIcon icon={child.icon} size={16} className="shrink-0" />
                       <span>{child.label}</span>
                     </Link>
                   ))}

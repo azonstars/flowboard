@@ -37,6 +37,7 @@ const ALL_ROLES = [
 const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, onAddSubMenu, onChangeParent, allForms, allReports, menuStructure }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const [showIconPicker, setShowIconPicker] = useState(false)
+  const [iconTab, setIconTab] = useState('lucide') // 'lucide' | 'emoji'
   const [showSubMenuForm, setShowSubMenuForm] = useState(false)
   const [subItem, setSubItem] = useState({ label: '', path: '', icon: '📌', link_type: 'custom', roles: [] })
   const [showSubIconPicker, setShowSubIconPicker] = useState(false)
@@ -190,14 +191,26 @@ const SortableItem = ({ item, onToggleExpand, expandedId, onUpdate, onRemove, on
                   <span className="text-gray-500">Change icon</span>
                 </button>
                 {showIconPicker && (
-                  <div className="absolute top-10 left-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-3 w-72">
-                    <div className="grid grid-cols-10 gap-1">
-                      {AVAILABLE_ICONS.map(icon => (
-                        <button key={icon} onClick={() => { onUpdate(item, 'icon', icon); setShowIconPicker(false) }}
-                          className={`w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-primary-50 transition ${(item.icon || item.menu_icon) === icon ? 'bg-primary-100 ring-2 ring-primary-500' : ''}`}>
-                          {icon}
-                        </button>
-                      ))}
+                  <div className="absolute top-10 left-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-3 w-80">
+                    <div className="flex gap-1 mb-2 bg-gray-100 rounded-lg p-1">
+                      <button onClick={() => setIconTab('lucide')} className={`flex-1 py-1 text-xs font-medium rounded-md transition ${iconTab==='lucide' ? 'bg-white shadow text-primary-600' : 'text-gray-500'}`}>SVG Icons</button>
+                      <button onClick={() => setIconTab('emoji')} className={`flex-1 py-1 text-xs font-medium rounded-md transition ${iconTab==='emoji' ? 'bg-white shadow text-primary-600' : 'text-gray-500'}`}>Emoji</button>
+                    </div>
+                    <input type="text" placeholder="খুঁজুন..." className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                      onChange={e => { const q=e.target.value.toLowerCase(); document.querySelectorAll('.ibp1').forEach(b => { b.style.display=!q||b.dataset.icon.toLowerCase().includes(q)?'':'none' }) }} />
+                    <div className="flex flex-wrap gap-1 max-h-52 overflow-y-auto">
+                    {iconTab==='lucide' ? LUCIDE_ICONS.map(n => (
+                      <button key={n} data-icon={n} title={n}
+                        onClick={() => { onUpdate(item, 'icon', 'lucide:'+n); setShowIconPicker(false) }}
+                        className={`ibp1 w-9 h-9 flex items-center justify-center rounded text-xs text-gray-600 hover:bg-primary-50 transition ${(item.icon||item.menu_icon)==='lucide:'+n ? 'bg-primary-100 ring-2 ring-primary-500 text-primary-700' : ''}`}>
+                        {n.slice(0,4)}</button>
+                    )) : AVAILABLE_ICONS.map(icon => (
+                      <button key={icon} data-icon={icon}
+                        onClick={() => { onUpdate(item, 'icon', icon); setShowIconPicker(false) }}
+                        className={`ibp1 w-8 h-8 flex items-center justify-center rounded text-lg hover:bg-primary-50 transition ${(item.icon||item.menu_icon)===icon ? 'bg-primary-100 ring-2 ring-primary-500' : ''}`}>
+                        {icon}
+                      </button>
+                    ))}
                     </div>
                   </div>
                 )}
@@ -476,6 +489,7 @@ export default function Settings() {
   const [logoUploading, setLogoUploading] = useState(false)
   const [customLink, setCustomLink] = useState({ label: '', path: '', icon: '📌', link_type: 'path' })
   const [showIconPicker, setShowIconPicker] = useState(false)
+  const [iconTab, setIconTab] = useState('lucide') // 'lucide' | 'emoji'
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
