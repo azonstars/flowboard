@@ -62,27 +62,72 @@
   border-color: var(--sidebar-border-color, rgba(0,0,0,0.08)) !important;
 }
 
-.dark .bg-white       { background-color: var(--bg-card) !important; }
-.dark .bg-gray-50     { background-color: var(--bg-secondary) !important; }
-.dark .bg-gray-100    { background-color: #374151 !important; }
-.dark .text-gray-800  { color: var(--text-primary) !important; }
-.dark .text-gray-700  { color: #e5e7eb !important; }
-.dark .text-gray-600  { color: #d1d5db !important; }
-.dark .text-gray-500  { color: #9ca3af !important; }
-.dark .border-gray-200 { border-color: var(--border) !important; }
-.dark .border-gray-100 { border-color: #374151 !important; }
-.dark .shadow-sm      { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+/* ── Dark mode — backgrounds ─────────────────────────────── */
+.dark .bg-white,
+.dark .bg-gray-50,
+.dark [class*="rounded"][class*="shadow"],
+.dark [class*="rounded-lg"],
+.dark [class*="rounded-xl"] {
+  background-color: var(--bg-card, #2a2a28) !important;
+}
+.dark .bg-gray-100,
+.dark .bg-gray-200 { background-color: #374151 !important; }
+.dark .bg-gray-50  { background-color: var(--bg-secondary, #2a2a28) !important; }
 
-.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+/* ── Dark mode — text ────────────────────────────────────── */
+.dark,
+.dark * {
+  --tw-text-opacity: 1;
+}
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark h1,.dark h2,.dark h3,.dark h4,.dark h5 { color: var(--text-primary, #ececec) !important; }
+.dark .text-gray-700 { color: #e5e7eb !important; }
+.dark .text-gray-600 { color: #d1d5db !important; }
+.dark .text-gray-500,
+.dark .text-gray-400 { color: #9ca3af !important; }
+
+/* ── Dark mode — borders ─────────────────────────────────── */
+.dark .border-gray-200,
+.dark .border-gray-300 { border-color: var(--border, rgba(255,255,255,0.1)) !important; }
+.dark .border-gray-100 { border-color: #374151 !important; }
+.dark .divide-gray-100 > * + * { border-color: #374151 !important; }
+.dark .divide-gray-200 > * + * { border-color: var(--border) !important; }
+
+/* ── Dark mode — inputs ──────────────────────────────────── */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
 .dark select,
 .dark textarea {
-  background-color: #374151 !important;
-  color: #f9fafb !important;
-  border-color: #4b5563 !important;
+  background-color: var(--bg-secondary, #374151) !important;
+  color: var(--text-primary, #f9fafb) !important;
+  border-color: rgba(255,255,255,0.15) !important;
 }
+.dark input::placeholder,
+.dark textarea::placeholder { color: #6b7280 !important; }
 
-.dark thead { background-color: #1f2937 !important; }
-.dark tbody tr:hover { background-color: #374151 !important; }
+/* ── Dark mode — tables ──────────────────────────────────── */
+.dark table { background-color: var(--bg-card, #2a2a28) !important; color: var(--text-primary, #ececec) !important; }
+.dark thead,
+.dark thead tr,
+.dark thead th { background-color: var(--bg-secondary, #1f2937) !important; color: var(--text-secondary, #9ca3af) !important; }
+.dark tbody tr:hover { background-color: rgba(255,255,255,0.04) !important; }
+.dark td { color: var(--text-primary, #ececec) !important; border-color: var(--border, rgba(255,255,255,0.08)) !important; }
+
+/* ── Dark mode — shadows ─────────────────────────────────── */
+.dark .shadow-sm,
+.dark .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; }
+
+/* ── Dark mode — hover backgrounds ──────────────────────── */
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover { background-color: rgba(255,255,255,0.05) !important; }
+
+/* ── Dark mode — specific components ────────────────────── */
+.dark .bg-blue-50   { background-color: rgba(59,130,246,0.15) !important; }
+.dark .bg-green-50  { background-color: rgba(34,197,94,0.12) !important; }
+.dark .bg-red-50    { background-color: rgba(239,68,68,0.12) !important; }
+.dark .bg-yellow-50 { background-color: rgba(234,179,8,0.12) !important; }
+.dark .bg-purple-50 { background-color: rgba(168,85,247,0.12) !important; }
+.dark .bg-orange-50 { background-color: rgba(249,115,22,0.12) !important; }
 
 .sidebar-normal-item {
   color: var(--sidebar-text, rgba(26,26,26,0.75));
