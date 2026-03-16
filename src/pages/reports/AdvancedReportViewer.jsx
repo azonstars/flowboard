@@ -766,11 +766,11 @@ export default function AdvancedReportViewer() {
                       </thead>
                       <tbody>
                         {tableRows.map((row, ri) => (
-                          <tr key={ri} className={row.isTotal ? 'bg-primary-50 border-t-2 border-primary-200' : ri%2===0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-primary-50'}>
-                            <td className={`px-2 py-2 text-center border border-gray-200 sticky left-0 z-10 text-xs text-gray-400 ${row.isTotal ? 'bg-primary-50' : ri%2===0 ? 'bg-white' : 'bg-gray-50'}`}>
+                          <tr key={ri} className={row.isTotal ? 'bg-primary-50 border-t-2 border-primary-200 dark:bg-primary-900/20' : ri%2===0 ? 'bg-white hover:bg-gray-50 dark:bg-transparent dark:hover:bg-white/5' : 'bg-gray-50 hover:bg-primary-50 dark:bg-white/5 dark:hover:bg-white/10'}>
+                            <td className={`px-2 py-2 text-center border border-gray-200 sticky left-0 z-10 text-xs text-gray-400 ${row.isTotal ? 'bg-primary-50 dark:bg-primary-900/20' : ri%2===0 ? 'bg-white dark:bg-transparent' : 'bg-gray-50 dark:bg-white/5'}`}>
                               {row.isTotal ? '' : ri + 1}
                             </td>
-                            <td className={`px-3 py-2 border border-gray-200 sticky left-8 z-10 whitespace-nowrap ${row.isTotal ? 'bg-primary-50 font-bold text-primary-800' : ri%2===0 ? 'bg-white' : 'bg-gray-50'}`}
+                            <td className={`px-3 py-2 border border-gray-200 sticky left-8 z-10 whitespace-nowrap ${row.isTotal ? 'bg-primary-50 font-bold text-primary-800 dark:bg-primary-900/20 dark:text-primary-300' : ri%2===0 ? 'bg-white dark:bg-transparent' : 'bg-gray-50 dark:bg-white/5'}`}
                               style={{ paddingLeft: `${(row.level||0)*12+12}px` }}>
                               {row.label}
                             </td>
