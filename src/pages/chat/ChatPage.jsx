@@ -617,7 +617,7 @@ export default function ChatPage() {
                 <div className="flex-1 min-w-0"><p className="text-xs font-semibold text-yellow-700">Pinned Message</p><p className="text-xs text-gray-600 truncate">{pinnedMsg.content || pinnedMsg.file_name}</p></div>
               </div>
             )}
-            <div className="flex-1 overflow-y-auto px-4 py-4" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #fafafa 100%)' }}>
+            <div className="flex-1 overflow-y-auto px-4 py-4" style={{ background: 'var(--bg-secondary)' }}>
               {loading ? <div className="flex items-center justify-center h-full text-gray-400">Loading...</div>
                 : filteredMessages.length === 0 ? <div className="flex items-center justify-center h-full text-gray-400 text-sm">{searchMsg ? 'কোনো result নেই' : 'এখনো কোনো message নেই। প্রথম message পাঠান! 👋'}</div>
                 : filteredMessages.map((msg, i) => {
