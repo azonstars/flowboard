@@ -335,8 +335,8 @@ export default function FormSubmitPage() {
                         <td style={{padding:'9px 16px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid var(--subtotal-border,#bbf7d0)',borderBottom:'1px solid var(--subtotal-border,#bbf7d0)',background:'var(--subtotal-bg,#f0fdf4)'}}>
                           🔹 {field.label}
                         </td>
-                        {hasCount  && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid var(--subtotal-border,#bbf7d0)',borderBottom:'1px solid var(--subtotal-border,#bbf7d0)',borderLeft:'1px solid var(--subtotal-border,#bbf7d0)',background:'#f0fdf4'}}>{toBn(count)}</td>}
-                        {hasAmount && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid var(--subtotal-border,#bbf7d0)',borderBottom:'1px solid var(--subtotal-border,#bbf7d0)',borderLeft:'1px solid var(--subtotal-border,#bbf7d0)',background:'#f0fdf4'}}>{toBn(amount)}</td>}
+                        {hasCount  && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid var(--subtotal-border,#bbf7d0)',borderBottom:'1px solid var(--subtotal-border,#bbf7d0)',borderLeft:'1px solid var(--subtotal-border,#bbf7d0)',background:'var(--subtotal-bg,#f0fdf4)'}}>{toBn(count)}</td>}
+                        {hasAmount && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid var(--subtotal-border,#bbf7d0)',borderBottom:'1px solid var(--subtotal-border,#bbf7d0)',borderLeft:'1px solid var(--subtotal-border,#bbf7d0)',background:'var(--subtotal-bg,#f0fdf4)'}}>{toBn(amount)}</td>}
                       </tr>
                     )
                   }
@@ -349,8 +349,8 @@ export default function FormSubmitPage() {
                         <td style={{padding:'11px 16px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid var(--grandtotal-border,#bfdbfe)',background:'var(--grandtotal-bg,#eff6ff)'}}>
                           🔷 {field.label}
                         </td>
-                        {hasCount  && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid var(--grandtotal-border,#bfdbfe)',borderLeft:'1px solid var(--grandtotal-border,#bfdbfe)',background:'#eff6ff'}}>{toBn(count)}</td>}
-                        {hasAmount && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid var(--grandtotal-border,#bfdbfe)',borderLeft:'1px solid var(--grandtotal-border,#bfdbfe)',background:'#eff6ff'}}>{toBn(amount)}</td>}
+                        {hasCount  && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid var(--grandtotal-border,#bfdbfe)',borderLeft:'1px solid var(--grandtotal-border,#bfdbfe)',background:'var(--grandtotal-bg,#eff6ff)'}}>{toBn(count)}</td>}
+                        {hasAmount && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid var(--grandtotal-border,#bfdbfe)',borderLeft:'1px solid var(--grandtotal-border,#bfdbfe)',background:'var(--grandtotal-bg,#eff6ff)'}}>{toBn(amount)}</td>}
                       </tr>
                     )
                   }
