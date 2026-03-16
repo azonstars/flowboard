@@ -436,7 +436,7 @@ export default function ChatPage() {
             <span className="text-xs text-gray-500 mb-1 px-1">{msg.profiles?.full_name}</span>
           )}
           <div className="relative">
-            <div className={`rounded-2xl px-4 py-2.5 shadow-sm ${isMine ? 'bg-primary-600 text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm border border-gray-100'} ${msg.is_deleted ? 'opacity-60 italic' : ''}`}>
+            <div className={`rounded-2xl px-4 py-2.5 shadow-sm ${isMine ? 'bg-primary-600 text-white rounded-br-sm' : 'rounded-bl-sm border border-gray-100' } ${msg.is_deleted ? 'opacity-60 italic' : ''}`}>
               {msg.is_pinned && <p className="text-xs mb-1 opacity-70">📌 Pinned</p>}
               {replyMsg && !msg.is_deleted && (
                 <div className={`text-xs px-2 py-1 rounded-lg mb-2 border-l-2 ${isMine ? 'bg-primary-500 border-primary-300' : 'bg-gray-100 border-gray-300'}`}>
@@ -465,12 +465,12 @@ export default function ChatPage() {
                 className={`absolute top-0 ${isMine ? '-left-8' : '-right-8'} opacity-0 group-hover:opacity-100 transition text-lg`}>😊</button>
             )}
             {reactionTarget === msg.id && (
-              <div className={`absolute ${isMine ? 'right-0' : 'left-0'} -top-12 bg-white border border-gray-200 rounded-full shadow-lg px-2 py-1 flex gap-1 z-20`}>
+              <div className={`absolute ${isMine ? 'right-0' : 'left-0'} -top-12 border border-gray-200 rounded-full shadow-lg px-2 py-1 flex gap-1 z-20`}>
                 {EMOJIS.map(e => <button key={e} onClick={() => handleReaction(msg.id, e)} className="text-xl hover:scale-125 transition-transform">{e}</button>)}
               </div>
             )}
             {msgMenu === msg.id && (
-              <div className={`absolute ${isMine ? 'right-0' : 'left-0'} top-8 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-1 min-w-[160px]`}>
+              <div className={`absolute ${isMine ? 'right-0' : 'left-0'} top-8 border border-gray-200 rounded-xl shadow-xl z-20 py-1 min-w-[160px]`}>
                 {!msg.is_deleted && <>
                   <button onClick={() => { setReplyTo(msg); setMsgMenu(null) }} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">↩ Reply</button>
                   <button onClick={() => { setForwardMsg(msg); setShowForwardModal(true); setMsgMenu(null) }} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">↗ Forward</button>
@@ -561,11 +561,11 @@ export default function ChatPage() {
 
       <div className={`${!showSidebar ? 'flex' : 'hidden'} md:flex flex-col flex-1 min-w-0`}>
         {!activeConvId ? (
-          <div className="flex flex-col flex-1 bg-gray-50">
+          <div className="flex flex-col flex-1" style={{background:"var(--bg-secondary)"}}>
             {newChatStep === 'compose' && <div className="flex-1 flex items-center justify-center"><div className="text-center text-gray-300"><p className="text-6xl mb-3">💬</p><p className="text-base font-medium">নিচে message লিখুন</p></div></div>}
             {newChatStep === 'select_user' && (
               <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="px-6 pt-5 pb-3 border-b bg-white">
+                <div className="px-6 pt-5 pb-3 border-b" style={{background:"var(--bg-card)"}}>
                   <div className="flex items-center gap-3 mb-3">
                     <button onClick={() => setNewChatStep('compose')} className="text-gray-400 hover:text-gray-600 text-lg">←</button>
                     <div><p className="font-semibold text-gray-800 text-sm">কাকে পাঠাবেন?</p><p className="text-xs text-gray-400 truncate max-w-xs">"{newChatText}"</p></div>
@@ -579,7 +579,7 @@ export default function ChatPage() {
               </div>
             )}
             {newChatStep === 'compose' && (
-              <div className="bg-white border-t border-gray-200 px-4 py-3">
+              <div className="border-t border-gray-200 px-4 py-3" style={{background:"var(--bg-card)"}}>
                 <div className="flex items-end gap-2">
                   <textarea value={newChatText} onChange={e => setNewChatText(e.target.value)} placeholder="নতুন message লিখুন..." rows={1}
                     className="flex-1 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none max-h-32" style={{ minHeight: '44px' }}
@@ -592,7 +592,7 @@ export default function ChatPage() {
           </div>
         ) : (
           <>
-            <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3 shadow-sm">
+            <div className="border-b border-gray-200 px-4 py-3 flex items-center gap-3 shadow-sm" style={{background:"var(--bg-card)"}}>
               <button onClick={() => setShowSidebar(true)} className="md:hidden p-1 text-gray-600">←</button>
               {activeConv?.type === 'broadcast' ? <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white">📢</div>
                 : activeConv?.type === 'group' ? <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">👥</div>
@@ -604,7 +604,7 @@ export default function ChatPage() {
               <button onClick={() => setShowSearch(!showSearch)} className={`p-2 hover:bg-gray-100 rounded-full transition ${showSearch ? 'text-primary-600' : 'text-gray-500'}`}>🔍</button>
             </div>
             {showSearch && (
-              <div className="bg-white border-b border-gray-100 px-4 py-2">
+              <div className="border-b border-gray-100 px-4 py-2" style={{background:"var(--bg-card)"}}>
                 <input type="text" value={searchMsg} onChange={e => setSearchMsg(e.target.value)} placeholder="Message search করুন..."
                   className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" autoFocus />
                 {searchMsg && <p className="text-xs text-gray-400 mt-1">{filteredMessages.length} টি result পাওয়া গেছে</p>}
@@ -648,7 +648,7 @@ export default function ChatPage() {
               </div>
             )}
             {(activeConv?.type !== 'broadcast' || isAdmin) && (
-              <div className="bg-white border-t border-gray-200 px-4 py-3">
+              <div className="border-t border-gray-200 px-4 py-3" style={{background:"var(--bg-card)"}}>
                 <div className="flex items-end gap-2">
                   <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="p-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-full transition shrink-0">{uploading ? '⏳' : '📎'}</button>
                   <input ref={fileInputRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileSelect} />
@@ -664,7 +664,7 @@ export default function ChatPage() {
               </div>
             )}
             {activeConv?.type === 'broadcast' && !isAdmin && (
-              <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 text-center text-sm text-gray-400">📢 এটি একটি Broadcast channel — শুধু Admin message পাঠাতে পারবে</div>
+              <div className="border-t border-gray-200 px-4 py-3 text-center text-sm text-gray-400" style={{background:"var(--bg-secondary)"}}>📢 এটি একটি Broadcast channel — শুধু Admin message পাঠাতে পারবে</div>
             )}
           </>
         )}
@@ -672,7 +672,7 @@ export default function ChatPage() {
 
       {showNewGroup && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[85vh]">
+          <div className="rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[85vh]" style={{background:"var(--bg-card)"}}>
             <div className="flex items-center justify-between p-5 border-b shrink-0"><h3 className="font-bold text-gray-800">👥 নতুন Group</h3><button onClick={() => { setShowNewGroup(false); setSelectedUsers([]); setGroupName(''); setSearchUser('') }} className="text-gray-400 hover:text-gray-600">✕</button></div>
             <div className="p-4 space-y-3 shrink-0">
               <input type="text" placeholder="Group নাম..." value={groupName} onChange={e => setGroupName(e.target.value)} autoFocus className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
@@ -691,7 +691,7 @@ export default function ChatPage() {
 
       {showNewBroadcast && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl">
+          <div className="rounded-2xl w-full max-w-sm shadow-xl" style={{background:"var(--bg-card)"}}>
             <div className="flex items-center justify-between p-5 border-b"><h3 className="font-bold text-gray-800">📢 Broadcast</h3><button onClick={() => setShowNewBroadcast(false)} className="text-gray-400 hover:text-gray-600">✕</button></div>
             <div className="p-4 space-y-3">
               <input type="text" placeholder="Broadcast নাম..." value={broadcastName} onChange={e => setBroadcastName(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />

@@ -211,3 +211,8 @@
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+
+/* ── Chat bubble (others) dark mode ─────────────────────── */
+.dark .rounded-bl-sm { background-color: var(--bg-secondary) !important; color: var(--text-primary) !important; }
+.dark .rounded-full.shadow-lg { background-color: var(--bg-card) !important; }
+.dark .rounded-xl.shadow-xl  { background-color: var(--bg-card) !important; }
