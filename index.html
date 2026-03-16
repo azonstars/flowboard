@@ -3,63 +3,53 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-
-    <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#1d4ed8" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="FlowBoard" />
-
-    <!-- Icon -->
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
-
-    <!-- SEO -->
     <meta name="description" content="FlowBoard — ফর্ম সাবমিশন ও রিপোর্ট ম্যানেজমেন্ট সিস্টেম" />
-
     <title>FlowBoard</title>
-  
-  <!-- Early dark mode — React load হওয়ার আগেই apply করো -->
-  <script>
-    (function() {
-      const mode = localStorage.getItem('flowboard_theme') || 'system'
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      const isDark = mode === 'dark' || (mode === 'system' && prefersDark)
-      const root = document.documentElement
-      if (isDark) {
-        root.classList.add('dark')
-        root.style.setProperty('--sidebar-bg',           '#1f1f1e')
-        root.style.setProperty('--sidebar-text-solid',   '#ececec')
-        root.style.setProperty('--sidebar-text',         'rgba(236,236,236,0.75)')
-        root.style.setProperty('--sidebar-hover-bg',     'rgba(255,255,255,0.06)')
-        root.style.setProperty('--sidebar-active-bg',    'rgba(255,255,255,0.1)')
-        root.style.setProperty('--sidebar-border-color', 'rgba(255,255,255,0.08)')
-        root.style.setProperty('--bg-primary',   '#1f1f1e')
-        root.style.setProperty('--bg-secondary', '#2a2a28')
-        root.style.setProperty('--bg-card',      '#2a2a28')
-        root.style.setProperty('--text-primary', '#ececec')
-        root.style.setProperty('--text-secondary','#a0a0a0')
-        root.style.setProperty('--border',       'rgba(255,255,255,0.1)')
-      } else {
-        const sidebarColor = localStorage.getItem('flowboard_sidebar_color') || '#f9f9f7'
-        const sidebarText  = localStorage.getItem('flowboard_sidebar_text')  || '#1a1a1a'
-        root.style.setProperty('--sidebar-bg',           sidebarColor)
-        root.style.setProperty('--sidebar-text-solid',   sidebarText)
-        root.style.setProperty('--sidebar-text',         'rgba(26,26,26,0.75)')
-        root.style.setProperty('--sidebar-hover-bg',     'rgba(0,0,0,0.05)')
-        root.style.setProperty('--sidebar-active-bg',    'rgba(0,0,0,0.08)')
-        root.style.setProperty('--sidebar-border-color', 'rgba(0,0,0,0.08)')
-        root.style.setProperty('--bg-primary',   '#ffffff')
-        root.style.setProperty('--bg-secondary', '#f9f9f7')
-        root.style.setProperty('--bg-card',      '#ffffff')
-        root.style.setProperty('--text-primary', '#1a1a1a')
-        root.style.setProperty('--text-secondary','#6b6b6b')
-        root.style.setProperty('--border',       'rgba(0,0,0,0.1)')
-      }
-    })()
-  </script>
+    <script>
+      (function(){
+        var mode=localStorage.getItem('flowboard_theme')||'system'
+        var dark=mode==='dark'||(mode==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches)
+        var r=document.documentElement
+        if(dark){
+          r.classList.add('dark')
+          r.style.setProperty('--sidebar-bg','#1f1f1e')
+          r.style.setProperty('--sidebar-text-solid','#ececec')
+          r.style.setProperty('--sidebar-text','rgba(236,236,236,0.75)')
+          r.style.setProperty('--sidebar-hover-bg','rgba(255,255,255,0.06)')
+          r.style.setProperty('--sidebar-active-bg','rgba(255,255,255,0.1)')
+          r.style.setProperty('--sidebar-border-color','rgba(255,255,255,0.08)')
+          r.style.setProperty('--bg-primary','#1f1f1e')
+          r.style.setProperty('--bg-secondary','#2a2a28')
+          r.style.setProperty('--bg-card','#2a2a28')
+          r.style.setProperty('--text-primary','#ececec')
+          r.style.setProperty('--text-secondary','#a0a0a0')
+          r.style.setProperty('--border','rgba(255,255,255,0.1)')
+        } else {
+          var sc=localStorage.getItem('flowboard_sidebar_color')||'#f9f9f7'
+          var st=localStorage.getItem('flowboard_sidebar_text')||'#1a1a1a'
+          r.style.setProperty('--sidebar-bg',sc)
+          r.style.setProperty('--sidebar-text-solid',st)
+          r.style.setProperty('--sidebar-text','rgba(26,26,26,0.75)')
+          r.style.setProperty('--sidebar-hover-bg','rgba(0,0,0,0.05)')
+          r.style.setProperty('--sidebar-active-bg','rgba(0,0,0,0.08)')
+          r.style.setProperty('--sidebar-border-color','rgba(0,0,0,0.08)')
+          r.style.setProperty('--bg-primary','#ffffff')
+          r.style.setProperty('--bg-secondary','#f9f9f7')
+          r.style.setProperty('--bg-card','#ffffff')
+          r.style.setProperty('--text-primary','#1a1a1a')
+          r.style.setProperty('--text-secondary','#6b6b6b')
+          r.style.setProperty('--border','rgba(0,0,0,0.1)')
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

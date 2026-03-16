@@ -141,18 +141,9 @@
 .dark .bg-purple-50 { background-color: rgba(168,85,247,0.12) !important; }
 .dark .bg-orange-50 { background-color: rgba(249,115,22,0.12) !important; }
 
-.sidebar-normal-item {
-  color: var(--sidebar-text) !important;
-  transition: background-color 0.15s, color 0.15s;
-}
-.sidebar-normal-item:hover {
-  background-color: var(--sidebar-hover-bg) !important;
-  color: var(--sidebar-text-solid) !important;
-}
-.sidebar-active-item {
-  background-color: var(--sidebar-active-bg) !important;
-  color: var(--sidebar-text-solid) !important;
-}
+.sidebar-normal-item { color: var(--sidebar-text) !important; transition: background-color 0.15s, color 0.15s; }
+.sidebar-normal-item:hover { background-color: var(--sidebar-hover-bg) !important; color: var(--sidebar-text-solid) !important; }
+.sidebar-active-item { background-color: var(--sidebar-active-bg) !important; color: var(--sidebar-text-solid) !important; }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
