@@ -86,8 +86,38 @@ export const ThemeProvider = ({ children }) => {
   // Dark mode apply করো
   useEffect(() => {
     const applyDark = (dark) => {
-      if (dark) document.documentElement.classList.add('dark')
-      else document.documentElement.classList.remove('dark')
+      const root = document.documentElement
+      if (dark) {
+        root.classList.add('dark')
+        root.style.setProperty('--sidebar-bg',           '#1f1f1e')
+        root.style.setProperty('--sidebar-text-solid',   '#ececec')
+        root.style.setProperty('--sidebar-text',         'rgba(236,236,236,0.75)')
+        root.style.setProperty('--sidebar-hover-bg',     'rgba(255,255,255,0.06)')
+        root.style.setProperty('--sidebar-active-bg',    'rgba(255,255,255,0.1)')
+        root.style.setProperty('--sidebar-border-color', 'rgba(255,255,255,0.08)')
+        root.style.setProperty('--bg-primary',   '#1f1f1e')
+        root.style.setProperty('--bg-secondary', '#2a2a28')
+        root.style.setProperty('--bg-card',      '#2a2a28')
+        root.style.setProperty('--text-primary', '#ececec')
+        root.style.setProperty('--text-secondary','#a0a0a0')
+        root.style.setProperty('--border',       'rgba(255,255,255,0.1)')
+      } else {
+        root.classList.remove('dark')
+        const sidebarColor = localStorage.getItem('flowboard_sidebar_color') || '#f9f9f7'
+        const sidebarText  = localStorage.getItem('flowboard_sidebar_text')  || '#1a1a1a'
+        root.style.setProperty('--sidebar-bg',           sidebarColor)
+        root.style.setProperty('--sidebar-text-solid',   sidebarText)
+        root.style.setProperty('--sidebar-text',         'rgba(26,26,26,0.75)')
+        root.style.setProperty('--sidebar-hover-bg',     'rgba(0,0,0,0.05)')
+        root.style.setProperty('--sidebar-active-bg',    'rgba(0,0,0,0.08)')
+        root.style.setProperty('--sidebar-border-color', 'rgba(0,0,0,0.08)')
+        root.style.setProperty('--bg-primary',   '#ffffff')
+        root.style.setProperty('--bg-secondary', '#f9f9f7')
+        root.style.setProperty('--bg-card',      '#ffffff')
+        root.style.setProperty('--text-primary', '#1a1a1a')
+        root.style.setProperty('--text-secondary','#6b6b6b')
+        root.style.setProperty('--border',       'rgba(0,0,0,0.1)')
+      }
     }
 
     if (colorMode === 'dark') {
