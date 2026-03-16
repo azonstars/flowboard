@@ -29,6 +29,12 @@
   --text-primary: #1a1a1a;
   --text-secondary: #6b6b6b;
   --border:       rgba(0,0,0,0.1);
+  --subtotal-bg: #f0fdf4;
+  --subtotal-text: #15803d;
+  --subtotal-border: #bbf7d0;
+  --grandtotal-bg: #eff6ff;
+  --grandtotal-text: #1e40af;
+  --grandtotal-border: #bfdbfe;
 }
 
 .dark {
@@ -45,6 +51,12 @@
   --text-primary: #ececec;
   --text-secondary: #a0a0a0;
   --border:       rgba(255,255,255,0.1);
+  --subtotal-bg: rgba(34,197,94,0.12);
+  --subtotal-text: #86efac;
+  --subtotal-border: rgba(34,197,94,0.3);
+  --grandtotal-bg: rgba(59,130,246,0.12);
+  --grandtotal-text: #93c5fd;
+  --grandtotal-border: rgba(59,130,246,0.3);
 }
 
 .bg-theme-primary   { background-color: var(--bg-primary); }
