@@ -332,11 +332,11 @@ export default function FormSubmitPage() {
                     const { count, amount } = calcSubtotal(field, formData)
                     return (
                       <tr key={field.id} style={{background:'#f0fdf4'}}>
-                        <td style={{padding:'9px 16px',fontSize:'13px',fontWeight:'600',color:'#15803d',borderTop:'1px solid #bbf7d0',borderBottom:'1px solid #bbf7d0'}}>
+                        <td style={{padding:'9px 16px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid #bbf7d0',borderBottom:'1px solid #bbf7d0',background:'var(--subtotal-bg,#f0fdf4)'}}>
                           🔹 {field.label}
                         </td>
-                        {hasCount  && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'#15803d',borderTop:'1px solid #bbf7d0',borderBottom:'1px solid #bbf7d0',borderLeft:'1px solid #bbf7d0'}}>{toBn(count)}</td>}
-                        {hasAmount && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'#15803d',borderTop:'1px solid #bbf7d0',borderBottom:'1px solid #bbf7d0',borderLeft:'1px solid #bbf7d0'}}>{toBn(amount)}</td>}
+                        {hasCount  && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'#15803d',borderTop:'1px solid #bbf7d0',borderBottom:'1px solid #bbf7d0',borderLeft:'1px solid #bbf7d0',background:'#f0fdf4'}}>{toBn(count)}</td>}
+                        {hasAmount && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'#15803d',borderTop:'1px solid #bbf7d0',borderBottom:'1px solid #bbf7d0',borderLeft:'1px solid #bbf7d0',background:'#f0fdf4'}}>{toBn(amount)}</td>}
                       </tr>
                     )
                   }
@@ -346,11 +346,11 @@ export default function FormSubmitPage() {
                     const { count, amount } = calcGrandTotal(field, form.fields, formData)
                     return (
                       <tr key={field.id} style={{background:'#eff6ff'}}>
-                        <td style={{padding:'11px 16px',fontSize:'14px',fontWeight:'600',color:'#1e40af',borderTop:'2px solid #bfdbfe'}}>
+                        <td style={{padding:'11px 16px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid #bfdbfe',background:'var(--grandtotal-bg,#eff6ff)'}}>
                           🔷 {field.label}
                         </td>
-                        {hasCount  && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'#1e40af',borderTop:'2px solid #bfdbfe',borderLeft:'1px solid #bfdbfe'}}>{toBn(count)}</td>}
-                        {hasAmount && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'#1e40af',borderTop:'2px solid #bfdbfe',borderLeft:'1px solid #bfdbfe'}}>{toBn(amount)}</td>}
+                        {hasCount  && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'#1e40af',borderTop:'2px solid #bfdbfe',borderLeft:'1px solid #bfdbfe',background:'#eff6ff'}}>{toBn(count)}</td>}
+                        {hasAmount && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'#1e40af',borderTop:'2px solid #bfdbfe',borderLeft:'1px solid #bfdbfe',background:'#eff6ff'}}>{toBn(amount)}</td>}
                       </tr>
                     )
                   }
