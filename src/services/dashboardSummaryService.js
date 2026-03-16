@@ -207,6 +207,9 @@ export const getDashboardMenuSummary = async ({
       .gte('submission_date', range.from)
       .lte('submission_date', range.to)
     if (allowedBranchCodes?.length) q = q.in('branch_code', allowedBranchCodes)
+    else if (allowedBranchCodes !== null && allowedBranchCodes?.length === 0) {
+      return { formId, subs: [] } // empty branch list — no data
+    }
     const { data } = await q
     return { formId, subs: data || [] }
   })
