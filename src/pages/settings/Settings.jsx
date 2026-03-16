@@ -18,6 +18,31 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../services/supabase'
 import toast from 'react-hot-toast'
 
+const LUCIDE_ICONS = [
+  'LayoutDashboard','Home','Menu','Sidebar','PanelLeft','FileText','File','Files',
+  'Clipboard','ClipboardList','ClipboardCheck','FormInput','BookOpen','Book',
+  'BarChart','BarChart2','BarChart3','LineChart','PieChart','TrendingUp','TrendingDown','Activity',
+  'Users','User','UserCheck','UserPlus','UserCog','Contact',
+  'DollarSign','Wallet','CreditCard','Banknote','Coins','PiggyBank','Receipt',
+  'Building','Building2','Landmark','Store','Warehouse','Factory',
+  'Settings','Settings2','Wrench','Cog','SlidersHorizontal','Sliders',
+  'MessageCircle','MessageSquare','Mail','Phone','Bell','BellRing','Send','Inbox',
+  'Shield','ShieldCheck','Lock','Unlock','Key','Eye','EyeOff',
+  'Database','Server','HardDrive','Cloud','Archive',
+  'Search','Filter','List','Grid','Table',
+  'Plus','Edit','Edit2','Trash','Trash2','Download','Upload','RefreshCw',
+  'Check','X','ChevronDown','ChevronRight','ArrowRight',
+  'CheckCircle','XCircle','AlertCircle','AlertTriangle','Info','HelpCircle',
+  'Star','Heart','Bookmark','Tag','Flag','Award','Gift','Package',
+  'Zap','Globe','Map','MapPin','Calendar','Clock','Timer',
+  'Image','Camera','Printer','QrCode','Laptop','Smartphone','Monitor',
+  'Leaf','Wheat','Apple','Fish','Truck','Car','Plane','Ship',
+  'GraduationCap','School','Stethoscope','Hospital','Pill',
+  'Gauge','Target','Link','ExternalLink','Share2','Network',
+  'Folder','FolderOpen','FolderPlus','FileSpreadsheet',
+  'LogIn','LogOut','Power','Maximize',
+]
+
 const AVAILABLE_ICONS = [
   '🏠','📊','📋','🔨','📈','👥','🏢','🔒','⚙️','📝',
   '💰','📦','🎯','📅','🔔','💼','🌐','📱','🔍','✅',
