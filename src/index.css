@@ -142,16 +142,16 @@
 .dark .bg-orange-50 { background-color: rgba(249,115,22,0.12) !important; }
 
 .sidebar-normal-item {
-  color: var(--sidebar-text, rgba(26,26,26,0.75));
+  color: var(--sidebar-text) !important;
   transition: background-color 0.15s, color 0.15s;
 }
 .sidebar-normal-item:hover {
-  background-color: var(--sidebar-hover-bg, rgba(0,0,0,0.05));
-  color: var(--sidebar-text-solid, #1a1a1a);
+  background-color: var(--sidebar-hover-bg) !important;
+  color: var(--sidebar-text-solid) !important;
 }
 .sidebar-active-item {
-  background-color: var(--sidebar-active-bg, rgba(0,0,0,0.08));
-  color: var(--sidebar-text-solid, #1a1a1a);
+  background-color: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-text-solid) !important;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
