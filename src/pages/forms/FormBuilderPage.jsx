@@ -47,37 +47,31 @@ const FormPreviewModal = ({ form, fields, onClose }) => {
                       <div key={child.id} className="ml-4 border-l-2 border-gray-300 pl-3">
                         <p className="text-sm text-gray-600 mb-1">{child.label}</p>
                         <div className="flex gap-2">
-                          {(child.type === 'both' || child.type === 'count') && (
-                            <input type="number" placeholder="সংখ্যা" disabled
+                          {(field.columns || [{key:'count',label:'সংখ্যা'},{key:'amount',label:'পরিমাণ'}]).map(col => (
+                            <input key={col.key} type="number" placeholder={col.label} disabled
                               className="w-24 border border-gray-300 rounded px-2 py-1 text-sm bg-white opacity-60"/>
-                          )}
-                          {(child.type === 'both' || child.type === 'amount') && (
-                            <input type="number" placeholder="পরিমাণ" disabled
-                              className="w-32 border border-gray-300 rounded px-2 py-1 text-sm bg-white opacity-60"/>
-                          )}
+                          ))}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    {(field.type === 'both' || field.type === 'count') && (
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">সংখ্যা</p>
-                        <input type="number"
-                          value={previewData[field.id + '_count'] || ''}
-                          onChange={e => setPreviewData(p => ({...p, [field.id + '_count']: e.target.value, [field.id]: e.target.value}))}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
-                      </div>
-                    )}
-                    {(field.type === 'both' || field.type === 'amount') && (
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">পরিমাণ (৳)</p>
-                        <input type="number"
-                          value={previewData[field.id + '_amount'] || ''}
-                          onChange={e => setPreviewData(p => ({...p, [field.id + '_amount']: e.target.value, [field.id]: e.target.value}))}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
-                      </div>
+                    {(field.type === 'numeric' || ['both','count','amount'].includes(field.type)) && (
+                      (field.columns?.length > 0
+                        ? field.columns
+                        : field.type === 'both' ? [{key:'count',label:'সংখ্যা'},{key:'amount',label:'পরিমাণ'}]
+                        : field.type === 'count' ? [{key:'count',label:'সংখ্যা'}]
+                        : [{key:'amount',label:'পরিমাণ'}]
+                      ).map(col => (
+                        <div key={col.key} className="flex-1">
+                          <p className="text-xs text-gray-500 mb-1">{col.label}</p>
+                          <input type="number"
+                            value={previewData[field.id + '_' + col.key] || ''}
+                            onChange={e => setPreviewData(p => ({...p, [field.id + '_' + col.key]: e.target.value}))}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"/>
+                        </div>
+                      ))
                     )}
                     {field.type === 'select' && (
                       <select
@@ -187,19 +181,56 @@ export default function FormBuilderPage() {
     setShowTemplateModal(false)
   }
 
+  // Default columns helper
+  const defaultColumns = () => [
+    { key: 'col_' + Date.now() + '_1', label: 'সংখ্যা' },
+    { key: 'col_' + Date.now() + '_2', label: 'পরিমাণ' },
+  ]
+
   const addField = () => {
-    setFields([...fields, { id: Date.now().toString(), label: '', type: 'both', required: false, children: [], options: [], condition: null }])
+    setFields([...fields, { id: Date.now().toString(), label: '', type: 'numeric', required: false, children: [], options: [], condition: null, columns: defaultColumns() }])
   }
 
   const addSubField = (parentId) => {
     setFields(fields.map(f => f.id === parentId ? {
-      ...f, children: [...f.children, { id: Date.now().toString(), label: '', type: 'both', required: false }]
+      ...f, children: [...f.children, { id: Date.now().toString(), label: '', required: false }]
     } : f))
+  }
+
+  // Column management helpers
+  const addColumn = (fieldId) => {
+    setFields(fields.map(f => f.id === fieldId ? {
+      ...f, columns: [...(f.columns || []), { key: 'col_' + Date.now(), label: '' }]
+    } : f))
+  }
+
+  const updateColumn = (fieldId, colKey, newLabel) => {
+    setFields(fields.map(f => f.id === fieldId ? {
+      ...f, columns: (f.columns || []).map(c => c.key === colKey ? { ...c, label: newLabel } : c)
+    } : f))
+  }
+
+  const removeColumn = (fieldId, colKey) => {
+    setFields(fields.map(f => f.id === fieldId ? {
+      ...f, columns: (f.columns || []).filter(c => c.key !== colKey)
+    } : f))
+  }
+
+  // পুরনো both/count/amount field-কে নতুন columns format-এ migrate করো
+  const migrateFieldColumns = (field) => {
+    if (field.columns && field.columns.length > 0) return field.columns
+    if (field.type === 'both') return [
+      { key: field.id + '_count', label: 'সংখ্যা' },
+      { key: field.id + '_amount', label: 'পরিমাণ' },
+    ]
+    if (field.type === 'count') return [{ key: field.id + '_count', label: 'সংখ্যা' }]
+    if (field.type === 'amount') return [{ key: field.id + '_amount', label: 'পরিমাণ' }]
+    return defaultColumns()
   }
 
   // Subtotal field যোগ করো — fields list-এ একটি special row
   const addSubtotal = (afterIndex) => {
-    const numericFields = fields.filter((f, i) => i <= afterIndex && ['both','count','amount'].includes(f.type) && f.label)
+    const numericFields = fields.filter((f, i) => i <= afterIndex && (f.type === 'numeric' || ['both','count','amount'].includes(f.type)) && f.label)
     const newField = {
       id: Date.now().toString(),
       label: 'মোট',
@@ -282,12 +313,10 @@ export default function FormBuilderPage() {
   }
 
   const FIELD_TYPES = [
-    { value: 'both', label: 'সংখ্যা + পরিমাণ' },
-    { value: 'count', label: 'সংখ্যা only' },
-    { value: 'amount', label: 'পরিমাণ only' },
-    { value: 'text', label: 'টেক্সট' },
-    { value: 'select', label: 'Dropdown' },
-    { value: 'yesno', label: 'হ্যাঁ/না' },
+    { value: 'numeric', label: '🔢 সংখ্যাসূচক (কাস্টম কলাম)' },
+    { value: 'text', label: '📝 টেক্সট' },
+    { value: 'select', label: '📋 Dropdown' },
+    { value: 'yesno', label: '✅ হ্যাঁ/না' },
   ]
 
   // Conditional এর জন্য parent candidates — select বা yesno type
@@ -418,7 +447,7 @@ export default function FormBuilderPage() {
                 <div className="flex flex-wrap gap-2">
                   {(field.type === 'grandtotal'
                     ? fields.filter(f => f.type === 'subtotal')
-                    : fields.filter((f, i) => i < index && ['both','count','amount'].includes(f.type) && f.label)
+                    : fields.filter((f, i) => i < index && (f.type === 'numeric' || ['both','count','amount'].includes(f.type)) && f.label)
                   ).map(src => (
                     <label key={src.id} className="flex items-center gap-1.5 cursor-pointer bg-white border border-gray-200 rounded-lg px-2 py-1">
                       <input type="checkbox"
@@ -524,24 +553,57 @@ export default function FormBuilderPage() {
                   </div>
                 )}
 
+                {/* Column Management — numeric type এর জন্য */}
+                {(field.type === 'numeric' || ['both','count','amount'].includes(field.type)) && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                    <p className="text-xs text-blue-700 font-semibold mb-1">📊 কলাম সেটিং (admin যত ইচ্ছা column যোগ/বাদ দিতে পারবেন)</p>
+                    {migrateFieldColumns(field).map((col, ci) => (
+                      <div key={col.key} className="flex gap-2 items-center">
+                        <span className="text-xs text-blue-500 w-5 shrink-0">{ci + 1}.</span>
+                        <input
+                          type="text"
+                          value={col.label}
+                          onChange={e => {
+                            // পুরনো field হলে আগে migrate করো
+                            const cols = field.columns?.length > 0 ? field.columns : migrateFieldColumns(field)
+                            updateField(field.id, 'columns', cols.map(c => c.key === col.key ? { ...c, label: e.target.value } : c))
+                          }}
+                          className="flex-1 border border-blue-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                          placeholder={`কলামের নাম (যেমন: সংখ্যা, পরিমাণ, মেয়াদ...)`}
+                        />
+                        <button
+                          onClick={() => {
+                            const cols = field.columns?.length > 0 ? field.columns : migrateFieldColumns(field)
+                            if (cols.length <= 1) { toast.error('কমপক্ষে ১টি কলাম থাকতে হবে!'); return }
+                            updateField(field.id, 'columns', cols.filter(c => c.key !== col.key))
+                          }}
+                          className="text-red-400 hover:text-red-600 text-lg leading-none shrink-0" title="কলাম মুছুন">✕</button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        // পুরনো field হলে আগে migrate করো
+                        const cols = field.columns?.length > 0 ? field.columns : migrateFieldColumns(field)
+                        updateField(field.id, 'columns', [...cols, { key: 'col_' + Date.now(), label: '' }])
+                      }}
+                      className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1">
+                      + কলাম যোগ করুন
+                    </button>
+                  </div>
+                )}
+
                 {/* Sub fields */}
-                {['both','count','amount'].includes(field.type) && field.children?.map(child => (
+                {(field.type === 'numeric' || ['both','count','amount'].includes(field.type)) && field.children?.map(child => (
                   <div key={child.id} className="ml-6 flex gap-3 items-center border-l-2 border-gray-200 pl-4">
                     <input type="text" value={child.label}
                       onChange={e => updateSubField(field.id, child.id, 'label', e.target.value)}
                       className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                       placeholder="Sub field label" />
-                    <select value={child.type} onChange={e => updateSubField(field.id, child.id, 'type', e.target.value)}
-                      className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
-                      <option value="both">সংখ্যা + পরিমাণ</option>
-                      <option value="count">সংখ্যা only</option>
-                      <option value="amount">পরিমাণ only</option>
-                    </select>
                     <button onClick={() => removeSubField(field.id, child.id)} className="text-red-500 hover:text-red-700">✕</button>
                   </div>
                 ))}
 
-                {['both','count','amount'].includes(field.type) && (
+                {(field.type === 'numeric' || ['both','count','amount'].includes(field.type)) && (
                   <button onClick={() => addSubField(field.id)} className="text-sm text-primary-600 hover:underline">
                     + Sub Field যোগ করুন
                   </button>
@@ -553,7 +615,7 @@ export default function FormBuilderPage() {
           )} {/* end subtotal/normal if */}
 
           {/* Subtotal add button — normal field-এর পরে */}
-          {!['subtotal','grandtotal'].includes(field.type) && ['both','count','amount'].includes(field.type) && field.label && (
+          {!['subtotal','grandtotal'].includes(field.type) && (field.type === 'numeric' || ['both','count','amount'].includes(field.type)) && field.label && (
             <div className="flex justify-end mt-1 mr-1">
               <button onClick={() => addSubtotal(index)}
                 className="text-xs text-green-600 hover:text-green-800 hover:underline">

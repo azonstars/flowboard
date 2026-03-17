@@ -301,27 +301,44 @@ export default function FormSubmitPage() {
           </div>
         )}
 
-        {/* Table layout — compact */}
+        {/* Table layout — dynamic columns */}
         {(() => {
-          // form-এর field type বিশ্লেষণ করো header column ঠিক করতে
-          const numericFields = (form.fields || []).filter(f => ['both','count','amount','subtotal','grandtotal'].includes(f.type))
-          const hasCount  = numericFields.some(f => f.type === 'count' || f.type === 'both')
-          const hasAmount = numericFields.some(f => f.type === 'amount' || f.type === 'both')
+          // form-এর সব numeric field collect করো এবং unique columns বের করো
+          const numericFields = (form.fields || []).filter(f =>
+            f.type === 'numeric' || ['both','count','amount','subtotal','grandtotal'].includes(f.type)
+          )
           if (!numericFields.length) return null
+
+          // সব column keys collect করো (order: প্রথম numeric field-এর columns অনুযায়ী)
+          // legacy: both → count + amount, count → count, amount → amount
+          const getLegacyCols = (f) => {
+            if (f.type === 'both') return [{key: f.id+'_count', label:'সংখ্যা'},{key: f.id+'_amount', label:'পরিমাণ'}]
+            if (f.type === 'count') return [{key: f.id+'_count', label:'সংখ্যা'}]
+            if (f.type === 'amount') return [{key: f.id+'_amount', label:'পরিমাণ'}]
+            return []
+          }
+
+          // Global columns: subtotal/grandtotal-এর জন্য — প্রথম numeric field থেকে নাও
+          const firstNumeric = numericFields.find(f => f.type === 'numeric' || ['both','count','amount'].includes(f.type))
+          const globalCols = firstNumeric
+            ? (firstNumeric.columns?.length > 0 ? firstNumeric.columns : getLegacyCols(firstNumeric))
+            : []
 
           return (
           <div className="border border-gray-200 rounded-xl overflow-hidden">
             <table style={{width:'100%',borderCollapse:'collapse',tableLayout:'fixed'}}>
               <colgroup>
-                <col style={{width: hasCount && hasAmount ? '50%' : hasCount || hasAmount ? '60%' : '100%'}} />
-                {hasCount  && <col style={{width:'25%'}} />}
-                {hasAmount && <col style={{width:'25%'}} />}
+                <col style={{width: globalCols.length === 0 ? '100%' : globalCols.length === 1 ? '60%' : globalCols.length === 2 ? '50%' : '40%'}} />
+                {globalCols.map(col => <col key={col.key} style={{width: `${50 / globalCols.length}%`}} />)}
               </colgroup>
               <thead>
                 <tr style={{background:'#f8fafc'}}>
                   <th style={{padding:'8px 16px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'#64748b',borderBottom:'1px solid #e2e8f0'}}>বিবরণ</th>
-                  {hasCount  && <th style={{padding:'8px 12px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'#64748b',borderBottom:'1px solid #e2e8f0',borderLeft:'1px solid #e2e8f0'}}>সংখ্যা</th>}
-                  {hasAmount && <th style={{padding:'8px 12px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'#64748b',borderBottom:'1px solid #e2e8f0',borderLeft:'1px solid #e2e8f0'}}>পরিমাণ</th>}
+                  {globalCols.map(col => (
+                    <th key={col.key} style={{padding:'8px 12px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'#64748b',borderBottom:'1px solid #e2e8f0',borderLeft:'1px solid #e2e8f0'}}>
+                      {col.label || col.key}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -329,28 +346,61 @@ export default function FormSubmitPage() {
 
                   // Subtotal row
                   if (field.type === 'subtotal') {
-                    const { count, amount } = calcSubtotal(field, formData)
+                    // subtotal: সব source field-এর সব column-এর যোগ
+                    const sources = field.sourceFields || []
+                    const colTotals = globalCols.map(col => {
+                      let total = 0
+                      sources.forEach(srcId => {
+                        total += parseFloat(formData[`${srcId}_${col.key}`] || formData[`${srcId}_count`] || 0)
+                      })
+                      // legacy fallback
+                      if (total === 0) {
+                        sources.forEach(srcId => {
+                          const src = form.fields?.find(f => f.id === srcId)
+                          if (!src) return
+                          if (col.label === 'সংখ্যা') total += parseFloat(formData[`${srcId}_count`] || 0)
+                          if (col.label === 'পরিমাণ') total += parseFloat(formData[`${srcId}_amount`] || 0)
+                        })
+                      }
+                      return total
+                    })
                     return (
                       <tr key={field.id} style={{background:'var(--subtotal-bg,#f0fdf4)'}}>
                         <td style={{padding:'9px 16px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid var(--subtotal-border,#bbf7d0)',borderBottom:'1px solid var(--subtotal-border,#bbf7d0)',background:'var(--subtotal-bg,#f0fdf4)'}}>
                           🔹 {field.label}
                         </td>
-                        {hasCount  && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid var(--subtotal-border,#bbf7d0)',borderBottom:'1px solid var(--subtotal-border,#bbf7d0)',borderLeft:'1px solid var(--subtotal-border,#bbf7d0)',background:'var(--subtotal-bg,#f0fdf4)'}}>{toBn(count)}</td>}
-                        {hasAmount && <td style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid var(--subtotal-border,#bbf7d0)',borderBottom:'1px solid var(--subtotal-border,#bbf7d0)',borderLeft:'1px solid var(--subtotal-border,#bbf7d0)',background:'var(--subtotal-bg,#f0fdf4)'}}>{toBn(amount)}</td>}
+                        {colTotals.map((total, ci) => (
+                          <td key={ci} style={{padding:'9px 12px',fontSize:'13px',fontWeight:'600',color:'var(--subtotal-text,#15803d)',borderTop:'1px solid var(--subtotal-border,#bbf7d0)',borderBottom:'1px solid var(--subtotal-border,#bbf7d0)',borderLeft:'1px solid var(--subtotal-border,#bbf7d0)',background:'var(--subtotal-bg,#f0fdf4)'}}>{toBn(total)}</td>
+                        ))}
                       </tr>
                     )
                   }
 
                   // Grand Total row
                   if (field.type === 'grandtotal') {
-                    const { count, amount } = calcGrandTotal(field, form.fields, formData)
+                    const sources = field.sourceFields || []
+                    const colTotals = globalCols.map(col => {
+                      let total = 0
+                      sources.forEach(stId => {
+                        const st = form.fields?.find(f => f.id === stId)
+                        if (!st) return
+                        ;(st.sourceFields || []).forEach(srcId => {
+                          total += parseFloat(formData[`${srcId}_${col.key}`] || 0)
+                          // legacy
+                          if (col.label === 'সংখ্যা') total += parseFloat(formData[`${srcId}_count`] || 0)
+                          if (col.label === 'পরিমাণ') total += parseFloat(formData[`${srcId}_amount`] || 0)
+                        })
+                      })
+                      return total
+                    })
                     return (
                       <tr key={field.id} style={{background:'var(--grandtotal-bg,#eff6ff)'}}>
                         <td style={{padding:'11px 16px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid var(--grandtotal-border,#bfdbfe)',background:'var(--grandtotal-bg,#eff6ff)'}}>
                           🔷 {field.label}
                         </td>
-                        {hasCount  && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid var(--grandtotal-border,#bfdbfe)',borderLeft:'1px solid var(--grandtotal-border,#bfdbfe)',background:'var(--grandtotal-bg,#eff6ff)'}}>{toBn(count)}</td>}
-                        {hasAmount && <td style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid var(--grandtotal-border,#bfdbfe)',borderLeft:'1px solid var(--grandtotal-border,#bfdbfe)',background:'var(--grandtotal-bg,#eff6ff)'}}>{toBn(amount)}</td>}
+                        {colTotals.map((total, ci) => (
+                          <td key={ci} style={{padding:'11px 12px',fontSize:'14px',fontWeight:'600',color:'var(--grandtotal-text,#1e40af)',borderTop:'2px solid var(--grandtotal-border,#bfdbfe)',borderLeft:'1px solid var(--grandtotal-border,#bfdbfe)',background:'var(--grandtotal-bg,#eff6ff)'}}>{toBn(total)}</td>
+                        ))}
                       </tr>
                     )
                   }
@@ -359,7 +409,7 @@ export default function FormSubmitPage() {
                   if (['text','select','yesno'].includes(field.type)) {
                     return (
                       <tr key={field.id} style={{borderBottom:'1px solid #f1f5f9'}}>
-                        <td colSpan={1 + (hasCount?1:0) + (hasAmount?1:0)} style={{padding:'8px 16px'}}>
+                        <td colSpan={1 + globalCols.length} style={{padding:'8px 16px'}}>
                           <div className="flex items-center gap-3">
                             <label className="text-sm font-medium text-gray-700 shrink-0 w-40">{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</label>
                             {field.type === 'text' && (
@@ -394,65 +444,52 @@ export default function FormSubmitPage() {
                     )
                   }
 
-                  // Normal numeric field (both/count/amount)
-                  const fHasCount  = field.type === 'both' || field.type === 'count'
-                  const fHasAmount = field.type === 'both' || field.type === 'amount'
+                  // Numeric field — dynamic columns
+                  const fieldCols = field.columns?.length > 0
+                    ? field.columns
+                    : getLegacyCols(field)
+
                   return (
                     <>
                     <tr key={field.id} style={{borderBottom: field.children?.length ? 'none' : '1px solid #f1f5f9'}}>
                       <td style={{padding:'8px 16px',fontSize:'13px',color:'#1e293b',fontWeight:'500'}}>
                         {field.label}{field.required && <span style={{color:'#ef4444',marginLeft:'4px'}}>*</span>}
                       </td>
-                      {hasCount && (
-                        <td style={{padding:'6px 8px',borderLeft:'1px solid #f1f5f9'}}>
-                          {fHasCount ? (
-                            <input type="number"
-                              value={formData[`${field.id}_count`] || ''}
-                              onChange={e => handleChange(field.id, null, 'count', e.target.value)}
-                              className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                              placeholder="সংখ্যা" />
-                          ) : <span className="text-gray-300 text-xs px-2">—</span>}
-                        </td>
-                      )}
-                      {hasAmount && (
-                        <td style={{padding:'6px 8px',borderLeft:'1px solid #f1f5f9'}}>
-                          {fHasAmount ? (
-                            <input type="number" step="0.01"
-                              value={formData[`${field.id}_amount`] || ''}
-                              onChange={e => handleChange(field.id, null, 'amount', e.target.value)}
-                              className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                              placeholder="পরিমাণ" />
-                          ) : <span className="text-gray-300 text-xs px-2">—</span>}
-                        </td>
-                      )}
+                      {globalCols.map(gCol => {
+                        // এই field-এর মধ্যে এই column আছে কিনা দেখো
+                        const matchCol = fieldCols.find(c => c.key === gCol.key || c.label === gCol.label)
+                        return (
+                          <td key={gCol.key} style={{padding:'6px 8px',borderLeft:'1px solid #f1f5f9'}}>
+                            {matchCol ? (
+                              <input type="number" step="any"
+                                value={formData[`${field.id}_${matchCol.key}`] || ''}
+                                onChange={e => setFormData(prev => ({...prev, [`${field.id}_${matchCol.key}`]: e.target.value}))}
+                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder={matchCol.label} />
+                            ) : <span className="text-gray-300 text-xs px-2">—</span>}
+                          </td>
+                        )
+                      })}
                     </tr>
                     {field.children?.map((child, ci) => (
                       <tr key={child.id} style={{background:'#f8fafc', borderBottom: ci === field.children.length-1 ? '1px solid #f1f5f9' : 'none'}}>
                         <td style={{padding:'7px 16px',paddingLeft:'32px',fontSize:'12px',color:'#475569'}}>
                           ↳ {child.label}
                         </td>
-                        {hasCount && (
-                          <td style={{padding:'5px 8px',borderLeft:'1px solid #f1f5f9'}}>
-                            {(child.type==='both'||child.type==='count') ? (
-                              <input type="number"
-                                value={formData[`${field.id}_${child.id}_count`] || ''}
-                                onChange={e => handleChange(field.id, child.id, 'count', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-                                placeholder="সংখ্যা" />
-                            ) : <span className="text-gray-300 text-xs px-2">—</span>}
-                          </td>
-                        )}
-                        {hasAmount && (
-                          <td style={{padding:'5px 8px',borderLeft:'1px solid #f1f5f9'}}>
-                            {(child.type==='both'||child.type==='amount') ? (
-                              <input type="number" step="0.01"
-                                value={formData[`${field.id}_${child.id}_amount`] || ''}
-                                onChange={e => handleChange(field.id, child.id, 'amount', e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-                                placeholder="পরিমাণ" />
-                            ) : <span className="text-gray-300 text-xs px-2">—</span>}
-                          </td>
-                        )}
+                        {globalCols.map(gCol => {
+                          const matchCol = fieldCols.find(c => c.key === gCol.key || c.label === gCol.label)
+                          return (
+                            <td key={gCol.key} style={{padding:'5px 8px',borderLeft:'1px solid #f1f5f9'}}>
+                              {matchCol ? (
+                                <input type="number" step="any"
+                                  value={formData[`${field.id}_${child.id}_${matchCol.key}`] || ''}
+                                  onChange={e => setFormData(prev => ({...prev, [`${field.id}_${child.id}_${matchCol.key}`]: e.target.value}))}
+                                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                                  placeholder={matchCol.label} />
+                              ) : <span className="text-gray-300 text-xs px-2">—</span>}
+                            </td>
+                          )
+                        })}
                       </tr>
                     ))}
                     </>
