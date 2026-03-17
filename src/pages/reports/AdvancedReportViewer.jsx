@@ -187,23 +187,38 @@ export default function AdvancedReportViewer() {
 
     // BRANCH-WISE (Image 1)
     const rows = []
-    const drillUser   = isBranch
-    const drillBranch = !drillUser && !!(fBranch || isRegional || (isDivisional && fReg) || ((isAdmin || isCentral) && fReg))
-    const drillRegion = !drillUser && !drillBranch && !!(isDivisional || ((isAdmin || isCentral) && fDiv))
+    // user filter থাকলে সেই user(s)-এর combined data — সবসময় একটাই consolidated row
+    const filteredSubs     = fUsers.length > 0 ? subs.filter(s => fUsers.includes(s.submitted_by))     : subs
+    const filteredPrevSubs = fUsers.length > 0 ? prevSubs.filter(s => fUsers.includes(s.submitted_by)) : prevSubs
+    const filteredWeekSubs = fUsers.length > 0 ? weekSubs.filter(s => fUsers.includes(s.submitted_by)) : weekSubs
 
-    if (drillUser) {
-      const brCode  = profile.branch_code
-      const brUsers = users.filter(u => u.branch_code === brCode)
-      for (const u of brUsers) {
-        const uid = u.id
-        rows.push(make(u.full_name || uid,
-          subs.filter(s => s.submitted_by === uid),
-          prevSubs.filter(s => s.submitted_by === uid),
-          weekSubs.filter(s => s.submitted_by === uid)))
-      }
-      const matched = new Set(brUsers.map(u => u.id))
-      const rest = subs.filter(s => !matched.has(s.submitted_by))
-      if (rest.length) rows.push(make('অন্যান্য', rest))
+    // drillBranch: শাখা-ওয়ারি rows — Regional (no fBranch), Admin/Central with fReg
+    const drillBranch = !isBranch && !isDivisional && !!(fBranch || isRegional || ((isAdmin || isCentral) && fReg))
+    // drillRegion: অঞ্চল-ওয়ারি rows — Admin/Central with fDiv only
+    const drillRegion = !isBranch && !isDivisional && !drillBranch && !!((isAdmin || isCentral) && fDiv)
+
+    // ── Branch Manager: সবসময় নিজের branch-এর consolidated, user filter সহ ──
+    if (isBranch) {
+      const label = fUsers.length === 1
+        ? (users.find(u => u.id === fUsers[0])?.full_name || 'নির্বাচিত ইউজার')
+        : fUsers.length > 1
+          ? `${fUsers.length} জন ইউজার (মোট)`
+          : 'শাখার মোট'
+      rows.push(make(label, filteredSubs, filteredPrevSubs, filteredWeekSubs))
+
+    // ── Divisional Checker: consolidated, অঞ্চল filter সহ ──────────────────
+    } else if (isDivisional) {
+      // fReg select থাকলে সেই অঞ্চলের consolidated, নইলে পুরো বিভাগের consolidated
+      const divCodes = fReg
+        ? branches.filter(b => b.region_id === fReg).map(b => b.branch_code)
+        : branches.filter(b => b.division_id === profile.division_id).map(b => b.branch_code)
+      const label = fReg
+        ? (regions.find(r => r.id === fReg)?.name || 'নির্বাচিত অঞ্চল')
+        : 'বিভাগের মোট'
+      rows.push(make(label,
+        filteredSubs.filter(s => divCodes.includes(s.branch_code)),
+        filteredPrevSubs.filter(s => divCodes.includes(s.branch_code)),
+        filteredWeekSubs.filter(s => divCodes.includes(s.branch_code))))
 
     } else if (drillBranch) {
       let pool = branches
@@ -212,12 +227,20 @@ export default function AdvancedReportViewer() {
       else if (fDiv) pool = branches.filter(b => b.division_id === fDiv)
       else if (isRegional)   pool = branches.filter(b => b.region_id === profile.region_id)
       else if (isDivisional) pool = branches.filter(b => b.division_id === profile.division_id)
-      for (const br of pool) {
-        const bc = br.branch_code
-        rows.push(make(br.name || bc,
-          subs.filter(s => s.branch_code === bc),
-          prevSubs.filter(s => s.branch_code === bc),
-          weekSubs.filter(s => s.branch_code === bc)))
+      // শাখা select + user filter → consolidated একটাই row
+      if (fBranch && fUsers.length > 0) {
+        const label = fUsers.length === 1
+          ? (users.find(u => u.id === fUsers[0])?.full_name || 'নির্বাচিত ইউজার')
+          : `${fUsers.length} জন ইউজার (মোট)`
+        rows.push(make(label, filteredSubs, filteredPrevSubs, filteredWeekSubs))
+      } else {
+        for (const br of pool) {
+          const bc = br.branch_code
+          rows.push(make(br.name || bc,
+            filteredSubs.filter(s => s.branch_code === bc),
+            filteredPrevSubs.filter(s => s.branch_code === bc),
+            filteredWeekSubs.filter(s => s.branch_code === bc)))
+        }
       }
 
     } else if (drillRegion) {
@@ -227,9 +250,9 @@ export default function AdvancedReportViewer() {
       for (const reg of pool) {
         const codes = branches.filter(b => b.region_id === reg.id).map(b => b.branch_code)
         rows.push(make(reg.name || 'অঞ্চল',
-          subs.filter(s => codes.includes(s.branch_code)),
-          prevSubs.filter(s => codes.includes(s.branch_code)),
-          weekSubs.filter(s => codes.includes(s.branch_code))))
+          filteredSubs.filter(s => codes.includes(s.branch_code)),
+          filteredPrevSubs.filter(s => codes.includes(s.branch_code)),
+          filteredWeekSubs.filter(s => codes.includes(s.branch_code))))
       }
 
     } else {
@@ -237,9 +260,9 @@ export default function AdvancedReportViewer() {
       for (const div of divisions) {
         const codes = branches.filter(b => b.division_id === div.id).map(b => b.branch_code)
         rows.push(make(div.name || 'বিভাগ',
-          subs.filter(s => codes.includes(s.branch_code)),
-          prevSubs.filter(s => codes.includes(s.branch_code)),
-          weekSubs.filter(s => codes.includes(s.branch_code))))
+          filteredSubs.filter(s => codes.includes(s.branch_code)),
+          filteredPrevSubs.filter(s => codes.includes(s.branch_code)),
+          filteredWeekSubs.filter(s => codes.includes(s.branch_code))))
       }
     }
 
@@ -262,20 +285,28 @@ export default function AdvancedReportViewer() {
 
   const showDivFilter = selected?.type === 'branch_wise' && visDiv.length > 0 && !isRegional && !isBranch
   const showRegFilter = selected?.type === 'branch_wise' && visReg.length > 0 && !isBranch
-  const showBrFilter  = selected?.type === 'branch_wise' && visBr.length > 0 && !isBranch && !isRegional
+  const showBrFilter  = selected?.type === 'branch_wise' && visBr.length > 0 && !isBranch && !isDivisional
 
   const summaryUsers = useMemo(() => {
-    if (selected?.type !== 'summary') return []
-    if (isBranch) return users.filter(u => u.branch_code === profile.branch_code)
-    if (isRegional) { const codes = branches.filter(b => b.region_id === profile.region_id).map(b=>b.branch_code); return users.filter(u => codes.includes(u.branch_code)) }
-    if (isDivisional) { const codes = branches.filter(b => b.division_id === profile.division_id).map(b=>b.branch_code); return users.filter(u => codes.includes(u.branch_code)) }
+    if (!selected) return []
+    // শাখা select করলে সেই শাখার users — সব role-এর জন্য
     if (fBranch) return users.filter(u => u.branch_code === fBranch)
-    return users
+    // Branch Manager — সবসময় নিজের শাখার users
+    if (isBranch) return users.filter(u => u.branch_code === profile.branch_code)
+    // Summary type — role অনুযায়ী
+    if (selected?.type === 'summary') {
+      if (isRegional) { const codes = branches.filter(b => b.region_id === profile.region_id).map(b=>b.branch_code); return users.filter(u => codes.includes(u.branch_code)) }
+      if (isDivisional) { const codes = branches.filter(b => b.division_id === profile.division_id).map(b=>b.branch_code); return users.filter(u => codes.includes(u.branch_code)) }
+      return users
+    }
+    return []
   }, [selected, fBranch, users, branches, profile, isRegional, isDivisional, isBranch])
 
   const rowHeader = () => {
     if (!selected || selected.type !== 'branch_wise') return 'বিবরণ'
-    if (isBranch) return 'ইউজারের নাম'
+    if (isBranch) return 'বিবরণ'
+    if (fBranch && fUsers.length > 0) return 'বিবরণ'
+    if (fBranch) return 'শাখা / বিবরণ'
     if (isRegional || fReg) return 'শাখার নাম'
     if (isDivisional || fDiv) return 'অঞ্চলের নাম'
     return 'নাম'
@@ -677,16 +708,23 @@ export default function AdvancedReportViewer() {
                       </select>
                     </div>
                   )}
-                  {selected.type === 'summary' && summaryUsers.length > 0 && (
+                  {summaryUsers.length > 0 && (selected.type === 'summary' || fBranch || isBranch) && (
                     <div>
-                      <label className="text-xs text-gray-500 block mb-1">ইউজার ফিল্টার <span className="text-gray-400">(Ctrl+click)</span></label>
+                      <label className="text-xs text-gray-500 block mb-1">
+                        ইউজার ফিল্টার
+                        <span className="ml-1 text-gray-400 font-normal">(একাধিক: Ctrl+click)</span>
+                      </label>
                       <select multiple value={fUsers}
                         onChange={e => setFUsers(Array.from(e.target.selectedOptions, o => o.value))}
-                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 min-w-44 max-h-24">
-                        {summaryUsers.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 min-w-44 max-h-28">
+                        {summaryUsers.map(u => (
+                          <option key={u.id} value={u.id}>{u.full_name} ({u.branch_code})</option>
+                        ))}
                       </select>
                       {fUsers.length > 0 && (
-                        <button onClick={() => setFUsers([])} className="text-xs text-red-400 hover:underline mt-0.5 block">✕ clear</button>
+                        <button onClick={() => setFUsers([])} className="text-xs text-red-400 hover:underline mt-0.5 block">
+                          ✕ clear ({fUsers.length} selected)
+                        </button>
                       )}
                     </div>
                   )}
