@@ -92,12 +92,12 @@ export default function AdvancedReportViewer() {
     localStorage.setItem('arv_last_template', t.id)
   }, [setSearchParams])
 
-  // Template select হলে auto load (current month)
+  // Template select হলে বা branches load হলে auto load
   useEffect(() => {
-    if (selected && profile) {
+    if (selected && profile && branches.length > 0) {
       loadReport()
     }
-  }, [selected])
+  }, [selected, branches])
 
   const getAllowedCodes = (extraDiv, extraReg, extraBr) => {
     let pool = branches
@@ -120,7 +120,7 @@ export default function AdvancedReportViewer() {
       const hasPrevYear = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'prev_year')
       const isLatest = selected.report_mode === 'latest'
 
-      let mainSubs = await fetchSubmissions({ formId: selected.form_id, dateFrom, dateTo, branchCodes: codes })
+      let mainSubs = await fetchSubmissions({ formId: selected.form_id, dateFrom, dateTo, branchCodes: codes.length ? codes : undefined })
 
       // Latest mode: প্রতি branch-এর জন্য সর্বশেষ submission রাখো
       if (isLatest) {
