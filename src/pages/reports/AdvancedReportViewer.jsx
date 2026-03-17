@@ -267,7 +267,7 @@ export default function AdvancedReportViewer() {
       }
     }
 
-    if (rows.length) rows.push(buildTotalRow({ label: 'সর্বমোট', rows, allCols }))
+    if (rows.length > 1) rows.push(buildTotalRow({ label: 'সর্বমোট', rows, allCols }))
     return rows
   }, [selected, subs, prevSubs, weekSubs, allCols, fDiv, fReg, fBranch, fUsers,
       branches, regions, divisions, users, isAdmin, isCentral, isDivisional, isRegional, isBranch, profile])
