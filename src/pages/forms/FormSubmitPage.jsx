@@ -332,10 +332,10 @@ export default function FormSubmitPage() {
                 {globalCols.map(col => <col key={col.key} style={{width: `${50 / globalCols.length}%`}} />)}
               </colgroup>
               <thead>
-                <tr style={{background:'#f8fafc'}}>
-                  <th style={{padding:'8px 16px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'#64748b',borderBottom:'1px solid #e2e8f0'}}>বিবরণ</th>
+                <tr style={{background:'var(--bg-secondary)'}}>
+                  <th style={{padding:'8px 16px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'var(--text-secondary,#64748b)',borderBottom:'1px solid var(--border,#e2e8f0)'}}>বিবরণ</th>
                   {globalCols.map(col => (
-                    <th key={col.key} style={{padding:'8px 12px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'#64748b',borderBottom:'1px solid #e2e8f0',borderLeft:'1px solid #e2e8f0'}}>
+                    <th key={col.key} style={{padding:'8px 12px',textAlign:'left',fontSize:'12px',fontWeight:'500',color:'var(--text-secondary,#64748b)',borderBottom:'1px solid var(--border,#e2e8f0)',borderLeft:'1px solid var(--border,#e2e8f0)'}}>
                       {col.label || col.key}
                     </th>
                   ))}
@@ -408,7 +408,7 @@ export default function FormSubmitPage() {
                   // Text/Select/YesNo field — full width
                   if (['text','select','yesno'].includes(field.type)) {
                     return (
-                      <tr key={field.id} style={{borderBottom:'1px solid #f1f5f9'}}>
+                      <tr key={field.id} style={{borderBottom:'1px solid var(--border,#f1f5f9)'}}>
                         <td colSpan={1 + globalCols.length} style={{padding:'8px 16px'}}>
                           <div className="flex items-center gap-3">
                             <label className="text-sm font-medium text-gray-700 shrink-0 w-40">{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</label>
@@ -451,15 +451,15 @@ export default function FormSubmitPage() {
 
                   return (
                     <>
-                    <tr key={field.id} style={{borderBottom: field.children?.length ? 'none' : '1px solid #f1f5f9'}}>
-                      <td style={{padding:'8px 16px',fontSize:'13px',color:'#1e293b',fontWeight:'500'}}>
+                    <tr key={field.id} style={{borderBottom: field.children?.length ? 'none' : '1px solid var(--border,#f1f5f9)'}}>
+                      <td style={{padding:'8px 16px',fontSize:'13px',color:'var(--text-primary,#1e293b)',fontWeight:'500'}}>
                         {field.label}{field.required && <span style={{color:'#ef4444',marginLeft:'4px'}}>*</span>}
                       </td>
                       {globalCols.map(gCol => {
                         // এই field-এর মধ্যে এই column আছে কিনা দেখো
                         const matchCol = fieldCols.find(c => c.key === gCol.key || c.label === gCol.label)
                         return (
-                          <td key={gCol.key} style={{padding:'6px 8px',borderLeft:'1px solid #f1f5f9'}}>
+                          <td key={gCol.key} style={{padding:'6px 8px',borderLeft:'1px solid var(--border,#f1f5f9)'}}>
                             {matchCol ? (
                               <input type="number" step="any"
                                 value={formData[`${field.id}_${matchCol.key}`] || ''}
@@ -472,14 +472,14 @@ export default function FormSubmitPage() {
                       })}
                     </tr>
                     {field.children?.map((child, ci) => (
-                      <tr key={child.id} style={{background:'#f8fafc', borderBottom: ci === field.children.length-1 ? '1px solid #f1f5f9' : 'none'}}>
-                        <td style={{padding:'7px 16px',paddingLeft:'32px',fontSize:'12px',color:'#475569'}}>
+                      <tr key={child.id} style={{background:'var(--bg-secondary)', borderBottom: ci === field.children.length-1 ? '1px solid var(--border,#f1f5f9)' : 'none'}}>
+                        <td style={{padding:'7px 16px',paddingLeft:'32px',fontSize:'12px',color:'var(--text-secondary,#475569)'}}>
                           ↳ {child.label}
                         </td>
                         {globalCols.map(gCol => {
                           const matchCol = fieldCols.find(c => c.key === gCol.key || c.label === gCol.label)
                           return (
-                            <td key={gCol.key} style={{padding:'5px 8px',borderLeft:'1px solid #f1f5f9'}}>
+                            <td key={gCol.key} style={{padding:'5px 8px',borderLeft:'1px solid var(--border,#f1f5f9)'}}>
                               {matchCol ? (
                                 <input type="number" step="any"
                                   value={formData[`${field.id}_${child.id}_${matchCol.key}`] || ''}
