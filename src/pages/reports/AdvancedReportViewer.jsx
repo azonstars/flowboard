@@ -115,6 +115,7 @@ export default function AdvancedReportViewer() {
     setLoading(true)
     try {
       const codes = getAllowedCodes(fDiv, fReg, fBranch)
+      console.log('[Report] formId:', selected.form_id, '| codes:', codes, '| date:', dateFrom, '-', dateTo)
       const weekRange  = getCurrentWeekRange()
       const hasWeekly   = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'weekly')
       const hasPrevYear = selected.column_groups?.flatMap(g=>g.columns).some(c => c.calcType === 'prev_year')
@@ -142,6 +143,7 @@ export default function AdvancedReportViewer() {
           ? fetchSubmissions({ formId: selected.form_id, dateFrom: weekRange.from, dateTo: weekRange.to, branchCodes: codes })
           : Promise.resolve([]),
       ])
+      console.log('[Report] fetched subs:', mainSubs.length, '| sample:', mainSubs[0]?.data)
       setSubs(mainSubs); setPrevSubs(prev); setWeekSubs(week)
     } catch (e) { toast.error(e.message) }
     finally { setLoading(false) }
