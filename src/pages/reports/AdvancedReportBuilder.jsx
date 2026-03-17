@@ -84,11 +84,56 @@ export default function AdvancedReportBuilder() {
       const { data } = await supabase.from('forms').select('fields').eq('id', fid).single()
       const flat = []
       ;(data?.fields || []).forEach(f => {
-        if (['text','number','select','yesno'].includes(f.type) || !f.type) {
-          flat.push({ id: f.id, label: f.label || f.id })
+
+        // ── নতুন numeric type: প্রতিটি column আলাদা entry ──────────
+        if (f.type === 'numeric' && f.columns?.length) {
+          f.columns.forEach(col => {
+            flat.push({
+              id:    `${f.id}_${col.key}`,
+              label: `${f.label || f.id} › ${col.label || col.key}`,
+            })
+          })
+          // sub-fields থাকলে সেগুলোও
+          if (f.children?.length) {
+            f.children.forEach(child => {
+              f.columns.forEach(col => {
+                flat.push({
+                  id:    `${f.id}_${child.id}_${col.key}`,
+                  label: `${f.label} › ${child.label} › ${col.label || col.key}`,
+                })
+              })
+            })
+          }
+          return
         }
-        if (f.children?.length) {
-          f.children.forEach(c => flat.push({ id: `${f.id}_${c.id}`, label: `${f.label} › ${c.label}` }))
+
+        // ── Legacy both/count/amount type ────────────────────────────
+        if (f.type === 'both' || (!f.type && f.children === undefined)) {
+          flat.push({ id: `${f.id}_count`,  label: `${f.label || f.id} › সংখ্যা` })
+          flat.push({ id: `${f.id}_amount`, label: `${f.label || f.id} › পরিমাণ` })
+        } else if (f.type === 'count') {
+          flat.push({ id: `${f.id}_count`,  label: `${f.label || f.id} › সংখ্যা` })
+        } else if (f.type === 'amount') {
+          flat.push({ id: `${f.id}_amount`, label: `${f.label || f.id} › পরিমাণ` })
+        } else if (['text','select','yesno'].includes(f.type)) {
+          flat.push({ id: `${f.id}_${f.type}`, label: f.label || f.id })
+        }
+
+        // ── Sub-fields (legacy) ───────────────────────────────────────
+        if (f.children?.length && f.type !== 'numeric') {
+          f.children.forEach(child => {
+            if (f.columns?.length) {
+              f.columns.forEach(col => {
+                flat.push({
+                  id:    `${f.id}_${child.id}_${col.key}`,
+                  label: `${f.label} › ${child.label} › ${col.label || col.key}`,
+                })
+              })
+            } else {
+              flat.push({ id: `${f.id}_${child.id}_count`,  label: `${f.label} › ${child.label} › সংখ্যা` })
+              flat.push({ id: `${f.id}_${child.id}_amount`, label: `${f.label} › ${child.label} › পরিমাণ` })
+            }
+          })
         }
       })
       setFormFields(flat)
