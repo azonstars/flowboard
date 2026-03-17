@@ -57,6 +57,9 @@
   --grandtotal-bg: rgba(59,130,246,0.12);
   --grandtotal-text: #93c5fd;
   --grandtotal-border: rgba(59,130,246,0.3);
+  --primary-50:  rgba(181,99,63,0.10);
+  --primary-100: rgba(181,99,63,0.16);
+  --primary-200: rgba(181,99,63,0.25);
 }
 
 .bg-theme-primary   { background-color: var(--bg-primary); }
