@@ -457,88 +457,89 @@ export default function AdvancedReportViewer() {
   // ── PRINT VIEW ──────────────────────────────────────────────────────────────
   const handlePrint = () => {
     if (!tableRows.length) { toast.error('আগে Report লোড করুন'); return }
-    const hc      = selected.header_config || {}
-    const orgName   = hc.orgName   || 'বাংলাদেশ কৃষি ব্যাংক'
-    const appNumber = hc.appNumber || 'ছক-"ক"'
-    const unitLabel = hc.unitLabel || '(কোটি টাকা)'
+    const hc = selected.header_config || {}
+    const pl = selected.print_layout || {}
+
+    const headerBg    = pl.tableHeaderBg    || '#1e3a5f'
+    const headerColor = pl.tableHeaderColor || '#ffffff'
+    const evenBg      = pl.evenRowBg        || '#ffffff'
+    const oddBg       = pl.oddRowBg         || '#f8fafc'
+    const totalBg     = pl.totalRowBg       || '#e8f0fe'
+    const totalColor  = pl.totalRowColor    || '#1e3a5f'
+    const fontSize    = pl.fontSize         || '8'
+    const rowHeight   = pl.rowHeight        || 'normal'
+    const borderStyle = pl.borderStyle      || 'full'
+    const labelW      = pl.labelColWidth    || '22'
+    const showSerial  = pl.showSerial !== false
+    const showDate    = pl.showDate   !== false
+    const showUnit    = pl.showUnit   !== false
+    const dblLine     = pl.headerBorderBottom !== false
+
+    const rowPad = rowHeight === 'compact' ? '2px 4px' : rowHeight === 'relaxed' ? '8px 6px' : '4px 6px'
+    const hdrPad = rowHeight === 'compact' ? '4px 4px' : rowHeight === 'relaxed' ? '10px 6px' : '6px 6px'
+    const fsPt = fontSize + 'pt'
+    const getBorder = (side) => {
+      if (borderStyle === 'full') return '1px solid #d1d5db'
+      if (borderStyle === 'horizontal' && (side === 'bottom' || side === 'top')) return '1px solid #d1d5db'
+      return 'none'
+    }
+
+    const orgName   = hc.orgName   || ''
+    const appNumber = hc.appNumber || ''
+    const unitLabel = hc.unitLabel || ''
     const pageSize  = hc.pageSize  || 'legal'
     const pageCss   = pageSize === 'a3' ? 'size: A3 landscape' : pageSize === 'a4' ? 'size: A4 landscape' : 'size: 14in 8.5in landscape'
     const wk = hc.showWeekNumber ? getWeekNumber(dateTo) : null
+    const numCols = allCols.length
+    const dataW = ((100 - parseFloat(labelW) - (showSerial ? 3 : 0)) / numCols).toFixed(1) + '%'
 
     const colsHtml = selected.column_groups.map(g =>
-      `<th colspan="${g.columns.length}" style="background:#1d4ed8;color:#fff;padding:5px 3px;border:1px solid #93c5fd;text-align:center;font-size:8pt">${g.label}</th>`
+      '<th colspan="' + g.columns.length + '" style="background:' + headerBg + ';color:' + headerColor + ';padding:' + hdrPad + ';border:' + getBorder('all') + ';text-align:center;font-size:' + fsPt + ';font-weight:bold">' + g.label + '</th>'
     ).join('')
     const subColsHtml = allCols.map(c =>
-      `<th style="background:#2563eb;color:#fff;padding:3px 2px;border:1px solid #93c5fd;text-align:center;font-size:7.5pt;white-space:nowrap">${c.label}</th>`
+      '<th style="background:' + headerBg + ';color:' + headerColor + ';padding:' + hdrPad + ';border:' + getBorder('all') + ';text-align:center;font-size:' + fsPt + ';white-space:nowrap">' + c.label + '</th>'
     ).join('')
     const dataHtml = tableRows.map((row, ri) => {
-      const bg = row.isTotal ? '#dbeafe' : ri % 2 === 0 ? '#fff' : '#f8fafc'
-      const fw = row.isTotal ? 'bold' : 'normal'
+      const bg    = row.isTotal ? totalBg : ri % 2 === 0 ? evenBg : oddBg
+      const color = row.isTotal ? totalColor : 'inherit'
+      const fw    = row.isTotal ? 'bold' : 'normal'
+      const borderTop = row.isTotal ? '2px solid ' + headerBg : getBorder('top')
       const cells = allCols.map(col => {
         const val = row[col.id]
         const n = parseFloat(val)
-        const disp = isNaN(n) ? '—' : col.calcType === 'percent' ? `${n.toFixed(2)}%` : n.toLocaleString('en-IN', { maximumFractionDigits: 2 })
-        const color = col.calcType === 'percent' ? (n >= 100 ? '#16a34a' : n >= 75 ? '#ca8a04' : '#dc2626') : 'inherit'
-        return `<td style="text-align:right;padding:2px 3px;border:1px solid #e2e8f0;font-size:7.5pt;font-weight:${fw};color:${color}">${disp}</td>`
+        const disp = isNaN(n) ? '—' : col.calcType === 'percent' ? n.toFixed(2) + '%' : n.toLocaleString('en-IN', { maximumFractionDigits: 2 })
+        const pctColor = col.calcType === 'percent' ? (n >= 100 ? '#16a34a' : n >= 75 ? '#ca8a04' : '#dc2626') : color
+        return '<td style="text-align:right;padding:' + rowPad + ';border-bottom:' + getBorder('bottom') + ';border-left:' + getBorder('left') + ';border-top:' + borderTop + ';font-size:' + fsPt + ';font-weight:' + fw + ';color:' + pctColor + ';background:' + bg + '">' + disp + '</td>'
       }).join('')
       const serial = row.isTotal ? '' : ri + 1
-      return `<tr style="background:${bg}">
-        <td style="text-align:center;padding:2px;border:1px solid #e2e8f0;font-size:7.5pt;color:#9ca3af">${serial}</td>
-        <td style="padding:2px 4px;border:1px solid #e2e8f0;font-size:8pt;font-weight:${fw};padding-left:${(row.level||0)*10+4}px">${row.label}</td>
-        ${cells}
-      </tr>`
+      const serialCell = showSerial ? '<td style="text-align:center;padding:' + rowPad + ';border-bottom:' + getBorder('bottom') + ';border-top:' + borderTop + ';font-size:' + fsPt + ';color:#9ca3af;background:' + bg + '">' + serial + '</td>' : ''
+      return '<tr>' + serialCell + '<td style="padding:' + rowPad + ';border-bottom:' + getBorder('bottom') + ';border-top:' + borderTop + ';font-size:' + fsPt + ';font-weight:' + fw + ';color:' + color + ';background:' + bg + ';padding-left:' + ((row.level||0)*10+4) + 'px">' + row.label + '</td>' + cells + '</tr>'
     }).join('')
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <title>${selected.title}</title>
-    <style>
-      @page { ${pageCss}; margin: 8mm 10mm; }
-      body { font-family: 'SolaimanLipi', 'Kalpurush', Arial, sans-serif; font-size: 9pt; margin: 0; }
-      table { border-collapse: collapse; width: 100%; table-layout: fixed; }
-      th, td { word-break: break-word; }
-      .header-wrap { margin-bottom: 5px; }
-      @media print { button { display: none !important; } }
-    </style></head><body>
-    <div class="header-wrap">
-      <table style="width:100%;border:none;margin-bottom:3px">
-        <tr>
-          <td style="width:15%;border:none;font-size:9pt;font-weight:bold;vertical-align:top">
-            ${wk ? `${wk} তম সপ্তাহ` : ''}
-          </td>
-          <td style="text-align:center;border:none;vertical-align:top">
-            <div style="font-size:13pt;font-weight:bold">${orgName}</div>
-            ${hc.officeName ? `<div style="font-size:11pt;font-weight:bold">${hc.officeName}</div>` : ''}
-          </td>
-          <td style="width:15%;text-align:right;border:none;font-size:10pt;font-weight:bold;vertical-align:top">
-            ${appNumber}
-          </td>
-        </tr>
-      </table>
-      <table style="width:100%;border:none;margin-bottom:2px">
-        <tr>
-          <td style="border:none;font-size:8.5pt;font-style:italic">
-            ${hc.subTitle || selected.title}
-          </td>
-          <td style="text-align:right;border:none;font-size:8.5pt;white-space:nowrap">
-            ${dateTo} তারিখ পর্যন্ত
-          </td>
-        </tr>
-      </table>
-      <div style="text-align:right;font-size:7.5pt;font-style:italic;margin-bottom:3px">${unitLabel}</div>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th rowspan="2" style="background:#1d4ed8;color:#fff;padding:5px 3px;border:1px solid #93c5fd;text-align:center;font-size:8pt;width:3%">ক্রমিক</th>
-          <th rowspan="2" style="background:#1d4ed8;color:#fff;padding:5px 6px;border:1px solid #93c5fd;text-align:center;font-size:9pt;width:15%">${rowHeader()}</th>
-          ${colsHtml}
-        </tr>
-        <tr>${subColsHtml}</tr>
-      </thead>
-      <tbody>${dataHtml}</tbody>
-    </table>
-    <script>setTimeout(()=>window.print(),500)</script>
-    </body></html>`
+    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + selected.title + '</title><style>@page{' + pageCss + ';margin:10mm 12mm}body{font-family:"SolaimanLipi","Kalpurush",Arial,sans-serif;font-size:' + fsPt + ';margin:0}table{border-collapse:collapse;width:100%}th,td{word-break:break-word}@media print{.no-print{display:none!important}}</style></head><body>'
+      + '<table style="width:100%;border:none;margin-bottom:4px"><tr>'
+      + '<td style="width:18%;border:none;font-size:' + fsPt + ';font-weight:bold;vertical-align:top">' + (wk ? wk + ' তম সপ্তাহ' : '') + '</td>'
+      + '<td style="text-align:center;border:none;vertical-align:top">'
+      + (orgName ? '<div style="font-size:' + (parseInt(fontSize)+4) + 'pt;font-weight:bold;letter-spacing:0.5px">' + orgName + '</div>' : '')
+      + (hc.officeName ? '<div style="font-size:' + (parseInt(fontSize)+2) + 'pt;font-weight:bold;margin-top:2px">' + hc.officeName + '</div>' : '')
+      + (hc.subTitle ? '<div style="font-size:' + fsPt + ';font-style:italic;margin-top:3px;color:#555">' + hc.subTitle + '</div>' : '')
+      + '<div style="font-size:' + (parseInt(fontSize)+1) + 'pt;font-weight:bold;margin-top:4px;border-top:1px solid #ccc;padding-top:3px">' + selected.title + '</div>'
+      + '</td>'
+      + '<td style="width:18%;text-align:right;border:none;vertical-align:top">'
+      + (appNumber ? '<div style="font-size:' + (parseInt(fontSize)+1) + 'pt;font-weight:bold">' + appNumber + '</div>' : '')
+      + (showDate ? '<div style="font-size:' + fsPt + ';color:#555;margin-top:2px">' + dateTo + ' পর্যন্ত</div>' : '')
+      + '</td></tr></table>'
+      + (dblLine ? '<div style="border-top:3px double #333;margin-bottom:4px"></div>' : '')
+      + (showUnit && unitLabel ? '<div style="text-align:right;font-size:' + fsPt + ';font-style:italic;color:#555;margin-bottom:3px">' + unitLabel + '</div>' : '')
+      + '<table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup>'
+      + (showSerial ? '<col style="width:3%">' : '')
+      + '<col style="width:' + labelW + '%">'
+      + allCols.map(() => '<col style="width:' + dataW + '">').join('')
+      + '</colgroup><thead><tr>'
+      + (showSerial ? '<th rowspan="2" style="background:' + headerBg + ';color:' + headerColor + ';padding:' + hdrPad + ';border:' + getBorder('all') + ';text-align:center;font-size:' + fsPt + '">ক্রমিক</th>' : '')
+      + '<th rowspan="2" style="background:' + headerBg + ';color:' + headerColor + ';padding:' + hdrPad + ';border:' + getBorder('all') + ';text-align:center;font-size:' + fsPt + '">' + rowHeader() + '</th>'
+      + colsHtml + '</tr><tr>' + subColsHtml + '</tr></thead><tbody>' + dataHtml + '</tbody></table>'
+      + '<script>setTimeout(()=>window.print(),600)</script></body></html>'
 
     const w = window.open('', '_blank', 'width=1400,height=900')
     w.document.write(html)
