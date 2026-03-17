@@ -280,7 +280,7 @@ export default function FormSubmitPage() {
               <p className="text-sm text-gray-500 px-4 py-2">এই range এ কোনো data নেই</p>
             )}
             {rangeSummary && Object.keys(rangeSummary).length > 0 && (
-              <div className="px-4 py-2 bg-white text-xs text-gray-600">
+              <div className="px-4 py-2 bg-[var(--bg-card)] text-xs text-gray-600">
                 <p className="font-semibold text-gray-700 mb-1">📊 {dateRange.from} থেকে {dateRange.to} পর্যন্ত মোট:</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
                   {form.fields?.map(field => {
@@ -484,7 +484,7 @@ export default function FormSubmitPage() {
                                 <input type="number" step="any"
                                   value={formData[`${field.id}_${child.id}_${matchCol.key}`] || ''}
                                   onChange={e => setFormData(prev => ({...prev, [`${field.id}_${child.id}_${matchCol.key}`]: e.target.value}))}
-                                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                   placeholder={matchCol.label} />
                               ) : <span className="text-gray-300 text-xs px-2">—</span>}
                             </td>

@@ -128,6 +128,13 @@
 .dark .hover\:bg-gray-100:hover { background-color: rgba(255,255,255,0.05) !important; }
 
 /* ── Dark mode — specific components ────────────────────── */
+
+/* ── Form submit page — primary-50/100 dark mode ──────────── */
+.dark .bg-primary-50   { background-color: rgba(181,99,63,0.10) !important; }
+.dark .bg-primary-100  { background-color: rgba(181,99,63,0.16) !important; }
+.dark .border-primary-100 { border-color: rgba(181,99,63,0.25) !important; }
+.dark .border-primary-200 { border-color: rgba(181,99,63,0.35) !important; }
+.dark .text-primary-700 { color: var(--primary-400, #d4855a) !important; }
 .dark .bg-blue-50   { background-color: rgba(59,130,246,0.15) !important; }
 .dark .bg-green-50  { background-color: rgba(34,197,94,0.12) !important; }
 .dark .bg-red-50    { background-color: rgba(239,68,68,0.12) !important; }
@@ -193,6 +200,13 @@
 .dark .hover\:bg-gray-100:hover { background-color: rgba(255,255,255,0.06) !important; }
 
 /* ── Semantic color backgrounds (dimmed) ─────────────────── */
+
+/* ── Form submit page — primary-50/100 dark mode ──────────── */
+.dark .bg-primary-50   { background-color: rgba(181,99,63,0.10) !important; }
+.dark .bg-primary-100  { background-color: rgba(181,99,63,0.16) !important; }
+.dark .border-primary-100 { border-color: rgba(181,99,63,0.25) !important; }
+.dark .border-primary-200 { border-color: rgba(181,99,63,0.35) !important; }
+.dark .text-primary-700 { color: var(--primary-400, #d4855a) !important; }
 .dark .bg-blue-50   { background-color: rgba(59,130,246,0.12) !important; }
 .dark .bg-blue-100  { background-color: rgba(59,130,246,0.18) !important; }
 .dark .bg-green-50  { background-color: rgba(34,197,94,0.10) !important; }
