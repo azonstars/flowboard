@@ -472,7 +472,7 @@ export default function FormSubmitPage() {
                       })}
                     </tr>
                     {field.children?.map((child, ci) => (
-                      <tr key={child.id} style={{background:'var(--bg-secondary)', borderBottom: ci === field.children.length-1 ? '1px solid var(--border,#f1f5f9)' : 'none'}}>
+                      <tr key={child.id} style={{background:'var(--bg-secondary)', borderBottom: ci === field.children.length-1 ? '1px solid #f1f5f9' : 'none'}}>
                         <td style={{padding:'7px 16px',paddingLeft:'32px',fontSize:'12px',color:'var(--text-secondary,#475569)'}}>
                           ↳ {child.label}
                         </td>
