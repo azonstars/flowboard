@@ -192,10 +192,7 @@ export default function AdvancedReportViewer() {
     const filteredPrevSubs = fUsers.length > 0 ? prevSubs.filter(s => fUsers.includes(s.submitted_by)) : prevSubs
     const filteredWeekSubs = fUsers.length > 0 ? weekSubs.filter(s => fUsers.includes(s.submitted_by)) : weekSubs
 
-    // drillBranch: শাখা-ওয়ারি rows — Regional (no fBranch), Admin/Central with fReg
-    const drillBranch = !isBranch && !isDivisional && !!(fBranch || isRegional || ((isAdmin || isCentral) && fReg))
-    // drillRegion: অঞ্চল-ওয়ারি rows — Admin/Central with fDiv only
-    const drillRegion = !isBranch && !isDivisional && !drillBranch && !!((isAdmin || isCentral) && fDiv)
+    // সব role-এ সবসময় consolidated — filter শুধু scope বদলায়
 
     // ── Branch Manager: সবসময় নিজের branch-এর consolidated, user filter সহ ──
     if (isBranch) {
@@ -220,49 +217,53 @@ export default function AdvancedReportViewer() {
         filteredPrevSubs.filter(s => divCodes.includes(s.branch_code)),
         filteredWeekSubs.filter(s => divCodes.includes(s.branch_code))))
 
-    } else if (drillBranch) {
-      let pool = branches
-      if (fBranch)   pool = branches.filter(b => b.branch_code === fBranch)
-      else if (fReg) pool = branches.filter(b => b.region_id === fReg)
-      else if (fDiv) pool = branches.filter(b => b.division_id === fDiv)
-      else if (isRegional)   pool = branches.filter(b => b.region_id === profile.region_id)
-      else if (isDivisional) pool = branches.filter(b => b.division_id === profile.division_id)
-      // শাখা select + user filter → consolidated একটাই row
+    } else {
+      // Regional / Admin / Central — সবসময় consolidated একটি row
+      // filter অনুযায়ী scope নির্ধারণ
+      let codes
+      let label
+
       if (fBranch && fUsers.length > 0) {
-        const label = fUsers.length === 1
+        // শাখা + user filter → user-এর data
+        codes = null // filteredSubs already filtered by user
+        label = fUsers.length === 1
           ? (users.find(u => u.id === fUsers[0])?.full_name || 'নির্বাচিত ইউজার')
           : `${fUsers.length} জন ইউজার (মোট)`
         rows.push(make(label, filteredSubs, filteredPrevSubs, filteredWeekSubs))
+      } else if (fBranch) {
+        // শুধু শাখা filter
+        codes = [fBranch]
+        label = branches.find(b => b.branch_code === fBranch)?.name || fBranch
+        rows.push(make(label,
+          filteredSubs.filter(s => codes.includes(s.branch_code)),
+          filteredPrevSubs.filter(s => codes.includes(s.branch_code)),
+          filteredWeekSubs.filter(s => codes.includes(s.branch_code))))
+      } else if (fReg) {
+        // অঞ্চল filter
+        codes = branches.filter(b => b.region_id === fReg).map(b => b.branch_code)
+        label = regions.find(r => r.id === fReg)?.name || 'নির্বাচিত অঞ্চল'
+        rows.push(make(label,
+          filteredSubs.filter(s => codes.includes(s.branch_code)),
+          filteredPrevSubs.filter(s => codes.includes(s.branch_code)),
+          filteredWeekSubs.filter(s => codes.includes(s.branch_code))))
+      } else if (fDiv) {
+        // বিভাগ filter
+        codes = branches.filter(b => b.division_id === fDiv).map(b => b.branch_code)
+        label = divisions.find(d => d.id === fDiv)?.name || 'নির্বাচিত বিভাগ'
+        rows.push(make(label,
+          filteredSubs.filter(s => codes.includes(s.branch_code)),
+          filteredPrevSubs.filter(s => codes.includes(s.branch_code)),
+          filteredWeekSubs.filter(s => codes.includes(s.branch_code))))
+      } else if (isRegional) {
+        // Regional default — নিজের অঞ্চলের সব শাখার combined
+        codes = branches.filter(b => b.region_id === profile.region_id).map(b => b.branch_code)
+        rows.push(make('অঞ্চলের মোট',
+          filteredSubs.filter(s => codes.includes(s.branch_code)),
+          filteredPrevSubs.filter(s => codes.includes(s.branch_code)),
+          filteredWeekSubs.filter(s => codes.includes(s.branch_code))))
       } else {
-        for (const br of pool) {
-          const bc = br.branch_code
-          rows.push(make(br.name || bc,
-            filteredSubs.filter(s => s.branch_code === bc),
-            filteredPrevSubs.filter(s => s.branch_code === bc),
-            filteredWeekSubs.filter(s => s.branch_code === bc)))
-        }
-      }
-
-    } else if (drillRegion) {
-      let pool = regions
-      if (fDiv)             pool = regions.filter(r => r.division_id === fDiv)
-      else if (isDivisional) pool = regions.filter(r => r.division_id === profile.division_id)
-      for (const reg of pool) {
-        const codes = branches.filter(b => b.region_id === reg.id).map(b => b.branch_code)
-        rows.push(make(reg.name || 'অঞ্চল',
-          filteredSubs.filter(s => codes.includes(s.branch_code)),
-          filteredPrevSubs.filter(s => codes.includes(s.branch_code)),
-          filteredWeekSubs.filter(s => codes.includes(s.branch_code))))
-      }
-
-    } else {
-      // Admin/Central no filter → বিভাগ rows
-      for (const div of divisions) {
-        const codes = branches.filter(b => b.division_id === div.id).map(b => b.branch_code)
-        rows.push(make(div.name || 'বিভাগ',
-          filteredSubs.filter(s => codes.includes(s.branch_code)),
-          filteredPrevSubs.filter(s => codes.includes(s.branch_code)),
-          filteredWeekSubs.filter(s => codes.includes(s.branch_code))))
+        // Admin / Central — সব শাখার combined
+        rows.push(make('সর্বমোট', filteredSubs, filteredPrevSubs, filteredWeekSubs))
       }
     }
 
